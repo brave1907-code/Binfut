@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b0e11">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vadeli Grafik">
+<title>Vadeli Grafik</title>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+:root{
+  --bg:#0b0e11; --panel:#161a1e; --panel2:#1e2329; --line:#2b3139;
+  --text:#eaecef; --muted:#848e9c; --up:#0ecb81; --down:#f6465d; --accent:#f0b90b;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+#app{height:100dvh;display:flex;flex-direction:column;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+/* Üst bar */
+.top{display:flex;align-items:center;gap:10px;padding:8px 12px 4px}
+#symBtn{display:flex;align-items:baseline;gap:4px;font-weight:700;font-size:18px}
+#symBtn .q{font-size:12px;color:var(--muted);font-weight:500}
+#symBtn .caret{color:var(--muted);font-size:13px}
+.px{margin-left:auto;text-align:right;line-height:1.15}
+#price{font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+#chg{font-size:12px;font-variant-numeric:tabular-nums}
+#favBtn{font-size:22px;color:var(--muted);width:34px;height:34px}
+#favBtn.on{color:var(--accent)}
+.stats{display:flex;gap:14px;padding:0 12px 6px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stats b{color:var(--text);font-weight:500}
+
+/* Zaman dilimleri */
+#tfBar{display:flex;gap:4px;overflow-x:auto;padding:4px 8px;border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);scrollbar-width:none}
+#tfBar::-webkit-scrollbar{display:none}
+.tf{flex:0 0 auto;padding:6px 10px;border-radius:6px;font-size:13px;color:var(--muted)}
+.tf.on{background:var(--panel2);color:var(--accent);font-weight:600}
+
+/* Grafik */
+#chartWrap{position:relative;flex:1;min-height:0}
+#chart{position:absolute;inset:0}
+#legend{position:absolute;left:8px;top:6px;z-index:3;font-size:11px;pointer-events:none;
+  font-variant-numeric:tabular-nums;color:var(--muted);display:flex;flex-wrap:wrap;gap:0 8px}
+#legend b{font-weight:500}
+#status{position:absolute;inset:0;z-index:4;display:none;align-items:center;justify-content:center;
+  text-align:center;padding:24px;color:var(--muted);font-size:14px;background:rgba(11,14,17,.6)}
+#status.show{display:flex}
+
+/* Alt araç çubuğu */
+.tools{display:flex;border-top:1px solid var(--line);background:var(--panel)}
+.tools button{flex:1;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted)}
+.tools button .i{font-size:19px;line-height:1}
+.tools button:disabled{opacity:.4}
+.tools button.main{color:var(--text)}
+
+/* Coin listesi sayfası */
+#sheet{position:fixed;inset:0;z-index:20;background:var(--bg);display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .25s ease;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#sheet.open{transform:none}
+.sh-head{display:flex;gap:8px;align-items:center;padding:10px 12px}
+#search{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  color:var(--text);font-size:16px;padding:9px 12px;outline:none}
+#search:focus{border-color:var(--accent)}
+#closeSheet{color:var(--muted);font-size:14px;padding:8px 4px}
+#sortBar{display:flex;gap:6px;padding:0 12px 8px;overflow-x:auto;scrollbar-width:none}
+#sortBar::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;padding:6px 12px;border-radius:16px;background:var(--panel2);font-size:12px;color:var(--muted)}
+.chip.on{background:var(--accent);color:#000;font-weight:600}
+.lh{display:grid;grid-template-columns:34px 1fr auto 74px;gap:8px;padding:6px 12px;font-size:11px;
+  color:var(--muted);border-bottom:1px solid var(--line)}
+.lh span:nth-child(3),.lh span:nth-child(4){text-align:right}
+#list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.row{display:grid;grid-template-columns:34px 1fr auto 74px;gap:8px;align-items:center;
+  padding:10px 12px;border-bottom:1px solid #15191e}
+.row:active{background:var(--panel)}
+.row.cur{background:var(--panel)}
+.star{font-size:18px;color:#3c434d;text-align:center}
+.star.on{color:var(--accent)}
+.nm b{font-size:15px}
+.nm small{color:var(--muted);font-size:11px;margin-left:2px}
+.nm .v{display:block;color:var(--muted);font-size:11px;margin-top:1px}
+.pr{text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+.pill{text-align:center;border-radius:5px;padding:6px 0;font-size:13px;font-weight:600;
+  color:#fff;font-variant-numeric:tabular-nums}
+.pill.up{background:var(--up)} .pill.down{background:var(--down)} .pill.flat{background:#474d57}
+.empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px}
+.up-t{color:var(--up)} .down-t{color:var(--down)}
+
+/* Çizim */
+#ov{position:absolute;inset:0;z-index:2;pointer-events:none;touch-action:none}
+#drawBar{display:none;gap:2px;overflow-x:auto;padding:6px 6px;border-top:1px solid var(--line);
+  background:var(--panel);scrollbar-width:none}
+#drawBar::-webkit-scrollbar{display:none}
+#drawBar.show{display:flex}
+.dt{flex:1 0 auto;min-width:58px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:6px 6px;border-radius:8px;font-size:10.5px;color:var(--muted)}
+.dt svg{width:22px;height:22px;fill:none;stroke:var(--text);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dt.on{background:var(--panel2);color:var(--accent)}
+.dt.on svg{stroke:var(--accent)}
+.dt.sep{border-left:1px solid var(--line);border-radius:0 8px 8px 0}
+.tools button.active{color:var(--accent)}
+#hint,#selBar{position:absolute;top:26px;left:50%;transform:translateX(-50%);z-index:5;display:none;
+  align-items:center;gap:8px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;
+  padding:5px 6px 5px 12px;font-size:12px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+#hint.show,#selBar.show{display:flex}
+#selBar{padding-left:8px}
+.pillbtn{padding:5px 11px;border-radius:14px;background:var(--panel);font-size:12px}
+.pillbtn.del{color:var(--down);font-weight:600}
+#selColors{display:flex;gap:6px}
+.sw{width:20px;height:20px;border-radius:50%;border:2px solid transparent}
+.sw.on{border-color:#fff}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <button id="symBtn" aria-label="Coin seç"><span id="symBase">BTC</span><span class="q" id="symQuote">USDT</span><span class="caret">▾</span></button>
+    <button id="favBtn" aria-label="Favori">☆</button>
+    <div class="px"><div id="price">–</div><div id="chg">–</div></div>
+  </header>
+  <div class="stats">
+    <span>24s Y <b id="hi">–</b></span>
+    <span>24s D <b id="lo">–</b></span>
+    <span>Hacim <b id="qv">–</b></span>
+  </div>
+  <nav id="tfBar"></nav>
+  <div id="chartWrap">
+    <div id="chart"></div>
+    <canvas id="ov"></canvas>
+    <div id="legend"></div>
+    <div id="hint"><span id="hintText"></span><button class="pillbtn" id="hintCancel">İptal</button></div>
+    <div id="selBar"><span id="selColors"></span><button class="pillbtn del" id="selDel">Sil</button><button class="pillbtn" id="selClose">✕</button></div>
+    <div id="status"></div>
+  </div>
+  <div id="drawBar">
+    <button class="dt" data-tool="hray"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"/><path d="M7.5 12H22"/></svg>Yatay ışın</button>
+    <button class="dt" data-tool="vline"><svg viewBox="0 0 24 24"><path d="M12 2v7.5M12 14.5V22"/><circle cx="12" cy="12" r="2.5"/></svg>Dikey çizgi</button>
+    <button class="dt" data-tool="trend"><svg viewBox="0 0 24 24"><path d="M6.8 17.2L17.2 6.8"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="5" r="2.5"/></svg>Trend</button>
+    <button class="dt" data-tool="measure"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 16V8M9 11l3-3 3 3"/></svg>Ölçü %</button>
+    <button class="dt sep" data-act="magnet"><svg viewBox="0 0 24 24"><path d="M6 3v9a6 6 0 0 0 12 0V3"/><path d="M6 7h3.5M14.5 7H18"/></svg>Mıknatıs</button>
+    <button class="dt" data-act="clear"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Temizle</button>
+  </div>
+  <footer class="tools">
+    <button class="main" id="openList"><span class="i">☰</span>Coinler</button>
+    <button class="main" id="drawToggle"><span class="i">✎</span>Çizim</button>
+    <button disabled><span class="i">⏰</span>Alarm</button>
+    <button class="main" id="goLive"><span class="i">⇥</span>Canlıya dön</button>
+  </footer>
+</div>
+
+<div id="sheet">
+  <div class="sh-head">
+    <input id="search" type="search" placeholder="Coin ara (ör. SOL)" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    <button id="closeSheet">Kapat</button>
+  </div>
+  <div id="sortBar"></div>
+  <div class="lh"><span></span><span>Kontrat / Hacim</span><span>Fiyat</span><span>24s %</span></div>
+  <div id="list"></div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const API = 'https://fapi.binance.com';
+const WS  = 'wss://fstream.binance.com/ws';
+const TZ  = -new Date().getTimezoneOffset() * 60; // grafiği yerel saate kaydır
+
+const INTERVALS = [
+  ['1m','1d'],['3m','3d'],['5m','5d'],['15m','15d'],['30m','30d'],
+  ['1h','1s'],['2h','2s'],['4h','4s'],['6h','6s'],['12h','12s'],
+  ['1d','1G'],['3d','3G'],['1w','1H'],['1M','1A']
+];
+const SORTS = [['vol','Hacim'],['up','Yükselen'],['down','Düşen'],['fav','★ Favoriler'],['az','A-Z']];
+
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+const S = {
+  symbols: {},           // sembol -> {base, quote, prec, tick}
+  tickers: {},           // sembol -> {last, chg, hi, lo, qv}
+  symbol: store.get('vg_symbol', 'BTCUSDT'),
+  interval: store.get('vg_interval', '1h'),
+  favs: new Set(store.get('vg_favs', ['BTCUSDT','ETHUSDT','SOLUSDT'])),
+  sort: store.get('vg_sort', 'vol'),
+  query: '',
+  candles: [],
+  loadingOld: false, noMoreOld: false,
+  ws: null, tickWs: null, hovering: false, hiddenAt: 0
+};
+
+const $ = id => document.getElementById(id);
+
+/* ---------- Biçimlendirme ---------- */
+function decimals(tick){
+  const s = String(tick);
+  if (!s.includes('.')) return 0;
+  return s.replace(/0+$/,'').split('.')[1].length;
+}
+function prec(sym){ return S.symbols[sym] ? S.symbols[sym].prec : 2; }
+function fp(v, sym){ return (v == null || isNaN(v)) ? '–' : Number(v).toFixed(prec(sym || S.symbol)); }
+function fvol(v){
+  if (!v) return '–';
+  if (v >= 1e9) return (v/1e9).toFixed(2) + 'B';
+  if (v >= 1e6) return (v/1e6).toFixed(1) + 'M';
+  if (v >= 1e3) return (v/1e3).toFixed(1) + 'K';
+  return v.toFixed(0);
+}
+function fpct(v){ return (v == null || isNaN(v)) ? '–' : (v > 0 ? '+' : '') + v.toFixed(2) + '%'; }
+function cls(v){ return v > 0 ? 'up' : v < 0 ? 'down' : 'flat'; }
+
+function setStatus(msg){ const el = $('status'); el.textContent = msg || ''; el.classList.toggle('show', !!msg); }
+
+/* ---------- Grafik ---------- */
+const chart = LightweightCharts.createChart($('chart'), {
+  autoSize: true,
+  layout: { background: { type: 'solid', color: '#0b0e11' }, textColor: '#848e9c', fontSize: 11 },
+  grid: { vertLines: { color: '#161b21' }, horzLines: { color: '#161b21' } },
+  crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+  rightPriceScale: { borderColor: '#2b3139' },
+  timeScale: { borderColor: '#2b3139', timeVisible: true, secondsVisible: false, rightOffset: 6 },
+  handleScroll: true,
+  handleScale: { pinch: true, mouseWheel: true, axisPressedMouseMove: true },
+  kineticScroll: { touch: true, mouse: false }
+});
+const candle = chart.addCandlestickSeries({
+  upColor: '#0ecb81', downColor: '#f6465d', borderVisible: false,
+  wickUpColor: '#0ecb81', wickDownColor: '#f6465d'
+});
+candle.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0.22 } });
+const vol = chart.addHistogramSeries({
+  priceScaleId: 'vol', priceFormat: { type: 'volume' },
+  lastValueVisible: false, priceLineVisible: false
+});
+chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+
+const toBar = k => ({ time: k[0]/1000 + TZ, open: +k[1], high: +k[2], low: +k[3], close: +k[4], volume: +k[5] });
+const volBar = b => ({ time: b.time, value: b.volume, color: b.close >= b.open ? 'rgba(14,203,129,.45)' : 'rgba(246,70,93,.45)' });
+
+function setLegend(b){
+  if (!b){ $('legend').innerHTML = ''; return; }
+  const c = b.close >= b.open ? 'up-t' : 'down-t';
+  const p = (b.close - b.open) / b.open * 100;
+  $('legend').innerHTML =
+    `<span>A <b class="${c}">${fp(b.open)}</b></span><span>Y <b class="${c}">${fp(b.high)}</b></span>` +
+    `<span>D <b class="${c}">${fp(b.low)}</b></span><span>K <b class="${c}">${fp(b.close)}</b></span>` +
+    `<span class="${c}">${fpct(p)}</span>`;
+}
+
+chart.subscribeCrosshairMove(param => {
+  const d = param && param.time ? param.seriesData.get(candle) : null;
+  S.hovering = !!d;
+  if (d){
+    const full = S.candles.find(c => c.time === d.time) || d;
+    setLegend(full);
+  } else setLegend(S.candles[S.candles.length - 1]);
+});
+
+function applyPrecision(){
+  const m = S.symbols[S.symbol];
+  if (m) candle.applyOptions({ priceFormat: { type: 'price', precision: m.prec, minMove: m.tick } });
+}
+
+let loadToken = 0;
+async function loadChart(){
+  const token = ++loadToken;
+  const { symbol, interval } = S;
+  closeKlineWs();
+  S.candles = []; S.noMoreOld = false; S.loadingOld = false;
+  drawLoad();
+  applyPrecision();
+  updateHeader();
+  setStatus('Yükleniyor…');
+  try{
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=1000`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (token !== loadToken) return;
+    S.candles = data.map(toBar);
+    candle.setData(S.candles);
+    vol.setData(S.candles.map(volBar));
+    const n = S.candles.length;
+    S.ref = n ? S.candles[n - 1].close : 0;
+    chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 100), to: n + 6 });
+    setLegend(S.candles[n - 1]);
+    updateHeader();
+    setStatus('');
+    openKlineWs(token);
+  }catch(e){
+    if (token === loadToken) setStatus('Grafik verisi alınamadı. İnternet bağlantını kontrol et.');
+  }
+}
+
+async function loadOlder(){
+  if (S.loadingOld || S.noMoreOld || !S.candles.length) return;
+  S.loadingOld = true;
+  const token = loadToken;
+  const end = (S.candles[0].time - TZ) * 1000 - 1;
+  try{
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${S.symbol}&interval=${S.interval}&limit=1000&endTime=${end}`);
+    const data = await r.json();
+    if (token !== loadToken) return;
+    const older = Array.isArray(data) ? data.map(toBar).filter(b => b.time < S.candles[0].time) : [];
+    if (!older.length){ S.noMoreOld = true; return; }
+    S.candles = older.concat(S.candles);
+    candle.setData(S.candles);
+    vol.setData(S.candles.map(volBar));
+  }catch(e){ /* sessizce geç, bir sonraki kaydırmada tekrar dener */ }
+  finally{ S.loadingOld = false; }
+}
+chart.timeScale().subscribeVisibleLogicalRangeChange(r => { if (r && r.from < 30) loadOlder(); });
+
+function openKlineWs(token){
+  const ws = new WebSocket(`${WS}/${S.symbol.toLowerCase()}@kline_${S.interval}`);
+  S.ws = ws;
+  ws.onmessage = e => {
+    if (token !== loadToken) return;
+    const k = JSON.parse(e.data).k;
+    if (!k) return;
+    const b = { time: k.t/1000 + TZ, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v };
+    const last = S.candles[S.candles.length - 1];
+    if (last && b.time < last.time) return;
+    if (last && b.time === last.time) S.candles[S.candles.length - 1] = b; else S.candles.push(b);
+    candle.update(b);
+    vol.update(volBar(b));
+    updateHeader();
+    if (!S.hovering) setLegend(b);
+  };
+  ws.onclose = () => {
+    if (S.ws === ws && token === loadToken) setTimeout(() => { if (S.ws === ws && token === loadToken) openKlineWs(token); }, 2000);
+  };
+}
+function closeKlineWs(){
+  const ws = S.ws; S.ws = null;
+  if (ws){ ws.onclose = null; ws.onmessage = null; try{ ws.close(); }catch(e){} }
+}
+
+/* ---------- Üst bilgi ---------- */
+function updateHeader(){
+  const m = S.symbols[S.symbol];
+  $('symBase').textContent = m ? m.base : S.symbol;
+  $('symQuote').textContent = m ? m.quote + ' Sürekli' : '';
+  const t = S.tickers[S.symbol] || {};
+  const last = S.candles.length ? S.candles[S.candles.length - 1].close : t.last;
+  const pe = $('price');
+  pe.textContent = fp(last);
+  pe.className = t.chg > 0 ? 'up-t' : t.chg < 0 ? 'down-t' : '';
+  const ce = $('chg');
+  ce.textContent = fpct(t.chg);
+  ce.className = t.chg > 0 ? 'up-t' : t.chg < 0 ? 'down-t' : '';
+  $('hi').textContent = fp(t.hi);
+  $('lo').textContent = fp(t.lo);
+  $('qv').textContent = fvol(t.qv);
+  $('favBtn').textContent = S.favs.has(S.symbol) ? '★' : '☆';
+  $('favBtn').classList.toggle('on', S.favs.has(S.symbol));
+  document.title = `${fp(last)} ${S.symbol}`;
+}
+
+/* ---------- Zaman dilimleri ---------- */
+function renderTf(){
+  $('tfBar').innerHTML = INTERVALS.map(([v, l]) =>
+    `<button class="tf${v === S.interval ? ' on' : ''}" data-tf="${v}">${l}</button>`).join('');
+  const on = $('tfBar').querySelector('.on');
+  if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
+}
+$('tfBar').addEventListener('click', e => {
+  const b = e.target.closest('[data-tf]');
+  if (!b || b.dataset.tf === S.interval) return;
+  S.interval = b.dataset.tf;
+  store.set('vg_interval', S.interval);
+  renderTf();
+  loadChart();
+});
+
+/* ---------- Coin listesi ---------- */
+function renderSort(){
+  $('sortBar').innerHTML = SORTS.map(([v, l]) =>
+    `<button class="chip${v === S.sort ? ' on' : ''}" data-sort="${v}">${l}</button>`).join('');
+}
+$('sortBar').addEventListener('click', e => {
+  const b = e.target.closest('[data-sort]');
+  if (!b) return;
+  S.sort = b.dataset.sort;
+  store.set('vg_sort', S.sort);
+  renderSort();
+  renderList(true);
+});
+
+function listItems(){
+  let arr = Object.keys(S.symbols);
+  const q = S.query.trim().toUpperCase();
+  if (q) arr = arr.filter(s => s.includes(q));
+  if (S.sort === 'fav') arr = arr.filter(s => S.favs.has(s));
+  const t = s => S.tickers[s] || {};
+  const sorters = {
+    vol:  (a, b) => (t(b).qv || 0) - (t(a).qv || 0),
+    fav:  (a, b) => (t(b).qv || 0) - (t(a).qv || 0),
+    up:   (a, b) => (t(b).chg ?? -1e9) - (t(a).chg ?? -1e9),
+    down: (a, b) => (t(a).chg ?? 1e9) - (t(b).chg ?? 1e9),
+    az:   (a, b) => a.localeCompare(b)
+  };
+  return arr.sort(sorters[S.sort] || sorters.vol);
+}
+
+function renderList(resetScroll){
+  const items = listItems();
+  if (!items.length){
+    $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : 'Sonuç bulunamadı.'}</div>`;
+    return;
+  }
+  $('list').innerHTML = items.map(s => {
+    const m = S.symbols[s], t = S.tickers[s] || {};
+    const fav = S.favs.has(s);
+    return `<div class="row${s === S.symbol ? ' cur' : ''}" data-s="${s}">
+      <button class="star${fav ? ' on' : ''}" data-fav="${s}">${fav ? '★' : '☆'}</button>
+      <div class="nm"><b>${m.base}</b><small>${m.quote}</small><span class="v">Hac ${fvol(t.qv)}</span></div>
+      <div class="pr">${fp(t.last, s)}</div>
+      <div class="pill ${cls(t.chg)}">${fpct(t.chg)}</div>
+    </div>`;
+  }).join('');
+  if (resetScroll) $('list').scrollTop = 0;
+}
+
+$('list').addEventListener('click', e => {
+  const f = e.target.closest('[data-fav]');
+  if (f){ toggleFav(f.dataset.fav); renderList(); return; }
+  const r = e.target.closest('[data-s]');
+  if (r) selectSymbol(r.dataset.s);
+});
+
+let qTimer;
+$('search').addEventListener('input', e => {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => { S.query = e.target.value; renderList(true); }, 120);
+});
+
+function openSheet(){
+  $('search').value = ''; S.query = '';
+  renderSort(); renderList(true);
+  $('sheet').classList.add('open');
+  history.pushState({ sheet: 1 }, '');
+}
+function closeSheet(fromPop){
+  if (!$('sheet').classList.contains('open')) return;
+  $('sheet').classList.remove('open');
+  $('search').blur();
+  if (!fromPop && history.state && history.state.sheet) history.back();
+}
+window.addEventListener('popstate', () => closeSheet(true)); // Android geri tuşu listeyi kapatır
+$('openList').addEventListener('click', openSheet);
+$('symBtn').addEventListener('click', openSheet);
+$('closeSheet').addEventListener('click', () => closeSheet());
+$('goLive').addEventListener('click', () => chart.timeScale().scrollToRealTime());
+
+function toggleFav(s){
+  S.favs.has(s) ? S.favs.delete(s) : S.favs.add(s);
+  store.set('vg_favs', [...S.favs]);
+  updateHeader();
+}
+$('favBtn').addEventListener('click', () => toggleFav(S.symbol));
+
+function selectSymbol(s){
+  closeSheet();
+  if (s === S.symbol) return;
+  S.symbol = s;
+  store.set('vg_symbol', s);
+  loadChart();
+}
+
+/* ---------- Tüm piyasa fiyatları ---------- */
+let listDirty = false;
+function openTickerWs(){
+  const ws = new WebSocket(`${WS}/!miniTicker@arr`);
+  S.tickWs = ws;
+  ws.onmessage = e => {
+    const arr = JSON.parse(e.data);
+    if (!Array.isArray(arr)) return;
+    for (const x of arr){
+      if (!S.symbols[x.s]) continue;
+      const o = +x.o, c = +x.c;
+      S.tickers[x.s] = { last: c, chg: o ? (c - o) / o * 100 : 0, hi: +x.h, lo: +x.l, qv: +x.q };
+    }
+    listDirty = true;
+    updateHeader();
+  };
+  ws.onclose = () => { if (S.tickWs === ws) setTimeout(() => { if (S.tickWs === ws) openTickerWs(); }, 3000); };
+}
+function closeTickerWs(){
+  const ws = S.tickWs; S.tickWs = null;
+  if (ws){ ws.onclose = null; ws.onmessage = null; try{ ws.close(); }catch(e){} }
+}
+// Liste açıkken fiyatları saniyede bir yenile (kaydırmayı bozmadan)
+setInterval(() => {
+  if (listDirty && $('sheet').classList.contains('open')){
+    listDirty = false;
+    const st = $('list').scrollTop;
+    renderList();
+    $('list').scrollTop = st;
+  }
+}, 1500);
+
+/* ---------- Uygulama arka plandan dönünce yenile ---------- */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){ S.hiddenAt = Date.now(); return; }
+  if (S.hiddenAt && Date.now() - S.hiddenAt > 5000){
+    closeTickerWs(); openTickerWs();
+    loadChart();
+  }
+});
+
+/* =====================================================================
+   ÇİZİM ARAÇLARI
+   Çizimler zaman (UTC sn) + fiyat olarak saklanır; böylece zaman dilimi
+   değişse de doğru yerde kalırlar. Coin bazında kaydedilir.
+   ===================================================================== */
+const ts = chart.timeScale();
+const ov = $('ov'), octx = ov.getContext('2d');
+const STEP = {'1m':60,'3m':180,'5m':300,'15m':900,'30m':1800,'1h':3600,'2h':7200,'4h':14400,
+  '6h':21600,'12h':43200,'1d':86400,'3d':259200,'1w':604800,'1M':2592000};
+const COLORS = ['#f0b90b','#4c9aff','#0ecb81','#f6465d','#c77dff','#eaecef'];
+const DEF_COLOR = { hray: '#f0b90b', vline: '#4c9aff', trend: '#4c9aff' };
+const TOOL_HINT = {
+  hray: 'Başlangıç noktasına dokun',
+  vline: 'İstediğin muma dokun',
+  trend: '1. noktaya dokun (ya da sürükle)',
+  measure: 'Başlangıca dokun (ya da sürükle)'
+};
+const AY = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+const FONT = '600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+
+const D = { list: [], tool: null, pending: null, press: null, sel: null, drag: null, cursor: null,
+  magnet: store.get('vg_magnet', true), ver: 0 };
+let cw = 0, ch = 0, dpr = 1;
+
+function resizeOv(){
+  const r = ov.getBoundingClientRect();
+  dpr = window.devicePixelRatio || 1;
+  cw = r.width; ch = r.height;
+  ov.width = Math.round(cw * dpr); ov.height = Math.round(ch * dpr);
+  D.ver++;
+}
+new ResizeObserver(resizeOv).observe($('chartWrap'));
+
+const pad = n => String(n).padStart(2, '0');
+function ftime(utc){
+  const d = new Date(utc * 1000);
+  const day = ['1d','1w','1M','3d'].includes(S.interval);
+  return `${pad(d.getDate())} ${AY[d.getMonth()]} '${String(d.getFullYear()).slice(2)}` + (day ? '' : ` ${pad(d.getHours())}:${pad(d.getMinutes())}`);
+}
+function fdur(sec){
+  const g = Math.floor(sec / 86400), s = Math.floor(sec % 86400 / 3600), m = Math.round(sec % 3600 / 60);
+  if (g) return `${g}g` + (s ? ` ${s}sa` : '');
+  if (s) return `${s}sa` + (m ? ` ${m}dk` : '');
+  return `${m}dk`;
+}
+
+/* --- Zaman <-> mantıksal indeks <-> piksel --- */
+function step(){ return STEP[S.interval] || 3600; }
+function timeToLogical(t){ // t: grafik zamanı
+  const c = S.candles, n = c.length;
+  if (!n) return null;
+  if (t >= c[n-1].time) return n - 1 + (t - c[n-1].time) / step();
+  if (t <= c[0].time) return (t - c[0].time) / step();
+  let lo = 0, hi = n - 1;
+  while (hi - lo > 1){ const m = (lo + hi) >> 1; if (c[m].time <= t) lo = m; else hi = m; }
+  return lo + (t - c[lo].time) / (c[hi].time - c[lo].time);
+}
+function logicalToTime(l){
+  const c = S.candles, n = c.length;
+  if (l >= n - 1) return c[n-1].time + (l - (n - 1)) * step();
+  if (l <= 0) return c[0].time + l * step();
+  const i = Math.floor(l), f = l - i;
+  return c[i].time + f * (c[i+1].time - c[i].time);
+}
+function toXY(pt){
+  const l = timeToLogical(pt.t + TZ);
+  const x = l == null ? null : ts.logicalToCoordinate(l);
+  const y = pt.p == null ? null : candle.priceToCoordinate(pt.p);
+  return { x, y };
+}
+// Dokunulan pikseli (zaman, fiyat) noktasına çevir; mıknatıs açıksa mumun A/Y/D/K'sine yapıştır
+function ptAt(x, y){
+  if (!S.candles.length) return null;
+  let l = ts.coordinateToLogical(x);
+  if (l == null) return null;
+  l = Math.round(l);
+  let p = candle.coordinateToPrice(y);
+  if (p == null) return null;
+  if (D.magnet && l >= 0 && l < S.candles.length){
+    const c = S.candles[l];
+    let best = null, bd = 36;
+    for (const v of [c.open, c.high, c.low, c.close]){
+      const vy = candle.priceToCoordinate(v);
+      if (vy != null && Math.abs(vy - y) < bd){ bd = Math.abs(vy - y); best = v; }
+    }
+    if (best != null) p = best;
+  }
+  return { t: logicalToTime(l) - TZ, p };
+}
+const paneW = () => ts.width();
+const paneH = () => ch - ts.height();
+
+/* --- Kanvas yardımcıları --- */
+function rr(x, y, w, h, r){
+  octx.beginPath(); octx.moveTo(x + r, y);
+  octx.arcTo(x + w, y, x + w, y + h, r); octx.arcTo(x + w, y + h, x, y + h, r);
+  octx.arcTo(x, y + h, x, y, r); octx.arcTo(x, y, x + w, y, r); octx.closePath();
+}
+function tag(text, x, y, bg, fg, align){
+  octx.font = FONT;
+  const lines = text.split('\n');
+  const w = Math.max(...lines.map(l => octx.measureText(l).width)) + 14, h = lines.length * 15 + 6;
+  let bx = align === 'right' ? x - w : align === 'left' ? x : x - w / 2;
+  bx = Math.max(2, Math.min(bx, paneW() - w - 2));
+  const by = y - h / 2;
+  octx.fillStyle = bg; rr(bx, by, w, h, 4); octx.fill();
+  octx.fillStyle = fg || '#fff'; octx.textAlign = 'center'; octx.textBaseline = 'middle';
+  lines.forEach((l, i) => octx.fillText(l, bx + w / 2, by + 3 + 7.5 + i * 15));
+}
+function line(x1, y1, x2, y2, color, w, dash){
+  octx.beginPath(); octx.setLineDash(dash || []);
+  octx.moveTo(x1, y1); octx.lineTo(x2, y2);
+  octx.strokeStyle = color; octx.lineWidth = w || 1.5; octx.stroke(); octx.setLineDash([]);
+}
+function handle(x, y, color){
+  octx.beginPath(); octx.arc(x, y, 6, 0, Math.PI * 2);
+  octx.fillStyle = '#0b0e11'; octx.fill(); octx.lineWidth = 2; octx.strokeStyle = color; octx.stroke();
+}
+function arrow(x, y, dx, dy, color){
+  if (!dx && !dy) return;
+  const s = 7;
+  octx.beginPath(); octx.moveTo(x, y);
+  octx.lineTo(x - dx * s - dy * s * 0.6, y - dy * s + dx * s * 0.6);
+  octx.lineTo(x - dx * s + dy * s * 0.6, y - dy * s - dx * s * 0.6);
+  octx.closePath(); octx.fillStyle = color; octx.fill();
+}
+
+/* --- Çizimleri ekrana bas --- */
+function drawOne(d, sel, W, H){
+  const c = d.color || DEF_COLOR[d.type] || '#4c9aff';
+  const a = toXY(d.p1);
+  if (a.x == null) return;
+  if (d.type === 'hray'){
+    if (a.y == null) return;
+    line(Math.max(a.x, -10), a.y, W, a.y, c, sel ? 2.2 : 1.5);
+    tag(fp(d.p1.p), W - 2, a.y, c, '#000', 'right');
+    if (sel) handle(a.x, a.y, c);
+  } else if (d.type === 'vline'){
+    line(a.x, 0, a.x, H, c, sel ? 2.2 : 1.5);
+    tag(ftime(d.p1.t), a.x, H - 12, c, '#000');
+    if (sel) handle(a.x, H / 2, c);
+  } else {
+    const b = toXY(d.p2);
+    if (b.x == null || a.y == null || b.y == null) return;
+    if (d.type === 'trend'){
+      line(a.x, a.y, b.x, b.y, c, sel ? 2.2 : 1.5);
+      if (sel){ handle(a.x, a.y, c); handle(b.x, b.y, c); }
+    } else if (d.type === 'measure'){
+      const up = d.p2.p >= d.p1.p, col = up ? '#0ecb81' : '#f6465d';
+      const x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x), y1 = Math.min(a.y, b.y), y2 = Math.max(a.y, b.y);
+      octx.fillStyle = up ? 'rgba(14,203,129,.16)' : 'rgba(246,70,93,.16)';
+      octx.fillRect(x1, y1, x2 - x1, y2 - y1);
+      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      line(mx, a.y, mx, b.y, col, 1.5);
+      arrow(mx, b.y, 0, Math.sign(b.y - a.y), col);
+      line(a.x, my, b.x, my, col, 1.5);
+      arrow(b.x, my, Math.sign(b.x - a.x), 0, col);
+      const diff = d.p2.p - d.p1.p, pct = d.p1.p ? diff / d.p1.p * 100 : 0;
+      const bars = Math.round(Math.abs(timeToLogical(d.p2.t + TZ) - timeToLogical(d.p1.t + TZ)));
+      const txt = `${fpct(pct)}  (${diff >= 0 ? '+' : '−'}${fp(Math.abs(diff))})\n${bars} mum · ${fdur(Math.abs(d.p2.t - d.p1.t))}`;
+      const ty = up ? y1 - 22 : y2 + 22;
+      tag(txt, mx, Math.max(20, Math.min(H - 20, ty)), col);
+      if (sel){ handle(a.x, a.y, col); handle(b.x, b.y, col); }
+    }
+  }
+}
+function render(){
+  octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  octx.clearRect(0, 0, cw, ch);
+  if (!S.candles.length) return;
+  const W = paneW(), H = paneH();
+  octx.save(); octx.beginPath(); octx.rect(0, 0, W, H); octx.clip();
+  for (const d of D.list) drawOne(d, d === D.sel, W, H);
+  if (D.pending) drawOne(D.pending, true, W, H);
+  if (D.cursor){ // parmak altındaki noktayı göster
+    line(0, D.cursor.y, W, D.cursor.y, '#848e9c', 1, [4, 4]);
+    line(D.cursor.x, 0, D.cursor.x, H, '#848e9c', 1, [4, 4]);
+    tag(fp(D.cursor.p), W - 2, D.cursor.y, '#474d57', '#fff', 'right');
+  }
+  octx.restore();
+}
+let lastSig = '';
+function sig(){
+  const r = ts.getVisibleLogicalRange(), ref = S.ref || 1;
+  return [r ? r.from.toFixed(3) : '', r ? r.to.toFixed(3) : '',
+    candle.priceToCoordinate(ref), candle.priceToCoordinate(ref * 1.01),
+    cw, ch, ts.width(), D.ver, S.candles.length].join('|');
+}
+(function loop(){
+  const s = sig();
+  if (s !== lastSig){ lastSig = s; render(); }
+  requestAnimationFrame(loop);
+})();
+
+/* --- Seçim ve dokunma testi --- */
+function segDist(px, py, x1, y1, x2, y2){
+  const dx = x2 - x1, dy = y2 - y1, L = dx * dx + dy * dy;
+  let t = L ? ((px - x1) * dx + (py - y1) * dy) / L : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+function hitOne(d, x, y){
+  const T = 14, a = toXY(d.p1);
+  if (a.x == null) return null;
+  const near = (px, py) => Math.hypot(x - px, y - py) < T + 4;
+  if (d.type === 'hray'){
+    if (a.y == null) return null;
+    if (near(a.x, a.y)) return 'p1';
+    if (x >= a.x - T && Math.abs(y - a.y) < T) return 'body';
+  } else if (d.type === 'vline'){
+    if (Math.abs(x - a.x) < T) return 'body';
+  } else {
+    const b = toXY(d.p2);
+    if (b.x == null || a.y == null || b.y == null) return null;
+    if (near(a.x, a.y)) return 'p1';
+    if (near(b.x, b.y)) return 'p2';
+    if (d.type === 'trend'){ if (segDist(x, y, a.x, a.y, b.x, b.y) < T) return 'body'; }
+    else if (x >= Math.min(a.x, b.x) - 4 && x <= Math.max(a.x, b.x) + 4 &&
+             y >= Math.min(a.y, b.y) - 4 && y <= Math.max(a.y, b.y) + 4) return 'body';
+  }
+  return null;
+}
+function hitAny(x, y){
+  if (x > paneW() || y > paneH()) return null;
+  for (let i = D.list.length - 1; i >= 0; i--){
+    const part = hitOne(D.list[i], x, y);
+    if (part) return { d: D.list[i], part };
+  }
+  return null;
+}
+
+function updateOverlay(){ ov.style.pointerEvents = (D.tool || D.sel) ? 'auto' : 'none'; }
+function select(d){
+  D.sel = d || null;
+  const bar = $('selBar');
+  if (D.sel){
+    $('selColors').innerHTML = D.sel.type === 'measure' ? '' :
+      COLORS.map(c => `<button class="sw${(D.sel.color || DEF_COLOR[D.sel.type]) === c ? ' on' : ''}" data-color="${c}" style="background:${c}"></button>`).join('');
+  }
+  bar.classList.toggle('show', !!D.sel);
+  updateOverlay(); D.ver++;
+}
+function setHint(){
+  const h = $('hint');
+  if (!D.tool){ h.classList.remove('show'); return; }
+  const two = D.tool === 'trend' || D.tool === 'measure';
+  $('hintText').textContent = (two && D.pending && !D.press) ? '2. noktaya dokun' : TOOL_HINT[D.tool];
+  h.classList.add('show');
+}
+function renderDrawBar(){
+  $('drawBar').querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === D.tool));
+  $('drawBar').querySelector('[data-act="magnet"]').classList.toggle('on', D.magnet);
+}
+function setTool(t){
+  D.tool = t; D.pending = null; D.press = null; D.cursor = null;
+  if (t) select(null);
+  renderDrawBar(); setHint(); updateOverlay(); D.ver++;
+}
+function saveDraw(){ store.set('vg_draw_' + S.symbol, D.list); }
+function drawLoad(){
+  D.list = store.get('vg_draw_' + S.symbol, []);
+  if (!Array.isArray(D.list)) D.list = [];
+  D.drag = null;
+  setTool(null); select(null);
+}
+function setCursor(pt){ const c = toXY(pt); D.cursor = c.x == null || c.y == null ? null : { x: c.x, y: c.y, p: pt.p }; }
+
+/* --- Dokunma olayları (sadece çizim modunda veya bir çizim seçiliyken) --- */
+function evXY(e){ const r = ov.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+
+function startDrag(d, part, x, y){
+  D.drag = { d, part, l0: ts.coordinateToLogical(x), p0: candle.coordinateToPrice(y), orig: JSON.parse(JSON.stringify(d)) };
+}
+function doDrag(x, y){
+  const g = D.drag, d = g.d;
+  if (g.part === 'body'){
+    const l = ts.coordinateToLogical(x), p = candle.coordinateToPrice(y);
+    if (l == null || p == null || g.l0 == null || g.p0 == null) return;
+    const dl = Math.round(l - g.l0), dp = p - g.p0;
+    for (const k of ['p1', 'p2']){
+      const o = g.orig[k];
+      if (!o) continue;
+      d[k] = { t: logicalToTime(Math.round(timeToLogical(o.t + TZ)) + dl) - TZ, p: d.type === 'vline' ? o.p : o.p + dp };
+    }
+  } else {
+    const pt = ptAt(x, y);
+    if (pt) d[g.part] = pt;
+  }
+  D.ver++;
+}
+
+ov.addEventListener('pointerdown', e => {
+  e.preventDefault();
+  try{ ov.setPointerCapture(e.pointerId); }catch(_){}
+  const [x, y] = evXY(e);
+  if (D.tool){
+    const pt = ptAt(x, y);
+    if (!pt) return;
+    if (D.tool === 'hray' || D.tool === 'vline'){
+      D.pending = { type: D.tool, p1: pt };              // parmağı kaldırınca kesinleşir
+      D.press = { x, y, first: true, moved: true };
+    } else if (!D.pending){
+      D.pending = { type: D.tool, p1: pt, p2: { ...pt } };
+      D.press = { x, y, first: true, moved: false };
+    } else {
+      D.pending.p2 = pt;
+      D.press = { x, y, first: false };
+    }
+    setCursor(pt); setHint(); D.ver++;
+    return;
+  }
+  if (D.sel){
+    let d = D.sel, part = hitOne(d, x, y);
+    if (!part){
+      const h = hitAny(x, y);
+      if (h){ d = h.d; part = h.part; select(d); }
+    }
+    if (part) startDrag(d, part, x, y);
+    else select(null);                                     // boşa dokununca seçim kalkar
+  }
+});
+ov.addEventListener('pointermove', e => {
+  if (!D.press && !D.drag) return;
+  const [x, y] = evXY(e);
+  if (D.press && D.pending){
+    const pt = ptAt(x, y);
+    if (!pt) return;
+    if (D.pending.type === 'hray' || D.pending.type === 'vline') D.pending.p1 = pt; else D.pending.p2 = pt;
+    if (D.press.first && Math.hypot(x - D.press.x, y - D.press.y) > 10) D.press.moved = true;
+    setCursor(pt); D.ver++;
+  } else if (D.drag){
+    doDrag(x, y);
+  }
+});
+function endPress(){
+  if (D.press && D.pending){
+    if (!D.press.first || D.press.moved){
+      const d = D.pending;
+      if (DEF_COLOR[d.type]) d.color = DEF_COLOR[d.type];
+      D.list.push(d); saveDraw();
+      setTool(null); select(d);                           // yeni çizim seçili gelir: hemen ayarla/sil
+    } else {
+      D.press = null; D.cursor = null; setHint();          // 2. noktayı bekle
+    }
+    D.press = null; D.cursor = null; D.ver++;
+  }
+  if (D.drag){ D.drag = null; saveDraw(); }
+}
+ov.addEventListener('pointerup', endPress);
+ov.addEventListener('pointercancel', endPress);
+
+// Normal modda bir çizime dokununca seç
+chart.subscribeClick(param => {
+  if (D.tool || D.sel || !param || !param.point) return;
+  const h = hitAny(param.point.x, param.point.y);
+  if (h) select(h.d);
+});
+
+/* --- Araç çubuğu --- */
+$('drawToggle').addEventListener('click', () => {
+  const on = $('drawBar').classList.toggle('show');
+  $('drawToggle').classList.toggle('active', on);
+  if (!on) setTool(null);
+});
+$('drawBar').addEventListener('click', e => {
+  const b = e.target.closest('[data-tool],[data-act]');
+  if (!b) return;
+  if (b.dataset.tool) setTool(D.tool === b.dataset.tool ? null : b.dataset.tool);
+  else if (b.dataset.act === 'magnet'){ D.magnet = !D.magnet; store.set('vg_magnet', D.magnet); renderDrawBar(); }
+  else if (b.dataset.act === 'clear'){
+    if (!D.list.length) return;
+    if (confirm(`${S.symbol} üzerindeki tüm çizimler silinsin mi?`)){ D.list = []; setTool(null); select(null); saveDraw(); }
+  }
+});
+$('hintCancel').addEventListener('click', () => setTool(null));
+$('selClose').addEventListener('click', () => select(null));
+$('selDel').addEventListener('click', () => {
+  if (!D.sel) return;
+  D.list = D.list.filter(d => d !== D.sel);
+  saveDraw(); select(null);
+});
+$('selColors').addEventListener('click', e => {
+  const b = e.target.closest('[data-color]');
+  if (!b || !D.sel) return;
+  D.sel.color = b.dataset.color; saveDraw(); select(D.sel);
+});
+renderDrawBar();
+
+/* ---------- Başlangıç ---------- */
+async function init(){
+  renderTf();
+  setStatus('Kontrat listesi yükleniyor…');
+  try{
+    const [info, tick] = await Promise.all([
+      fetch(`${API}/fapi/v1/exchangeInfo`).then(r => { if (!r.ok) throw 0; return r.json(); }),
+      fetch(`${API}/fapi/v1/ticker/24hr`).then(r => r.ok ? r.json() : [])
+    ]);
+    for (const s of info.symbols){
+      if (s.contractType !== 'PERPETUAL' || s.status !== 'TRADING') continue;
+      const pf = (s.filters || []).find(f => f.filterType === 'PRICE_FILTER');
+      const tick = pf ? +pf.tickSize : Math.pow(10, -s.pricePrecision);
+      S.symbols[s.symbol] = {
+        base: s.baseAsset, quote: s.quoteAsset,
+        tick, prec: pf ? decimals(pf.tickSize) : s.pricePrecision
+      };
+    }
+    for (const t of tick){
+      if (!S.symbols[t.symbol]) continue;
+      S.tickers[t.symbol] = { last: +t.lastPrice, chg: +t.priceChangePercent, hi: +t.highPrice, lo: +t.lowPrice, qv: +t.quoteVolume };
+    }
+    if (!S.symbols[S.symbol]) S.symbol = 'BTCUSDT';
+  }catch(e){
+    setStatus('Binance Futures verisine ulaşılamadı. İnterneti kontrol et; bazı ülkelerde/ağlarda Binance erişimi engelli olabilir.');
+    return;
+  }
+  openTickerWs();
+  loadChart();
+}
+init();
+})();
+</script>
+</body>
+</html>
