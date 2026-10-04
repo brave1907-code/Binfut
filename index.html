@@ -267,7 +267,7 @@ a.chip{text-decoration:none;display:inline-block}
     <button id="closeSheet">Kapat</button>
   </div>
   <div id="sortBar"></div>
-  <div class="lh"><span></span><span>Kontrat / Hacim</span><span>Fiyat</span><span>24s %</span></div>
+  <div class="lh"><span></span><span>Kontrat / Hacim</span><span>Fiyat</span><span>03:00 %</span></div>
   <div id="list"></div>
 </div>
 
@@ -346,7 +346,8 @@ const store = {
 
 const S = {
   symbols: {},           // sembol -> {base, quote, prec, tick}
-  tickers: {},           // sembol -> {last, chg, hi, lo, qv}
+  tickers: {},           // sembol -> {last, chg, hi, lo, qv}; chg = Türkiye saatiyle 03:00'a (00:00 UTC) göre %
+  dayOpen: {},           // sembol -> günlük (00:00 UTC = 03:00 TR) açılış fiyatı
   symbol: store.get('vg_symbol', 'BTCUSDT'),
   interval: store.get('vg_interval', '1h'),
   favs: new Set(store.get('vg_favs', ['BTCUSDT','ETHUSDT','SOLUSDT'])),
@@ -435,6 +436,22 @@ function applyPrecision(){
   if (m) candle.applyOptions({ priceFormat: { type: 'price', precision: m.prec, minMove: m.tick } });
 }
 
+// Mumları hızlı getir: ilk yüklemede 300 mum (eskiler kaydırınca gelir); listede coine dokunur dokunmaz ön yükleme başlar
+const FIRST_N = 300;
+const PRE = {};
+function fetchKlines(sym, iv){
+  const key = sym + '|' + iv, now = Date.now();
+  const c = PRE[key];
+  if (c && now - c.t < 30000) return c.p;
+  for (const k of Object.keys(PRE)) if (now - PRE[k].t > 60000) delete PRE[k];
+  const p = fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${iv}&limit=${FIRST_N}`).then(r => {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  });
+  PRE[key] = { t: now, p };
+  p.catch(() => { if (PRE[key] && PRE[key].p === p) delete PRE[key]; });
+  return p;
+}
 let loadToken = 0;
 async function loadChart(){
   const token = ++loadToken;
@@ -448,9 +465,7 @@ async function loadChart(){
   updateHeader();
   setStatus('Yükleniyor…');
   try{
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=1000`);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
+    const data = await fetchKlines(symbol, interval);
     if (token !== loadToken) return;
     S.candles = data.map(toBar);
     candle.setData(S.candles);
@@ -459,6 +474,7 @@ async function loadChart(){
     S.ref = n ? S.candles[n - 1].close : 0;
     S.closeMs = n ? data[n - 1][6] + 1 : 0;
     chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 100), to: n + 6 });
+    candle.priceScale().applyOptions({ autoScale: true });   // elle kaydırılmış fiyat ölçeği yeni coini ekran dışında bırakmasın
     setLegend(S.candles[n - 1]);
     updateHeader();
     setStatus('');
@@ -690,10 +706,14 @@ function closeSheet(fromPop){
   if (!fromPop && history.state && history.state.sheet) history.back();
 }
 window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); }); // Android geri tuşu listeyi kapatır
+$('list').addEventListener('pointerdown', e => {
+  const r = e.target.closest('.row[data-s]');
+  if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
+}, { passive: true });
 $('openList').addEventListener('click', openSheet);
 $('symBtn').addEventListener('click', openSheet);
 $('closeSheet').addEventListener('click', () => closeSheet());
-$('goLive').addEventListener('click', () => chart.timeScale().scrollToRealTime());
+$('goLive').addEventListener('click', () => { candle.priceScale().applyOptions({ autoScale: true }); chart.timeScale().scrollToRealTime(); });
 
 function toggleFav(s){
   S.favs.has(s) ? S.favs.delete(s) : S.favs.add(s);
@@ -710,6 +730,47 @@ function selectSymbol(s){
   loadChart();
 }
 
+
+/* ---------- Günlük değişim: Türkiye saatiyle 03:00'a (= 00:00 UTC) göre ----------
+   Binance'in günlük mumu 00:00 UTC'de açılır; bu da Türkiye'de 03:00'tür. Her coinin günlük mumunun
+   açılışı alınır; "en çok yükselen/düşen" ve % değerleri bu fiyata göre hesaplanır. */
+const DAYO = { running: false, key: '', next: 0 };
+const utcDayStart = () => { const n = new Date(); return Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()); };
+async function loadDayOpens(){
+  if (DAYO.running) return;
+  DAYO.running = true;
+  const start = utcDayStart(), key = new Date(start).toISOString().slice(0, 10);
+  const syms = Object.keys(S.symbols).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
+  let i = 0, ok = 0, stop = false;
+  const worker = async () => {
+    for (;;){
+      const k = i++; if (stop || k >= syms.length) return;
+      const sym = syms[k];
+      try{
+        const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1d&limit=1`);
+        if (r.status === 429 || r.status === 418){ stop = true; return; }
+        if (!r.ok) continue;
+        const j = await r.json();
+        if (!Array.isArray(j) || !j.length || +j[0][0] !== start) continue;      // bugünün mumu değilse alma
+        const o = +j[0][1];
+        if (!(o > 0)) continue;
+        S.dayOpen[sym] = o; ok++;
+        const t = S.tickers[sym];
+        if (t) t.chg = (t.last - o) / o * 100;
+      }catch(e){}
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  if (ok >= syms.length * 0.9) DAYO.key = key;
+  else DAYO.next = Date.now() + 60000;                    // eksik kaldı: 1 dk sonra yeniden dene
+  DAYO.running = false;
+  listDirty = true; updateHeader();
+}
+setInterval(() => {                                       // gün (00:00 UTC) değişince ya da eksik kalınca yenile
+  const key = new Date(utcDayStart()).toISOString().slice(0, 10);
+  if (!DAYO.running && Object.keys(S.symbols).length && DAYO.key !== key && Date.now() >= DAYO.next) loadDayOpens();
+}, 15000);
+
 /* ---------- Tüm piyasa fiyatları ---------- */
 let listDirty = false;
 function openTickerWs(){
@@ -722,7 +783,8 @@ function openTickerWs(){
     for (const x of arr){
       if (!S.symbols[x.s]) continue;
       const o = +x.o, c = +x.c;
-      S.tickers[x.s] = { last: c, chg: o ? (c - o) / o * 100 : 0, hi: +x.h, lo: +x.l, qv: +x.q };
+      const d0 = S.dayOpen[x.s] || o;                        // 03:00 açılışı yüklendiyse ona göre, yoksa geçici olarak 24s açılışına göre
+      S.tickers[x.s] = { last: c, chg: d0 ? (c - d0) / d0 * 100 : 0, hi: +x.h, lo: +x.l, qv: +x.q };
       if (A.list.length) checkAlarms(x.s, c);
     }
     listDirty = true;
@@ -1924,7 +1986,7 @@ async function init(){
     }
     for (const t of tick){
       if (!S.symbols[t.symbol]) continue;
-      S.tickers[t.symbol] = { last: +t.lastPrice, chg: +t.priceChangePercent, hi: +t.highPrice, lo: +t.lowPrice, qv: +t.quoteVolume };
+      S.tickers[t.symbol] = { last: +t.lastPrice, chg: +t.priceChangePercent, hi: +t.highPrice, lo: +t.lowPrice, qv: +t.quoteVolume };   // chg: 03:00 açılışı gelene kadar geçici (24s)
     }
     if (!S.symbols[S.symbol]) S.symbol = 'BTCUSDT';
   }catch(e){
@@ -1933,6 +1995,7 @@ async function init(){
   }
   catchUp();                                             // uygulama kapalıyken geçilen alarmlar
   openTickerWs();
+  loadDayOpens();
   loadChart();
 }
 init();
