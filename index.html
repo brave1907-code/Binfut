@@ -57,7 +57,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* Alt araç çubuğu */
 .tools{display:flex;border-top:1px solid var(--line);background:var(--panel)}
-.tools button{flex:1;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted)}
+.tools button{flex:1;min-width:0;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);white-space:nowrap}
 .tools button .i{font-size:19px;line-height:1;position:relative}
 .tools button:disabled{opacity:.4}
 .tools button.main{color:var(--text)}
@@ -74,6 +74,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 #closeSheet{color:var(--muted);font-size:14px;padding:8px 4px}
 #sortBar{display:flex;gap:6px;padding:0 12px 8px;overflow-x:auto;scrollbar-width:none}
 #sortBar::-webkit-scrollbar{display:none}
+#sortBar .sepv{flex:0 0 1px;align-self:stretch;background:var(--line);margin:0 2px}
 .chip{flex:0 0 auto;padding:6px 12px;border-radius:16px;background:var(--panel2);font-size:12px;color:var(--muted)}
 .chip.on{background:var(--accent);color:#000;font-weight:600}
 .lh{display:grid;grid-template-columns:34px 1fr auto 74px;gap:8px;padding:6px 12px;font-size:11px;
@@ -254,6 +255,7 @@ a.chip{text-decoration:none;display:inline-block}
   </div>
   <footer class="tools">
     <button class="main" id="openList"><span class="i">☰</span>Coinler</button>
+    <button class="main" id="tfBtn"><span class="i">📈</span>TradFi</button>
     <button class="main" id="drawToggle"><span class="i">✎</span>Çizim</button>
     <button class="main" id="alarmBtn"><span class="i">⏰<em class="badge" id="alBadge"></em></span>Alarm</button>
     <button class="main" id="wallBtn"><span class="i">🧱</span>Wall</button>
@@ -355,7 +357,9 @@ const S = {
   query: '',
   candles: [],
   loadingOld: false, noMoreOld: false,
-  ws: null, tickWs: null, hovering: false, hiddenAt: 0
+  ws: null, tickWs: null, hovering: false, hiddenAt: 0,
+  listMode: 'coin',      // 'coin' | 'tradfi'
+  tfKind: store.get('vg_tfkind', 'all')
 };
 
 const $ = id => document.getElementById(id);
@@ -436,10 +440,73 @@ function applyPrecision(){
   if (m) candle.applyOptions({ priceFormat: { type: 'price', precision: m.prec, minMove: m.tick } });
 }
 
+/* ---------- TradFi (hisse) grafikleri: günlük ve haftalıkta Cumartesi-Pazar atlanır ----------
+   Günlük: hafta sonu mumları gösterilmez. Haftalık: hafta sonu işlemleri hesaba katılmasın diye
+   Pazartesi-Cuma günlük mumlarından birleştirilir (kaynak 1d). Kripto coinlerde değişiklik yok. */
+const isTradfi = sym => !!(S.symbols[sym] && S.symbols[sym].tradfi);
+const isWeekendMs = ms => { const d = new Date(ms).getUTCDay(); return d === 0 || d === 6; };
+function weekStartMs(ms){
+  const d = new Date(ms), dow = (d.getUTCDay() + 6) % 7;                  // Pazartesi = 0
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - dow * 86400000;
+}
+const weekdayMode = (sym, iv) => isTradfi(sym) && (iv === '1d' || iv === '1w');
+const srcInterval = (sym, iv) => (iv === '1w' && isTradfi(sym)) ? '1d' : iv;
+function weekBar(ws, rows){
+  let hi = -Infinity, lo = Infinity, v = 0;
+  for (const k of rows){ hi = Math.max(hi, +k[2]); lo = Math.min(lo, +k[3]); v += +k[5]; }
+  return { time: ws / 1000 + TZ, open: +rows[0][1], high: hi, low: lo, close: +rows[rows.length - 1][4], volume: v };
+}
+function buildBars(rows, sym, iv, truncated){
+  if (!weekdayMode(sym, iv)) return rows.map(toBar);
+  const wk = rows.filter(k => !isWeekendMs(k[0]));
+  if (iv === '1d') return wk.map(toBar);
+  const groups = new Map();
+  for (const k of wk){ const ws = weekStartMs(k[0]); if (!groups.has(ws)) groups.set(ws, []); groups.get(ws).push(k); }
+  const out = [...groups.entries()].sort((a, b) => a[0] - b[0]);
+  if (truncated && out.length && rows.length && out[0][0] < rows[0][0]) out.shift();   // hafta ortasında başlayan eksik ilk haftayı alma
+  return out.map(([ws, g]) => weekBar(ws, g));
+}
+function initialCloseMs(rows, sym, iv){
+  if (!rows.length) return 0;
+  if (weekdayMode(sym, iv)){
+    const wk = rows.filter(k => !isWeekendMs(k[0]));
+    if (!wk.length) return 0;
+    return iv === '1w' ? weekStartMs(wk[wk.length - 1][0]) + 7 * 86400000 : wk[wk.length - 1][6] + 1;
+  }
+  return rows[rows.length - 1][6] + 1;
+}
+function initWeek(rows){
+  S.wk = null;
+  const wk = rows.filter(k => !isWeekendMs(k[0]));
+  if (!wk.length) return;
+  const ws = weekStartMs(wk[wk.length - 1][0]);
+  S.wk = { ws, days: {} };
+  for (const k of wk) if (weekStartMs(k[0]) === ws) S.wk.days[k[0]] = k;
+}
+// Canlı (WebSocket / yedek REST) ham mum satırı geldiğinde grafiğe uygula
+function pushRaw(row){
+  const sym = S.symbol, iv = S.interval;
+  if (weekdayMode(sym, iv)){
+    if (isWeekendMs(row[0])) return;
+    if (iv === '1w'){
+      const ws = weekStartMs(row[0]);
+      if (!S.wk || S.wk.ws !== ws){ if (S.wk && ws < S.wk.ws) return; S.wk = { ws, days: {} }; }
+      S.wk.days[row[0]] = row;
+      const rows = Object.keys(S.wk.days).map(Number).sort((a, b) => a - b).map(t => S.wk.days[t]);
+      S.closeMs = ws + 7 * 86400000;
+      applyBar(weekBar(ws, rows));
+      return;
+    }
+  }
+  S.closeMs = row[6] + 1;
+  applyBar(toBar(row));
+}
+
 // Mumları hızlı getir: ilk yüklemede 300 mum (eskiler kaydırınca gelir); listede coine dokunur dokunmaz ön yükleme başlar
 const FIRST_N = 300;
 const PRE = {};
 function fetchKlines(sym, iv){
+  iv = srcInterval(sym, iv);
   const key = sym + '|' + iv, now = Date.now();
   const c = PRE[key];
   if (c && now - c.t < 30000) return c.p;
@@ -467,12 +534,13 @@ async function loadChart(){
   try{
     const data = await fetchKlines(symbol, interval);
     if (token !== loadToken) return;
-    S.candles = data.map(toBar);
+    S.candles = buildBars(data, symbol, interval, data.length >= FIRST_N);
+    if (weekdayMode(symbol, interval) && interval === '1w') initWeek(data); else S.wk = null;
     candle.setData(S.candles);
     vol.setData(S.candles.map(volBar));
     const n = S.candles.length;
     S.ref = n ? S.candles[n - 1].close : 0;
-    S.closeMs = n ? data[n - 1][6] + 1 : 0;
+    S.closeMs = n ? initialCloseMs(data, symbol, interval) : 0;
     chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 100), to: n + 6 });
     candle.priceScale().applyOptions({ autoScale: true });   // elle kaydırılmış fiyat ölçeği yeni coini ekran dışında bırakmasın
     setLegend(S.candles[n - 1]);
@@ -490,10 +558,11 @@ async function loadOlder(){
   const token = loadToken;
   const end = (S.candles[0].time - TZ) * 1000 - 1;
   try{
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${S.symbol}&interval=${S.interval}&limit=1000&endTime=${end}`);
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${S.symbol}&interval=${srcInterval(S.symbol, S.interval)}&limit=1000&endTime=${end}`);
     const data = await r.json();
     if (token !== loadToken) return;
-    const older = Array.isArray(data) ? data.map(toBar).filter(b => b.time < S.candles[0].time) : [];
+    const first = S.candles[0].time;
+    const older = Array.isArray(data) ? buildBars(data, S.symbol, S.interval, data.length >= 1000).filter(b => b.time < first) : [];
     if (!older.length){ S.noMoreOld = true; return; }
     S.candles = older.concat(S.candles);
     candle.setData(S.candles);
@@ -514,7 +583,7 @@ function applyBar(b){
   if (!S.hovering) setLegend(b);
 }
 function openKlineWs(token){
-  const ws = new WebSocket(`${WS}/${S.symbol.toLowerCase()}@kline_${S.interval}`);
+  const ws = new WebSocket(`${WS}/${S.symbol.toLowerCase()}@kline_${srcInterval(S.symbol, S.interval)}`);
   S.ws = ws;
   S.lastKline = Date.now();
   ws.onmessage = e => {
@@ -522,9 +591,8 @@ function openKlineWs(token){
     const k = JSON.parse(e.data).k;
     if (!k) return;
     S.lastKline = Date.now();
-    if (k.T) S.closeMs = k.T + 1;
     setLiveMode('live');
-    applyBar({ time: k.t/1000 + TZ, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v });
+    pushRaw([k.t, k.o, k.h, k.l, k.c, k.v, k.T || (k.t + 1)]);
   };
   ws.onclose = () => {
     if (S.ws === ws && token === loadToken) setTimeout(() => { if (S.ws === ws && token === loadToken) openKlineWs(token); }, 2000);
@@ -548,13 +616,12 @@ setInterval(async () => {
   livePolling = true;
   const token = loadToken, sym = S.symbol, iv = S.interval;
   try{
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${iv}&limit=2`);
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${srcInterval(sym, iv)}&limit=2`);
     if (!r.ok) return;
     const data = await r.json();
     if (token !== loadToken || sym !== S.symbol || iv !== S.interval || !Array.isArray(data)) return;
     setLiveMode('poll');
-    data.forEach(k => applyBar(toBar(k)));
-    if (data.length) S.closeMs = data[data.length - 1][6] + 1;
+    data.forEach(pushRaw);
   }catch(e){ /* ağ yoksa bir sonraki turda tekrar dener */ }
   finally{ livePolling = false; }
 }, 1000);
@@ -577,7 +644,7 @@ function cdFrame(){
   let y = null;
   if (last && S.closeMs){ try{ y = candle.priceToCoordinate(last.close); }catch(e){} }
   const H = $('chartWrap').clientHeight;
-  if (y == null || isNaN(y) || y + 28 > H - 26 || y < 0){
+  if (y == null || isNaN(y) || y + 28 > H - 26 || y < 0 || S.closeMs < Date.now() - 10000){
     if (cdShown){ cdEl.style.display = 'none'; cdShown = false; }
     return;
   }
@@ -632,11 +699,21 @@ $('tfBar').addEventListener('click', e => {
 });
 
 /* ---------- Coin listesi ---------- */
+// Emtia / döviz sayılan TradFi kontratları (bilinenler). Listede olmayan her şey "Hisse" sayılır.
+const TF_NONSTOCK = new Set(['XAU','XAG','XPT','XPD','XCU','CL','BZ','NG','NATGAS','OIL','BRENT','WTI','COPPER','PLATINUM','PALLADIUM',
+  'SILVER','GOLD','EUR','GBP','JPY','AUD','CHF','CAD','TRY','SPX','NDX','DJI','NAS100','US500','US30']);
+const tfIsStock = m => !TF_NONSTOCK.has(String(m.base).toUpperCase());
 function renderSort(){
-  $('sortBar').innerHTML = SORTS.map(([v, l]) =>
+  let h = SORTS.map(([v, l]) =>
     `<button class="chip${v === S.sort ? ' on' : ''}" data-sort="${v}">${l}</button>`).join('');
+  if (S.listMode === 'tradfi')
+    h += '<span class="sepv"></span>' + [['all', 'Hepsi'], ['stock', 'Hisse'], ['cmd', 'Emtia/Diğer']].map(([v, l]) =>
+      `<button class="chip${v === S.tfKind ? ' on' : ''}" data-tfk="${v}">${l}</button>`).join('');
+  $('sortBar').innerHTML = h;
 }
 $('sortBar').addEventListener('click', e => {
+  const k = e.target.closest('[data-tfk]');
+  if (k){ S.tfKind = k.dataset.tfk; store.set('vg_tfkind', S.tfKind); renderSort(); renderList(true); return; }
   const b = e.target.closest('[data-sort]');
   if (!b) return;
   S.sort = b.dataset.sort;
@@ -646,7 +723,9 @@ $('sortBar').addEventListener('click', e => {
 });
 
 function listItems(){
-  let arr = Object.keys(S.symbols);
+  const tf = S.listMode === 'tradfi';
+  let arr = Object.keys(S.symbols).filter(s => !!S.symbols[s].tradfi === tf);
+  if (tf && S.tfKind !== 'all') arr = arr.filter(s => tfIsStock(S.symbols[s]) === (S.tfKind === 'stock'));
   const q = S.query.trim().toUpperCase();
   if (q) arr = arr.filter(s => s.includes(q));
   if (S.sort === 'fav') arr = arr.filter(s => S.favs.has(s));
@@ -664,7 +743,7 @@ function listItems(){
 function renderList(resetScroll){
   const items = listItems();
   if (!items.length){
-    $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : 'Sonuç bulunamadı.'}</div>`;
+    $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : (S.listMode === 'tradfi' && !Object.values(S.symbols).some(m => m.tradfi) ? 'Binance Futures’ta TradFi kontratı bulunamadı.' : 'Sonuç bulunamadı.')}</div>`;
     return;
   }
   $('list').innerHTML = items.map(s => {
@@ -693,7 +772,9 @@ $('search').addEventListener('input', e => {
   qTimer = setTimeout(() => { S.query = e.target.value; renderList(true); }, 120);
 });
 
-function openSheet(){
+function openSheet(mode){
+  S.listMode = mode === 'tradfi' ? 'tradfi' : 'coin';
+  $('search').placeholder = S.listMode === 'tradfi' ? 'Hisse ara (ör. TSLA)' : 'Coin ara (ör. SOL)';
   $('search').value = ''; S.query = '';
   renderSort(); renderList(true);
   $('sheet').classList.add('open');
@@ -710,8 +791,9 @@ $('list').addEventListener('pointerdown', e => {
   const r = e.target.closest('.row[data-s]');
   if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
 }, { passive: true });
-$('openList').addEventListener('click', openSheet);
-$('symBtn').addEventListener('click', openSheet);
+$('openList').addEventListener('click', () => openSheet('coin'));
+$('tfBtn').addEventListener('click', () => openSheet('tradfi'));
+$('symBtn').addEventListener('click', () => openSheet(S.symbols[S.symbol] && S.symbols[S.symbol].tradfi ? 'tradfi' : 'coin'));
 $('closeSheet').addEventListener('click', () => closeSheet());
 $('goLive').addEventListener('click', () => { candle.priceScale().applyOptions({ autoScale: true }); chart.timeScale().scrollToRealTime(); });
 
@@ -1787,7 +1869,7 @@ const baseKey = b => String(b).toUpperCase().replace(/^(1000000|1000|1M)/, '');
 
 // Piyasa değerine göre ilk 25 (Binance'te sürekli kontratı olan) coin. CoinGecko'dan alınır, 12 saat saklanır.
 async function loadTop25(){
-  const perps = new Set(Object.values(S.symbols).filter(m => m.quote === 'USDT').map(m => baseKey(m.base)));
+  const perps = new Set(Object.values(S.symbols).filter(m => m.quote === 'USDT' && !m.tradfi).map(m => baseKey(m.base)));
   const pick = list => { const out = []; for (const b of list){ if (perps.has(b) && !out.includes(b)) out.push(b); if (out.length >= 25) break; } return out; };
   const c = store.get('vg_top25', null);
   if (c && Array.isArray(c.l) && Date.now() - c.t < 12 * 3600 * 1000){ W.top = new Set(pick(c.l)); W.topSrc = 'CoinGecko'; return; }
@@ -1860,7 +1942,7 @@ async function wScan(){
     await loadTop25();
     const cand = Object.keys(S.symbols).filter(sym => {
       const m = S.symbols[sym], t = S.tickers[sym];
-      return m.quote === 'USDT' && !W.top.has(baseKey(m.base)) && t && t.qv >= WALL.minVol;
+      return m.quote === 'USDT' && !m.tradfi && !W.top.has(baseKey(m.base)) && t && t.qv >= WALL.minVol;
     }).sort((a, b) => S.tickers[b].qv - S.tickers[a].qv);
     W.total = cand.length;
     let i = 0;
@@ -1976,11 +2058,12 @@ async function init(){
       fetch(`${API}/fapi/v1/ticker/24hr`).then(r => r.ok ? r.json() : [])
     ]);
     for (const s of info.symbols){
-      if (s.contractType !== 'PERPETUAL' || s.status !== 'TRADING') continue;
+      const tradfi = s.contractType === 'TRADIFI_PERPETUAL';           // tokenleşmiş hisse / emtia sürekli kontratları
+      if ((s.contractType !== 'PERPETUAL' && !tradfi) || s.status !== 'TRADING') continue;
       const pf = (s.filters || []).find(f => f.filterType === 'PRICE_FILTER');
       const tick = pf ? +pf.tickSize : Math.pow(10, -s.pricePrecision);
       S.symbols[s.symbol] = {
-        base: s.baseAsset, quote: s.quoteAsset,
+        base: s.baseAsset, quote: s.quoteAsset, tradfi,
         tick, prec: pf ? decimals(pf.tickSize) : s.pricePrecision
       };
     }
