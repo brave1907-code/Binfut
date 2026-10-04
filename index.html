@@ -207,6 +207,21 @@ input{-webkit-user-select:text;user-select:text}
   transform:translateY(100%);transition:transform .25s ease;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 #wSheet.open{transform:none}
+#kSheet{position:fixed;inset:0;z-index:26;background:var(--bg);display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .25s ease;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);touch-action:pan-x pan-y}
+#kSheet.open{transform:none}
+#kClose{color:var(--muted);font-size:14px;padding:8px 4px;font-weight:400}
+#kBar{display:flex;gap:6px;padding:0 12px 8px;align-items:center;touch-action:pan-x;overflow-x:auto;scrollbar-width:none}
+#kBar::-webkit-scrollbar{display:none}
+#kBar .sepv{flex:0 0 1px;align-self:stretch;background:var(--line);margin:0 2px}
+#kList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.k-row{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--rowline)}
+.k-row:active{background:var(--panel)}
+.k-n{color:var(--muted);font-size:12px;text-align:center}
+.k-mid b{font-size:15px}
+.k-mid small{display:block;color:var(--muted);font-size:11px;margin-top:1px;font-variant-numeric:tabular-nums}
+.k-pct{font-weight:700;font-size:16px;font-variant-numeric:tabular-nums;text-align:right}
 #wClose{color:var(--muted);font-size:14px;padding:8px 4px;font-weight:400}
 .w-info{padding:0 12px 8px;font-size:12px;color:var(--muted);line-height:1.45}
 .w-info b{color:var(--text);font-weight:600}
@@ -275,6 +290,7 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="main" id="drawToggle"><span class="i">✎</span>Çizim</button>
     <button class="main" id="alarmBtn"><span class="i">⏰<em class="badge" id="alBadge"></em></span>Alarm</button>
     <button class="main" id="wallBtn"><span class="i">🧱</span>Wall</button>
+    <button class="main" id="wkBtn"><span class="i">📊</span>Hafta</button>
     <button class="main" id="goLive"><span class="i">⇥</span>Canlıya dön</button>
   </footer>
 </div>
@@ -340,6 +356,16 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="chip" data-wm="200000">≥200K$</button><button class="chip" data-wm="500000">≥500K$</button><button class="chip" data-wm="1000000">≥1M$</button>
   </div>
   <div id="wList"></div>
+</div>
+<div id="kSheet">
+  <div class="al-head"><span>📊 Haftalık değişim</span><span class="sp"></span><button id="kClose">Kapat</button></div>
+  <div class="w-info" id="kInfo"></div>
+  <div id="kBar">
+    <button class="chip" data-kt="up">📈 Yükselişte</button><button class="chip" data-kt="down">📉 Düşüşte</button>
+    <span class="sepv"></span>
+    <button class="chip" data-kf="all">Hepsi</button><button class="chip" data-kf="coin">Coin</button><button class="chip" data-kf="tradfi">TradFi</button>
+  </div>
+  <div id="kList"></div>
 </div>
 <div id="toasts"></div>
 
@@ -879,7 +905,7 @@ function closeSheet(fromPop){
   $('search').blur();
   if (!fromPop && history.state && history.state.sheet) history.back();
 }
-window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); }); // Android geri tuşu listeyi kapatır
+window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); }); // Android geri tuşu listeyi kapatır
 $('list').addEventListener('pointerdown', e => {
   const r = e.target.closest('.row[data-s]');
   if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
@@ -2252,6 +2278,107 @@ $('wList').addEventListener('click', e => {
 setInterval(() => {
   if (!wOpen() || document.hidden) return;
   if (!W.running && Date.now() - W.lastStart >= 60000) wScan(); else if (!W.running) wRender();
+}, 1000);
+
+/* ---------- Haftalık değişim (pazartesi 03:00 TR = 00:00 UTC açılışına göre) ---------- */
+const WK = { tab: store.get('vg_k_tab', 'up'), filt: store.get('vg_k_f', 'all'), open: {}, key: 0, running: false, done: 0, total: 0, html: '', err: '', failed: 0 };
+const utcWeekStart = () => { const n = new Date(); const day = (n.getUTCDay() + 6) % 7; return Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()) - day * 86400000; };
+const kOpen = () => $('kSheet').classList.contains('open');
+async function loadWeekOpens(){
+  if (WK.running) return;
+  const start = utcWeekStart();
+  if (WK.key !== start){
+    WK.open = {}; WK.key = start;
+    const c = store.get('vg_weekopen', null);
+    if (c && c.k === start && c.o) WK.open = c.o;
+  }
+  const syms = Object.keys(S.symbols).filter(x => !(WK.open[x] > 0)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
+  if (!syms.length) return;
+  WK.running = true; WK.done = 0; WK.total = syms.length; WK.err = ''; WK.failed = 0;
+  let i = 0, stop = false;
+  const worker = async () => {
+    for (;;){
+      const k = i++; if (stop || k >= syms.length) return;
+      const sym = syms[k];
+      try{
+        const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1w&limit=1`);
+        if (r.status === 429 || r.status === 418){ stop = true; WK.err = 'Binance istek sınırı: biraz sonra tekrar denenecek.'; return; }
+        if (!r.ok){ WK.failed++; continue; }
+        const j = await r.json();
+        if (Array.isArray(j) && j.length && +j[0][0] === start && +j[0][1] > 0) WK.open[sym] = +j[0][1];
+        else WK.failed++;
+      }catch(e){ WK.failed++; }
+      WK.done++;
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  WK.running = false;
+  store.set('vg_weekopen', { k: start, o: WK.open });
+  kRender();
+}
+function kRows(){
+  const out = [];
+  for (const sym in WK.open){
+    const m = S.symbols[sym], t = S.tickers[sym];
+    if (!m || !t || !(t.last > 0)) continue;
+    if (WK.filt === 'coin' && m.tradfi) continue;
+    if (WK.filt === 'tradfi' && !m.tradfi) continue;
+    const pct = (t.last - WK.open[sym]) / WK.open[sym] * 100;
+    if (WK.tab === 'up' ? pct <= 0 : pct >= 0) continue;
+    out.push({ sym, pct, last: t.last, base: m.base });
+  }
+  out.sort((a, b) => WK.tab === 'up' ? b.pct - a.pct : a.pct - b.pct);
+  return out;
+}
+function kRender(){
+  if (!kOpen()) return;
+  $('kBar').querySelectorAll('[data-kt]').forEach(b => b.classList.toggle('on', b.dataset.kt === WK.tab));
+  $('kBar').querySelectorAll('[data-kf]').forEach(b => b.classList.toggle('on', b.dataset.kf === WK.filt));
+  const rows = kRows();
+  const st = new Date(WK.key || utcWeekStart());
+  let info = `Haftalık açılış: <b>${st.toLocaleString('tr-TR', { weekday: 'long', hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'long' })}</b> (pzt 03:00 TR) · yüzdeler canlı`;
+  if (WK.running) info += `<br>Açılış fiyatları yükleniyor… <b>${WK.done}/${WK.total}</b>`;
+  else info += ` · <b>${rows.length}</b> coin`;
+  if (WK.err) info += `<br><span class="bad">${esc(WK.err)}</span>`;
+  $('kInfo').innerHTML = info;
+  const el = $('kList'), sc = el.scrollTop;
+  let html;
+  if (!rows.length) html = `<div class="empty">${WK.running || !Object.keys(WK.open).length ? 'Yükleniyor, liste birazdan dolacak…' : 'Bu bölümde coin yok.'}</div>`;
+  else html = rows.slice(0, 300).map((r, i) => `<div class="k-row" data-sym="${r.sym}">
+      <span class="k-n">${i + 1}</span>
+      <div class="k-mid"><b>${esc(r.base)}</b><small>${fp(r.last, r.sym)} · açılış ${fp(WK.open[r.sym], r.sym)}</small></div>
+      <div class="k-pct ${r.pct >= 0 ? 'up-t' : 'down-t'}">${fpct(r.pct)}</div>
+    </div>`).join('');
+  if (WK.html !== html){ WK.html = html; el.innerHTML = html; el.scrollTop = sc; }
+}
+function openWeek(){
+  $('kSheet').classList.add('open');
+  history.pushState({ week: 1 }, '');
+  kRender();
+  loadWeekOpens();
+}
+function closeWeek(fromPop){
+  if (!kOpen()) return;
+  $('kSheet').classList.remove('open');
+  if (!fromPop && history.state && history.state.week) history.back();
+}
+$('wkBtn').addEventListener('click', openWeek);
+$('kClose').addEventListener('click', () => closeWeek());
+$('kBar').addEventListener('click', e => {
+  const a = e.target.closest('[data-kt]'), b = e.target.closest('[data-kf]');
+  if (a){ WK.tab = a.dataset.kt; store.set('vg_k_tab', WK.tab); }
+  else if (b){ WK.filt = b.dataset.kf; store.set('vg_k_f', WK.filt); }
+  else return;
+  kRender();
+});
+$('kList').addEventListener('click', e => {
+  const r = e.target.closest('.k-row');
+  if (r){ closeWeek(); selectSymbol(r.dataset.sym); }
+});
+setInterval(() => {
+  if (!kOpen() || document.hidden) return;
+  if (!WK.running && WK.key !== utcWeekStart()) loadWeekOpens();
+  kRender();
 }, 1000);
 
 /* ---------- Başlangıç ---------- */
