@@ -110,6 +110,9 @@ def clean_alarm(raw):
             a["line"] = {k: float(ln[k]) for k in ("t1", "p1", "t2", "p2")}
             if not all(math.isfinite(v) for v in a["line"].values()):
                 return None
+        note = raw.get("note")
+        if isinstance(note, str) and note.strip():
+            a["note"] = " ".join(note.split())[:140]
         a["active"] = True
         return a
     except Exception:
@@ -138,6 +141,8 @@ def alarm_text(a, hit, cur, late):
     t = "⏰ ALARM · %s\n%s %s ulaştı" % (a["symbol"], what, how)
     if cur is not None:
         t += "\nŞu an: %s" % fp(cur)
+    if a.get("note"):
+        t += "\nNot: %s" % a["note"]
     if late:
         t += "\n(Bağlantı kopukken gerçekleşti · %s)" % clock(a["fired_at"])
     return t
