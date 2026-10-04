@@ -436,21 +436,25 @@ async function loadOlder(){
 }
 chart.timeScale().subscribeVisibleLogicalRangeChange(r => { if (r && r.from < 30) loadOlder(); });
 
+function applyBar(b){
+  const last = S.candles[S.candles.length - 1];
+  if (last && b.time < last.time) return;
+  if (last && b.time === last.time) S.candles[S.candles.length - 1] = b; else S.candles.push(b);
+  candle.update(b);
+  vol.update(volBar(b));
+  updateHeader();
+  if (!S.hovering) setLegend(b);
+}
 function openKlineWs(token){
   const ws = new WebSocket(`${WS}/${S.symbol.toLowerCase()}@kline_${S.interval}`);
   S.ws = ws;
+  S.lastKline = Date.now();
   ws.onmessage = e => {
     if (token !== loadToken) return;
     const k = JSON.parse(e.data).k;
     if (!k) return;
-    const b = { time: k.t/1000 + TZ, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v };
-    const last = S.candles[S.candles.length - 1];
-    if (last && b.time < last.time) return;
-    if (last && b.time === last.time) S.candles[S.candles.length - 1] = b; else S.candles.push(b);
-    candle.update(b);
-    vol.update(volBar(b));
-    updateHeader();
-    if (!S.hovering) setLegend(b);
+    S.lastKline = Date.now();
+    applyBar({ time: k.t/1000 + TZ, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v });
   };
   ws.onclose = () => {
     if (S.ws === ws && token === loadToken) setTimeout(() => { if (S.ws === ws && token === loadToken) openKlineWs(token); }, 2000);
@@ -460,6 +464,28 @@ function closeKlineWs(){
   const ws = S.ws; S.ws = null;
   if (ws){ ws.onclose = null; ws.onmessage = null; try{ ws.close(); }catch(e){} }
 }
+// Canlı fiyat güvencesi: WebSocket 3 sn sessiz kalırsa (bazı telefon/operatör ağlarında olur)
+// son 2 mumu REST ile çekip grafiği güncelle; 10 sn sessizse WebSocket'i yeniden aç.
+let livePolling = false, lastReopen = 0;
+setInterval(async () => {
+  if (document.hidden || livePolling || !S.candles.length || !S.ws) return;
+  const quiet = Date.now() - (S.lastKline || 0);
+  if (quiet < 3000) return;
+  if (quiet > 10000 && Date.now() - lastReopen > 10000){
+    lastReopen = Date.now();
+    closeKlineWs(); openKlineWs(loadToken);
+  }
+  livePolling = true;
+  const token = loadToken, sym = S.symbol, iv = S.interval;
+  try{
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${iv}&limit=2`);
+    if (!r.ok) return;
+    const data = await r.json();
+    if (token !== loadToken || sym !== S.symbol || iv !== S.interval || !Array.isArray(data)) return;
+    data.forEach(k => applyBar(toBar(k)));
+  }catch(e){ /* ağ yoksa bir sonraki turda tekrar dener */ }
+  finally{ livePolling = false; }
+}, 2000);
 
 /* ---------- Üst bilgi ---------- */
 function updateHeader(){
