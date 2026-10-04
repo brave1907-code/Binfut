@@ -14,6 +14,14 @@
 :root{
   --bg:#0b0e11; --panel:#161a1e; --panel2:#1e2329; --line:#2b3139;
   --text:#eaecef; --muted:#848e9c; --up:#0ecb81; --down:#f6465d; --accent:#f0b90b;
+  --rowline:#15191e; --staroff:#3c434d; --flat:#474d57; --scrim:rgba(11,14,17,.6);
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#ffffff; --panel:#f5f6f8; --panel2:#eceef1; --line:#dfe2e7;
+  --text:#1e2329; --muted:#707a8a; --up:#0aa86b; --down:#e03a4e; --accent:#d4a300;
+  --rowline:#eceef1; --staroff:#c5cad1; --flat:#9aa1ab; --scrim:rgba(255,255,255,.65);
+  color-scheme:light;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
@@ -35,6 +43,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 #chg{font-size:12px;font-variant-numeric:tabular-nums}
 #favBtn{font-size:22px;color:var(--muted);width:34px;height:34px}
 #favBtn.on{color:var(--accent)}
+#themeBtn{font-size:18px;width:34px;height:34px;color:var(--muted)}
 .stats{display:flex;gap:14px;padding:0 12px 6px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .stats b{color:var(--text);font-weight:500}
 
@@ -52,7 +61,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   font-variant-numeric:tabular-nums;color:var(--muted);display:flex;flex-wrap:wrap;gap:0 8px}
 #legend b{font-weight:500}
 #status{position:absolute;inset:0;z-index:4;display:none;align-items:center;justify-content:center;
-  text-align:center;padding:24px;color:var(--muted);font-size:14px;background:rgba(11,14,17,.6)}
+  text-align:center;padding:24px;color:var(--muted);font-size:14px;background:var(--scrim)}
 #status.show{display:flex}
 
 /* Alt araç çubuğu */
@@ -82,10 +91,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .lh span:nth-child(3),.lh span:nth-child(4){text-align:right}
 #list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .row{display:grid;grid-template-columns:34px 1fr auto 74px;gap:8px;align-items:center;
-  padding:10px 12px;border-bottom:1px solid #15191e}
+  padding:10px 12px;border-bottom:1px solid var(--rowline)}
 .row:active{background:var(--panel)}
 .row.cur{background:var(--panel)}
-.star{font-size:18px;color:#3c434d;text-align:center}
+.star{font-size:18px;color:var(--staroff);text-align:center}
 .star.on{color:var(--accent)}
 .nm b{font-size:15px}
 .nm small{color:var(--muted);font-size:11px;margin-left:2px}
@@ -93,7 +102,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .pr{text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
 .pill{text-align:center;border-radius:5px;padding:6px 0;font-size:13px;font-weight:600;
   color:#fff;font-variant-numeric:tabular-nums}
-.pill.up{background:var(--up)} .pill.down{background:var(--down)} .pill.flat{background:#474d57}
+.pill.up{background:var(--up)} .pill.down{background:var(--down)} .pill.flat{background:var(--flat)}
 .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:14px}
 .up-t{color:var(--up)} .down-t{color:var(--down)}
 
@@ -118,6 +127,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .pillbtn{padding:5px 11px;border-radius:14px;background:var(--panel);font-size:12px}
 .pillbtn.del{color:var(--down);font-weight:600}
 #selColors{display:flex;gap:6px}
+#selGrip{cursor:grab;touch-action:none;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px;user-select:none}
+#selBar{touch-action:none}
+.sw.custom{position:relative;background:conic-gradient(#f6465d,#f0b90b,#0ecb81,#4c9aff,#c77dff,#f6465d);overflow:hidden}
+.sw.custom input{position:absolute;inset:-6px;width:40px;height:40px;opacity:0;cursor:pointer}
 .sw{width:18px;height:18px;border-radius:50%;border:2px solid transparent}
 .sw.on{border-color:#fff}
 
@@ -144,7 +157,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .al-sub{padding:10px 12px 4px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
 .linkbtn{color:var(--accent);font-size:12px}
 #alList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.al-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid #15191e}
+.al-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid var(--rowline)}
 .al-row:active{background:var(--panel)}
 .al-row.done{opacity:.6}
 .al-ico{width:22px;text-align:center;font-size:18px;font-weight:700}
@@ -176,7 +189,9 @@ input{-webkit-user-select:text;user-select:text}
 
 /* Seçim çubuğu: renkler üstte, işlemler altta (dar ekranda taşmasın) */
 #selBar{flex-wrap:wrap;justify-content:center;max-width:calc(100% - 12px);border-radius:16px;padding:8px 10px;row-gap:8px}
-#selColors{flex:0 0 100%;display:flex;justify-content:center;gap:8px}
+#selColors{flex:1 0 100%;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+#selBar{padding-top:18px}
+#selGrip{position:absolute;left:50%;top:0;transform:translateX(-50%);padding:0 18px;line-height:8px;font-size:16px;letter-spacing:2px}
 #selColors:empty{display:none}
 
 /* Mum kapanışına geri sayım (fiyat etiketinin altında) */
@@ -200,7 +215,7 @@ input{-webkit-user-select:text;user-select:text}
 #wBar::-webkit-scrollbar{display:none}
 #wBar .sepv{flex:0 0 1px;align-self:stretch;background:var(--line);margin:0 2px}
 #wList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.w-row{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid #15191e}
+.w-row{display:grid;grid-template-columns:54px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--rowline)}
 .w-row:active{background:var(--panel)}
 .w-side{text-align:center;border-radius:5px;padding:5px 0;font-size:11px;font-weight:700;color:#fff}
 .w-side.buy{background:var(--up)} .w-side.sell{background:var(--down)}
@@ -228,6 +243,7 @@ a.chip{text-decoration:none;display:inline-block}
   <header class="top">
     <button id="symBtn" aria-label="Coin seç"><span id="symBase">BTC</span><span class="q" id="symQuote">USDT</span><span class="caret">▾</span></button>
     <button id="favBtn" aria-label="Favori">☆</button>
+    <button id="themeBtn" aria-label="Koyu / açık tema">🌙</button>
     <div class="px"><div id="price">–</div><div id="chg">–</div></div>
   </header>
   <div class="stats">
@@ -241,7 +257,7 @@ a.chip{text-decoration:none;display:inline-block}
     <canvas id="ov"></canvas>
     <div id="legend"></div>
     <div id="hint"><span id="hintText"></span><button class="pillbtn" id="hintCancel">İptal</button></div>
-    <div id="selBar"><span id="selColors"></span><button class="pillbtn" id="selExt" style="display:none">→ Uzat</button><button class="pillbtn" id="selAlarm" style="display:none">⏰ Alarm kur</button><button class="pillbtn del" id="selDel">Sil</button><button class="pillbtn" id="selClose">✕</button></div>
+    <div id="selBar"><span id="selGrip" title="Taşı">⠿</span><span id="selColors"></span><button class="pillbtn" id="selExt" style="display:none">→ Uzat</button><button class="pillbtn" id="selAlarm" style="display:none">⏰ Alarm kur</button><button class="pillbtn" id="selAlEdit" style="display:none">✎ Alarmı düzenle</button><button class="pillbtn del" id="selDel">Sil</button><button class="pillbtn" id="selClose">✕</button></div>
     <div id="cd"></div>
     <div id="status"></div>
   </div>
@@ -363,6 +379,17 @@ const S = {
 };
 
 const $ = id => document.getElementById(id);
+
+/* ---------- Tema: koyu / açık ---------- */
+const THEMES = {
+  dark:  { bg: '#0b0e11', text: '#848e9c', border: '#2b3139', icon: '🌙' },
+  light: { bg: '#ffffff', text: '#5e6673', border: '#dfe2e7', icon: '☀️' }
+};
+let themeName = store.get('vg_theme', null);
+if (themeName !== 'dark' && themeName !== 'light')
+  themeName = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+let T = THEMES[themeName];
+document.documentElement.setAttribute('data-theme', themeName);
 const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // Tarayıcının kendi pinch-zoom / sayfa kaydırma hareketlerini kapat; sadece grafik tepki versin
@@ -393,11 +420,11 @@ function setStatus(msg){ const el = $('status'); el.textContent = msg || ''; el.
 /* ---------- Grafik ---------- */
 const chart = LightweightCharts.createChart($('chart'), {
   autoSize: true,
-  layout: { background: { type: 'solid', color: '#0b0e11' }, textColor: '#848e9c', fontSize: 11 },
-  grid: { vertLines: { color: '#161b21' }, horzLines: { color: '#161b21' } },
+  layout: { background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 11 },
+  grid: { vertLines: { visible: false }, horzLines: { visible: false } },          // arka plan ızgarası yok
   crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-  rightPriceScale: { borderColor: '#2b3139' },
-  timeScale: { borderColor: '#2b3139', timeVisible: true, secondsVisible: false, rightOffset: 6 },
+  rightPriceScale: { borderColor: T.border },
+  timeScale: { borderColor: T.border, timeVisible: true, secondsVisible: false, rightOffset: 6 },
   handleScroll: true,
   handleScale: { pinch: true, mouseWheel: true, axisPressedMouseMove: true },
   kineticScroll: { touch: true, mouse: false }
@@ -412,6 +439,20 @@ const vol = chart.addHistogramSeries({
   lastValueVisible: false, priceLineVisible: false
 });
 chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+
+function applyTheme(name, save){
+  themeName = name; T = THEMES[name];
+  document.documentElement.setAttribute('data-theme', name);
+  const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute('content', T.bg);
+  chart.applyOptions({ layout: { background: { type: 'solid', color: T.bg }, textColor: T.text },
+    rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border } });
+  $('themeBtn').textContent = T.icon;
+  if (save) store.set('vg_theme', name);
+  if (typeof D !== 'undefined') D.ver++;
+}
+$('themeBtn').addEventListener('click', () => applyTheme(themeName === 'dark' ? 'light' : 'dark', true));
+$('themeBtn').textContent = T.icon;
+{ const m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute('content', T.bg); }
 
 const toBar = k => ({ time: k[0]/1000 + TZ, open: +k[1], high: +k[2], low: +k[3], close: +k[4], volume: +k[5] });
 const volBar = b => ({ time: b.time, value: b.volume, color: b.close >= b.open ? 'rgba(14,203,129,.45)' : 'rgba(246,70,93,.45)' });
@@ -1001,7 +1042,13 @@ const ov = $('ov'), ovctx = ov.getContext('2d');
 let octx = ovctx;   // çizim bağlamı: grafiğin kendi katmanı (primitive) ya da yedek kanvas
 const STEP = {'1m':60,'3m':180,'5m':300,'15m':900,'30m':1800,'1h':3600,'2h':7200,'4h':14400,
   '6h':21600,'12h':43200,'1d':86400,'3d':259200,'1w':604800,'1M':2592000};
-const COLORS = ['#f0b90b','#4c9aff','#0ecb81','#f6465d','#c77dff','#eaecef'];
+const COLORS = ['#f0b90b','#ff9800','#f6465d','#e91e63','#c77dff','#7c4dff','#4c9aff','#00bcd4','#0ecb81','#8bc34a','#ffffff','#131722'];
+// Verilen renk üzerinde okunur yazı rengi (siyah/beyaz)
+function onColor(c){
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(c || '')); if (!m) return '#000';
+  const n = parseInt(m[1], 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  return (0.299 * r + 0.587 * g + 0.114 * b) > 150 ? '#000' : '#fff';
+}
 const DEF_COLOR = { hray: '#f0b90b', vline: '#4c9aff', trend: '#4c9aff' };
 const TOOL_HINT = {
   hray: 'Başlangıç noktasına dokun',
@@ -1113,7 +1160,7 @@ function line(x1, y1, x2, y2, color, w, dash){
 }
 function handle(x, y, color){
   octx.beginPath(); octx.arc(x, y, 6, 0, Math.PI * 2);
-  octx.fillStyle = '#0b0e11'; octx.fill(); octx.lineWidth = 2; octx.strokeStyle = color; octx.stroke();
+  octx.fillStyle = T.bg; octx.fill(); octx.lineWidth = 2; octx.strokeStyle = color; octx.stroke();
 }
 function arrow(x, y, dx, dy, color){
   if (!dx && !dy) return;
@@ -1142,11 +1189,11 @@ function drawOne(d, sel, W, H){
   if (d.type === 'hray'){
     if (a.y == null || a.x > W) return;               // başlangıcı ekranın sağında kalan ışın görünmez
     line(Math.max(a.x, -10), a.y, W, a.y, c, sel ? 2.2 : 1.5);
-    tag((alarmActive(d.alarmId) ? '⏰ ' : '') + fp(d.p1.p), W - 2, a.y, c, '#000', 'right');
+    tag((alarmActive(d.alarmId) ? '⏰ ' : '') + fp(d.p1.p), W - 2, a.y, c, onColor(c), 'right');
     if (sel) handle(a.x, a.y, c);
   } else if (d.type === 'vline'){
     line(a.x, 0, a.x, H, c, sel ? 2.2 : 1.5);
-    tag(ftime(d.p1.t), a.x, H - 12, c, '#000');
+    tag(ftime(d.p1.t), a.x, H - 12, c, onColor(c));
     if (sel) handle(a.x, H / 2, c);
   } else {
     const b = toXY(d.p2);
@@ -1154,7 +1201,7 @@ function drawOne(d, sel, W, H){
     if (d.type === 'trend'){
       const e = trendEnds(d, a, b, W);
       line(e.p.x, e.p.y, e.q.x, e.q.y, c, sel ? 2.2 : 1.5);
-      if (alarmActive(d.alarmId)) tag('⏰', e.R.x, e.R.y - 16, c, '#000');
+      if (alarmActive(d.alarmId)) tag('⏰', e.R.x, e.R.y - 16, c, onColor(c));
       if (sel){ handle(a.x, a.y, c); handle(b.x, b.y, c); }
     } else if (d.type === 'measure'){
       const up = d.p2.p >= d.p1.p, col = up ? '#0ecb81' : '#f6465d';
@@ -1283,16 +1330,20 @@ function select(d){
   D.sel = d || null;
   const bar = $('selBar');
   if (D.sel){
+    const cur = D.sel.color || DEF_COLOR[D.sel.type];
     $('selColors').innerHTML = D.sel.type === 'measure' ? '' :
-      COLORS.map(c => `<button class="sw${(D.sel.color || DEF_COLOR[D.sel.type]) === c ? ' on' : ''}" data-color="${c}" style="background:${c}"></button>`).join('');
+      COLORS.map(c => `<button class="sw${cur === c ? ' on' : ''}" data-color="${c}" style="background:${c}${c === '#ffffff' ? ';box-shadow:inset 0 0 0 1px #8885' : ''}"></button>`).join('') +
+      `<label class="sw custom${COLORS.includes(cur) ? '' : ' on'}" title="Özel renk"><input type="color" id="selColorPick" value="${/^#[0-9a-f]{6}$/i.test(cur || '') ? cur : '#4c9aff'}"></label>`;
   }
   const isH = !!D.sel && (D.sel.type === 'hray' || D.sel.type === 'trend');
   $('selAlarm').style.display = isH ? '' : 'none';
   if (isH) $('selAlarm').textContent = alarmActive(D.sel.alarmId) ? '⏰ Alarmı kaldır' : '⏰ Alarm kur';
+  $('selAlEdit').style.display = (isH && alarmActive(D.sel.alarmId)) ? '' : 'none';
   const isT = !!D.sel && D.sel.type === 'trend';
   $('selExt').style.display = isT ? '' : 'none';
   if (isT) $('selExt').textContent = D.sel.ext ? '→ Uzatma' : '→ Uzat';
   bar.classList.toggle('show', !!D.sel);
+  if (D.sel) placeSelBar();
   updateOverlay(); D.ver++;
 }
 function setHint(){
@@ -1459,6 +1510,68 @@ $('selColors').addEventListener('click', e => {
   const b = e.target.closest('[data-color]');
   if (!b || !D.sel) return;
   D.sel.color = b.dataset.color; saveDraw(); select(D.sel);
+});
+// Özel renk: seçici açıkken rengi canlı uygula (paleti yeniden çizmeden), kapanınca kaydet
+$('selColors').addEventListener('input', e => {
+  if (e.target.id !== 'selColorPick' || !D.sel) return;
+  D.sel.color = e.target.value; D.ver++;
+});
+$('selColors').addEventListener('change', e => {
+  if (e.target.id !== 'selColorPick' || !D.sel) return;
+  D.sel.color = e.target.value; saveDraw(); select(D.sel);
+});
+
+// Seçim çubuğunu sürükleyerek taşı (grafiği kapatmasın)
+const selBar = $('selBar');
+let selPos = store.get('vg_selpos', null);
+function placeSelBar(){
+  if (!selPos || typeof selPos.fx !== 'number'){ selBar.style.left = ''; selBar.style.top = ''; selBar.style.transform = ''; return; }
+  const wr = $('chartWrap'), bw = selBar.offsetWidth, bh = selBar.offsetHeight;
+  const x = Math.max(2, Math.min(selPos.fx * wr.clientWidth, wr.clientWidth - bw - 2));
+  const y = Math.max(2, Math.min(selPos.fy * wr.clientHeight, wr.clientHeight - bh - 2));
+  selBar.style.left = x + 'px'; selBar.style.top = y + 'px'; selBar.style.transform = 'none';
+}
+selBar.addEventListener('pointerdown', e => {
+  if (e.target !== selBar && e.target.id !== 'selGrip') return;       // düğmelere dokunuş normal çalışsın
+  e.preventDefault(); e.stopPropagation();
+  const r = selBar.getBoundingClientRect(), wr = $('chartWrap').getBoundingClientRect();
+  const dx = e.clientX - r.left, dy = e.clientY - r.top;
+  try{ selBar.setPointerCapture(e.pointerId); }catch(_){}
+  const move = ev => {
+    const bw = selBar.offsetWidth, bh = selBar.offsetHeight;
+    const x = Math.max(2, Math.min(ev.clientX - dx - wr.left, wr.width - bw - 2));
+    const y = Math.max(2, Math.min(ev.clientY - dy - wr.top, wr.height - bh - 2));
+    selBar.style.left = x + 'px'; selBar.style.top = y + 'px'; selBar.style.transform = 'none';
+    selPos = { fx: x / wr.width, fy: y / wr.height };
+  };
+  const up = () => {
+    selBar.removeEventListener('pointermove', move); selBar.removeEventListener('pointerup', up); selBar.removeEventListener('pointercancel', up);
+    if (selPos) store.set('vg_selpos', selPos);
+  };
+  selBar.addEventListener('pointermove', move); selBar.addEventListener('pointerup', up); selBar.addEventListener('pointercancel', up);
+});
+window.addEventListener('resize', () => { if (D.sel) placeSelBar(); });
+
+// Çizgiye bağlı alarmı düzenle: yatay ışında fiyat + not, trend çizgisinde not
+$('selAlEdit').addEventListener('click', () => {
+  const d = D.sel;
+  if (!d || !alarmActive(d.alarmId)) return;
+  const a = A.list.find(x => x.id === d.alarmId);
+  if (!a) return;
+  if (d.type === 'hray'){
+    const v = prompt('Alarm fiyatı:', String(a.price));
+    if (v === null) return;
+    const np = parseFloat(String(v).replace(',', '.'));
+    if (!(np > 0)){ flash('Geçerli bir fiyat gir'); return; }
+    if (np !== a.price){ moveAlarm(a.id, np); d.p1.p = a.price; }     // çizgi de alarmla birlikte taşınır
+  }
+  const n = prompt('Alarm notu (boş bırakırsan not silinir):', a.note || '');
+  if (n !== null){
+    const t = n.trim().slice(0, 140);
+    if (t) a.note = t; else delete a.note;
+    saveAlarms(); syncSet(a); renderAlarmList();
+  }
+  saveDraw(); select(d); D.ver++;
 });
 renderDrawBar();
 
