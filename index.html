@@ -29,6 +29,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 #symBtn .caret{color:var(--muted);font-size:13px}
 .px{margin-left:auto;text-align:right;line-height:1.15}
 #price{font-weight:700;font-size:17px;font-variant-numeric:tabular-nums}
+.px #price::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle;background:#848e9c}
+.px.live #price::before{background:#0ecb81;box-shadow:0 0 6px #0ecb81}
+.px.poll #price::before{background:#f0b90b}
 #chg{font-size:12px;font-variant-numeric:tabular-nums}
 #favBtn{font-size:22px;color:var(--muted);width:34px;height:34px}
 #favBtn.on{color:var(--accent)}
@@ -436,6 +439,7 @@ async function loadOlder(){
 }
 chart.timeScale().subscribeVisibleLogicalRangeChange(r => { if (r && r.from < 30) loadOlder(); });
 
+function setLiveMode(m){ const el = document.querySelector('.px'); if (el && S.liveMode !== m){ S.liveMode = m; el.className = 'px ' + m; } }
 function applyBar(b){
   const last = S.candles[S.candles.length - 1];
   if (last && b.time < last.time) return;
@@ -454,6 +458,7 @@ function openKlineWs(token){
     const k = JSON.parse(e.data).k;
     if (!k) return;
     S.lastKline = Date.now();
+    setLiveMode('live');
     applyBar({ time: k.t/1000 + TZ, open: +k.o, high: +k.h, low: +k.l, close: +k.c, volume: +k.v });
   };
   ws.onclose = () => {
@@ -470,7 +475,7 @@ let livePolling = false, lastReopen = 0;
 setInterval(async () => {
   if (document.hidden || livePolling || !S.candles.length || !S.ws) return;
   const quiet = Date.now() - (S.lastKline || 0);
-  if (quiet < 3000) return;
+  if (quiet < 2000) return;
   if (quiet > 10000 && Date.now() - lastReopen > 10000){
     lastReopen = Date.now();
     closeKlineWs(); openKlineWs(loadToken);
@@ -482,10 +487,11 @@ setInterval(async () => {
     if (!r.ok) return;
     const data = await r.json();
     if (token !== loadToken || sym !== S.symbol || iv !== S.interval || !Array.isArray(data)) return;
+    setLiveMode('poll');
     data.forEach(k => applyBar(toBar(k)));
   }catch(e){ /* ağ yoksa bir sonraki turda tekrar dener */ }
   finally{ livePolling = false; }
-}, 2000);
+}, 1000);
 
 /* ---------- Üst bilgi ---------- */
 function updateHeader(){
