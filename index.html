@@ -55,7 +55,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 /* Alt araç çubuğu */
 .tools{display:flex;border-top:1px solid var(--line);background:var(--panel)}
 .tools button{flex:1;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted)}
-.tools button .i{font-size:19px;line-height:1}
+.tools button .i{font-size:19px;line-height:1;position:relative}
 .tools button:disabled{opacity:.4}
 .tools button.main{color:var(--text)}
 
@@ -94,7 +94,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .up-t{color:var(--up)} .down-t{color:var(--down)}
 
 /* Çizim */
-#ov{position:absolute;inset:0;z-index:2;pointer-events:none;touch-action:none}
+#ov{position:absolute;left:0;top:0;width:100%;height:100%;z-index:2;pointer-events:none;touch-action:none}
 #drawBar{display:none;gap:2px;overflow-x:auto;padding:6px 6px;border-top:1px solid var(--line);
   background:var(--panel);scrollbar-width:none}
 #drawBar::-webkit-scrollbar{display:none}
@@ -114,8 +114,79 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .pillbtn{padding:5px 11px;border-radius:14px;background:var(--panel);font-size:12px}
 .pillbtn.del{color:var(--down);font-weight:600}
 #selColors{display:flex;gap:6px}
-.sw{width:20px;height:20px;border-radius:50%;border:2px solid transparent}
+.sw{width:18px;height:18px;border-radius:50%;border:2px solid transparent}
 .sw.on{border-color:#fff}
+
+/* Alarm */
+.badge{font-style:normal;position:absolute;top:-5px;right:-12px;background:var(--accent);color:#000;
+  font-size:9px;font-weight:700;border-radius:8px;padding:1px 5px;display:none;line-height:1.3}
+#alSheet{position:fixed;inset:0;z-index:25;background:var(--bg);display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .25s ease;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#alSheet.open{transform:none}
+.al-head{display:flex;align-items:center;gap:8px;padding:12px;font-weight:700;font-size:17px}
+.al-head .sp{flex:1}
+#alClose{color:var(--muted);font-size:14px;padding:8px 4px;font-weight:400}
+.al-new{margin:0 12px 8px;padding:12px;background:var(--panel);border-radius:12px}
+.al-new .cur{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:8px}
+.al-new .cur b{color:var(--text);font-size:15px;font-variant-numeric:tabular-nums}
+.al-in{display:flex;gap:8px}
+#alPrice{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);
+  font-size:18px;padding:10px 12px;outline:none;font-variant-numeric:tabular-nums}
+#alPrice:focus{border-color:var(--accent)}
+.btn{padding:10px 16px;border-radius:8px;background:var(--accent);color:#000;font-weight:700;font-size:14px;white-space:nowrap}
+.al-quick{display:flex;gap:6px;margin-top:10px;overflow-x:auto;scrollbar-width:none}
+.al-quick::-webkit-scrollbar{display:none}
+.al-sub{padding:10px 12px 4px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+.linkbtn{color:var(--accent);font-size:12px}
+#alList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.al-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:1px solid #15191e}
+.al-row:active{background:var(--panel)}
+.al-row.done{opacity:.6}
+.al-ico{width:22px;text-align:center;font-size:18px;font-weight:700}
+.al-mid{flex:1;min-width:0}
+.al-mid b{font-size:15px}
+.al-mid .q{color:var(--muted);font-size:11px;margin-left:3px}
+.al-mid small{display:block;color:var(--muted);font-size:11px;margin-top:1px}
+.al-px{font-variant-numeric:tabular-nums;font-size:15px;font-weight:600}
+.al-btn{width:34px;height:34px;color:var(--muted);font-size:17px;border-radius:8px}
+.al-btn:active{background:var(--panel2)}
+#toasts{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 8px);z-index:60;display:flex;
+  flex-direction:column;gap:8px;padding:0 10px;pointer-events:none}
+.toast{pointer-events:auto;background:var(--panel2);border:1px solid var(--accent);border-radius:12px;padding:11px 14px;
+  display:flex;align-items:center;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.6);animation:tin .25s ease}
+.toast .tx{flex:1;font-size:14px;line-height:1.3;font-weight:600}
+.toast .tx small{display:block;color:var(--muted);font-size:11px;font-weight:400;margin-top:1px}
+@keyframes tin{from{transform:translateY(-16px);opacity:0}}
+
+/* Sayfa kilidi: yalnızca grafik/liste hareket eder; sayfa kaymaz, tarayıcı yakınlaştırmaz */
+html{overflow:hidden;overscroll-behavior:none}
+body{position:fixed;left:0;top:0;right:0;bottom:0;width:100%;overflow:hidden;overscroll-behavior:none;
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input{-webkit-user-select:text;user-select:text}
+#app{position:absolute;left:0;top:0;right:0;bottom:0;height:auto;overflow:hidden;touch-action:pan-x pan-y}
+#chartWrap,#chart,#ov,.top,.stats,.tools{touch-action:none}
+#sheet,#alSheet{touch-action:pan-x pan-y}
+#list,#alList{touch-action:pan-y;overscroll-behavior:contain}
+#tfBar,#sortBar,#drawBar,.al-quick{touch-action:pan-x}
+
+/* Seçim çubuğu: renkler üstte, işlemler altta (dar ekranda taşmasın) */
+#selBar{flex-wrap:wrap;justify-content:center;max-width:calc(100% - 12px);border-radius:16px;padding:8px 10px;row-gap:8px}
+#selColors{flex:0 0 100%;display:flex;justify-content:center;gap:8px}
+#selColors:empty{display:none}
+
+/* Telefon bildirimi (sunucu) kutusu */
+#syncBox{display:none}
+#syncBox.show{display:block}
+.sync-t{font-weight:700;font-size:14px;margin-bottom:6px}
+.sync-s{font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.35}
+.sync-s.ok{color:var(--up)} .sync-s.bad{color:var(--down)}
+#syncTopic{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);
+  font-size:13px;padding:10px 10px;font-family:ui-monospace,Menlo,Consolas,monospace;outline:none}
+.sync-h{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.45}
+.sync-h b,.sync-s b{color:var(--text);font-weight:600}
+a.chip{text-decoration:none;display:inline-block}
+#notifTopic{flex:1;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:13px;padding:10px;font-family:ui-monospace,Menlo,Consolas,monospace;outline:none}
 </style>
 </head>
 <body>
@@ -136,7 +207,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     <canvas id="ov"></canvas>
     <div id="legend"></div>
     <div id="hint"><span id="hintText"></span><button class="pillbtn" id="hintCancel">İptal</button></div>
-    <div id="selBar"><span id="selColors"></span><button class="pillbtn del" id="selDel">Sil</button><button class="pillbtn" id="selClose">✕</button></div>
+    <div id="selBar"><span id="selColors"></span><button class="pillbtn" id="selExt" style="display:none">→ Uzat</button><button class="pillbtn" id="selAlarm" style="display:none">⏰ Alarm kur</button><button class="pillbtn del" id="selDel">Sil</button><button class="pillbtn" id="selClose">✕</button></div>
     <div id="status"></div>
   </div>
   <div id="drawBar">
@@ -150,7 +221,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   <footer class="tools">
     <button class="main" id="openList"><span class="i">☰</span>Coinler</button>
     <button class="main" id="drawToggle"><span class="i">✎</span>Çizim</button>
-    <button disabled><span class="i">⏰</span>Alarm</button>
+    <button class="main" id="alarmBtn"><span class="i">⏰<em class="badge" id="alBadge"></em></span>Alarm</button>
     <button class="main" id="goLive"><span class="i">⇥</span>Canlıya dön</button>
   </footer>
 </div>
@@ -164,6 +235,47 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   <div class="lh"><span></span><span>Kontrat / Hacim</span><span>Fiyat</span><span>24s %</span></div>
   <div id="list"></div>
 </div>
+
+<div id="alSheet">
+  <div class="al-head">
+    <span>⏰ Alarmlar</span><span class="sp"></span>
+    <button class="chip" id="alSync">📱 Telefon</button>
+    <button class="chip" id="alMute">🔔 Ses açık</button>
+    <button id="alClose">Kapat</button>
+  </div>
+  <div class="al-new">
+    <div class="cur"><span id="alSym">–</span><span>Fiyat <b id="alCur">–</b></span></div>
+    <div class="al-in">
+      <input id="alPrice" type="text" inputmode="decimal" placeholder="Alarm fiyatı" autocomplete="off">
+      <button class="btn" id="alAdd">Alarm kur</button>
+    </div>
+    <div class="al-quick" id="alQuick">
+      <button class="chip" data-pct="-5">−5%</button><button class="chip" data-pct="-2">−2%</button><button class="chip" data-pct="-1">−1%</button>
+      <button class="chip" data-pct="1">+1%</button><button class="chip" data-pct="2">+2%</button><button class="chip" data-pct="5">+5%</button>
+      <button class="chip on" id="alPick">Grafikten seç</button>
+    </div>
+  </div>
+  <div class="al-new" id="syncBox">
+    <div class="sync-t">📱 Telefon bildirimi (uygulama kapalıyken)</div>
+    <div class="sync-s" id="syncState"></div>
+    <div class="al-in"><input id="syncTopic" readonly><button class="btn" id="syncCopy">Kopyala</button></div>
+    <div class="al-quick">
+      <button class="chip on" id="syncToggle">Aç</button>
+      <button class="chip" id="syncResend">Yeniden gönder</button>
+      <button class="chip" id="syncNew">Kodu yenile</button>
+    </div>
+    <div class="sync-t" style="margin-top:14px">🔔 Bildirimleri nereden alacaksın?</div>
+    <div class="sync-s">Telefona <b>ntfy</b> uygulamasını kur ve bu kanala abone ol. Alarm tetiklenince uygulama kapalıyken de bildirim gelir.</div>
+    <div class="al-in"><input id="notifTopic" readonly></div>
+    <div class="al-quick">
+      <a class="chip on" id="ntfyApp" href="#">ntfy uygulamasında aç</a>
+      <a class="chip" id="ntfyWeb" href="#" target="_blank" rel="noopener">Tarayıcıda aç</a>
+    </div>
+    <div class="sync-h">Sunucu (<b>alarm_server.py</b>) bir bilgisayarda çalışmalı; ona yukarıdaki kodu <b>NTFY_TOPIC</b> olarak ver. Kodları kimseyle paylaşma. Telegram istersen sunucuya ayrıca ekleyebilirsin.</div>
+  </div>
+  <div id="alList"></div>
+</div>
+<div id="toasts"></div>
 
 <script>
 (() => {
@@ -198,6 +310,11 @@ const S = {
 };
 
 const $ = id => document.getElementById(id);
+
+// Tarayıcının kendi pinch-zoom / sayfa kaydırma hareketlerini kapat; sadece grafik tepki versin
+['gesturestart', 'gesturechange', 'gestureend'].forEach(ev =>
+  document.addEventListener(ev, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
 /* ---------- Biçimlendirme ---------- */
 function decimals(tick){
@@ -276,6 +393,7 @@ async function loadChart(){
   closeKlineWs();
   S.candles = []; S.noMoreOld = false; S.loadingOld = false;
   drawLoad();
+  refreshAlarmLines();
   applyPrecision();
   updateHeader();
   setStatus('Yükleniyor…');
@@ -454,7 +572,7 @@ function closeSheet(fromPop){
   $('search').blur();
   if (!fromPop && history.state && history.state.sheet) history.back();
 }
-window.addEventListener('popstate', () => closeSheet(true)); // Android geri tuşu listeyi kapatır
+window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); }); // Android geri tuşu listeyi kapatır
 $('openList').addEventListener('click', openSheet);
 $('symBtn').addEventListener('click', openSheet);
 $('closeSheet').addEventListener('click', () => closeSheet());
@@ -483,10 +601,12 @@ function openTickerWs(){
   ws.onmessage = e => {
     const arr = JSON.parse(e.data);
     if (!Array.isArray(arr)) return;
+    A.lastTick = Date.now();
     for (const x of arr){
       if (!S.symbols[x.s]) continue;
       const o = +x.o, c = +x.c;
       S.tickers[x.s] = { last: c, chg: o ? (c - o) / o * 100 : 0, hi: +x.h, lo: +x.l, qv: +x.q };
+      if (A.list.length) checkAlarms(x.s, c);
     }
     listDirty = true;
     updateHeader();
@@ -513,6 +633,7 @@ document.addEventListener('visibilitychange', () => {
   if (S.hiddenAt && Date.now() - S.hiddenAt > 5000){
     closeTickerWs(); openTickerWs();
     loadChart();
+    catchUp();                                           // arka plandayken geçilen alarmları yakala
   }
 });
 
@@ -522,7 +643,8 @@ document.addEventListener('visibilitychange', () => {
    değişse de doğru yerde kalırlar. Coin bazında kaydedilir.
    ===================================================================== */
 const ts = chart.timeScale();
-const ov = $('ov'), octx = ov.getContext('2d');
+const ov = $('ov'), ovctx = ov.getContext('2d');
+let octx = ovctx;   // çizim bağlamı: grafiğin kendi katmanı (primitive) ya da yedek kanvas
 const STEP = {'1m':60,'3m':180,'5m':300,'15m':900,'30m':1800,'1h':3600,'2h':7200,'4h':14400,
   '6h':21600,'12h':43200,'1d':86400,'3d':259200,'1w':604800,'1M':2592000};
 const COLORS = ['#f0b90b','#4c9aff','#0ecb81','#f6465d','#c77dff','#eaecef'];
@@ -531,13 +653,18 @@ const TOOL_HINT = {
   hray: 'Başlangıç noktasına dokun',
   vline: 'İstediğin muma dokun',
   trend: '1. noktaya dokun (ya da sürükle)',
-  measure: 'Başlangıca dokun (ya da sürükle)'
+  measure: 'Başlangıca dokun (ya da sürükle)',
+  alarm: 'Alarm fiyatına dokun, sürükleyip bırak'
 };
 const AY = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
 const FONT = '600 11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
 
 const D = { list: [], tool: null, pending: null, press: null, sel: null, drag: null, cursor: null,
-  magnet: store.get('vg_magnet', true), ver: 0 };
+  magnet: store.get('vg_magnet', true) };
+// D.ver her artışında çizim katmanı yeniden boyanır
+let _ver = 0;
+Object.defineProperty(D, 'ver', { get(){ return _ver; }, set(v){ _ver = v; if (P.req) P.req(); } });
+const P = { active: false, drawn: false, req: null, err: null };
 let cw = 0, ch = 0, dpr = 1;
 
 function resizeOv(){
@@ -587,14 +714,14 @@ function toXY(pt){
   return { x, y };
 }
 // Dokunulan pikseli (zaman, fiyat) noktasına çevir; mıknatıs açıksa mumun A/Y/D/K'sine yapıştır
-function ptAt(x, y){
+function ptAt(x, y, noMagnet){
   if (!S.candles.length) return null;
   let l = ts.coordinateToLogical(x);
   if (l == null) return null;
   l = Math.round(l);
   let p = candle.coordinateToPrice(y);
   if (p == null) return null;
-  if (D.magnet && l >= 0 && l < S.candles.length){
+  if (D.magnet && !noMagnet && l >= 0 && l < S.candles.length){
     const c = S.candles[l];
     let best = null, bd = 36;
     for (const v of [c.open, c.high, c.low, c.close]){
@@ -643,15 +770,25 @@ function arrow(x, y, dx, dy, color){
   octx.closePath(); octx.fillStyle = color; octx.fill();
 }
 
+// Trend çizgisinin çizilecek uçları; "uzat" açıksa sağ kenara kadar devam eder
+function trendEnds(d, a, b, W){
+  const L = a.x <= b.x ? a : b, R = a.x <= b.x ? b : a;
+  if (d.ext && R.x > L.x + 1){
+    const X = W + 20;
+    return { p: L, q: { x: X, y: L.y + (R.y - L.y) * (X - L.x) / (R.x - L.x) }, L, R };
+  }
+  return { p: a, q: b, L, R };
+}
+
 /* --- Çizimleri ekrana bas --- */
 function drawOne(d, sel, W, H){
   const c = d.color || DEF_COLOR[d.type] || '#4c9aff';
   const a = toXY(d.p1);
   if (a.x == null) return;
   if (d.type === 'hray'){
-    if (a.y == null) return;
+    if (a.y == null || a.x > W) return;               // başlangıcı ekranın sağında kalan ışın görünmez
     line(Math.max(a.x, -10), a.y, W, a.y, c, sel ? 2.2 : 1.5);
-    tag(fp(d.p1.p), W - 2, a.y, c, '#000', 'right');
+    tag((alarmActive(d.alarmId) ? '⏰ ' : '') + fp(d.p1.p), W - 2, a.y, c, '#000', 'right');
     if (sel) handle(a.x, a.y, c);
   } else if (d.type === 'vline'){
     line(a.x, 0, a.x, H, c, sel ? 2.2 : 1.5);
@@ -661,7 +798,9 @@ function drawOne(d, sel, W, H){
     const b = toXY(d.p2);
     if (b.x == null || a.y == null || b.y == null) return;
     if (d.type === 'trend'){
-      line(a.x, a.y, b.x, b.y, c, sel ? 2.2 : 1.5);
+      const e = trendEnds(d, a, b, W);
+      line(e.p.x, e.p.y, e.q.x, e.q.y, c, sel ? 2.2 : 1.5);
+      if (alarmActive(d.alarmId)) tag('⏰', e.R.x, e.R.y - 16, c, '#000');
       if (sel){ handle(a.x, a.y, c); handle(b.x, b.y, c); }
     } else if (d.type === 'measure'){
       const up = d.p2.p >= d.p1.p, col = up ? '#0ecb81' : '#f6465d';
@@ -682,11 +821,8 @@ function drawOne(d, sel, W, H){
     }
   }
 }
-function render(){
-  octx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  octx.clearRect(0, 0, cw, ch);
+function paintAll(W, H){
   if (!S.candles.length) return;
-  const W = paneW(), H = paneH();
   octx.save(); octx.beginPath(); octx.rect(0, 0, W, H); octx.clip();
   for (const d of D.list) drawOne(d, d === D.sel, W, H);
   if (D.pending) drawOne(D.pending, true, W, H);
@@ -697,6 +833,44 @@ function render(){
   }
   octx.restore();
 }
+
+/* Çizimler grafiğin KENDİ çizim katmanında (series primitive) boyanır: grafikle aynı karede,
+   aynı koordinatlarla çizildiği için zoom/kaydırmada hiç gecikmez, kaymaz. Primitive API'si
+   yoksa ya da çalışmazsa eski yöntem (üstte kanvas) otomatik devreye girer. */
+function render(){ // yedek yol
+  octx = ovctx;
+  octx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  octx.clearRect(0, 0, cw, ch);
+  paintAll(paneW(), paneH());
+}
+const primRenderer = {
+  draw(target){
+    try{
+      target.useMediaCoordinateSpace(scope => {
+        octx = scope.context;
+        paintAll(scope.mediaSize.width, scope.mediaSize.height);
+        P.drawn = true;
+      });
+    }catch(e){ P.err = e; }
+  }
+};
+const primView = { zOrder(){ return 'top'; }, renderer(){ return primRenderer; } };
+const prim = {
+  attached(p){ P.req = p.requestUpdate; },
+  detached(){ P.req = null; },
+  updateAllViews(){},
+  paneViews(){ return [primView]; }
+};
+try{
+  if (typeof candle.attachPrimitive === 'function'){ candle.attachPrimitive(prim); P.active = true; }
+}catch(e){ P.active = false; P.err = e; }
+setTimeout(function chk(){   // primitive hiç boyamadıysa ya da hata verdiyse yedek yola geç
+  if (P.active && (P.err || (!P.drawn && S.candles.length))){
+    P.active = false; try{ candle.detachPrimitive(prim); }catch(e){}
+    lastSig = ''; return;
+  }
+  if (P.active && !P.drawn) setTimeout(chk, 1500);
+}, 2500);
 let lastSig = '';
 function sig(){
   const r = ts.getVisibleLogicalRange(), ref = S.ref || 1;
@@ -706,7 +880,7 @@ function sig(){
 }
 (function loop(){
   const s = sig();
-  if (s !== lastSig){ lastSig = s; render(); }
+  if (!P.active && s !== lastSig){ lastSig = s; render(); }
   requestAnimationFrame(loop);
 })();
 
@@ -732,7 +906,10 @@ function hitOne(d, x, y){
     if (b.x == null || a.y == null || b.y == null) return null;
     if (near(a.x, a.y)) return 'p1';
     if (near(b.x, b.y)) return 'p2';
-    if (d.type === 'trend'){ if (segDist(x, y, a.x, a.y, b.x, b.y) < T) return 'body'; }
+    if (d.type === 'trend'){
+      const e = trendEnds(d, a, b, paneW());
+      if (segDist(x, y, e.p.x, e.p.y, e.q.x, e.q.y) < T) return 'body';
+    }
     else if (x >= Math.min(a.x, b.x) - 4 && x <= Math.max(a.x, b.x) + 4 &&
              y >= Math.min(a.y, b.y) - 4 && y <= Math.max(a.y, b.y) + 4) return 'body';
   }
@@ -755,6 +932,12 @@ function select(d){
     $('selColors').innerHTML = D.sel.type === 'measure' ? '' :
       COLORS.map(c => `<button class="sw${(D.sel.color || DEF_COLOR[D.sel.type]) === c ? ' on' : ''}" data-color="${c}" style="background:${c}"></button>`).join('');
   }
+  const isH = !!D.sel && (D.sel.type === 'hray' || D.sel.type === 'trend');
+  $('selAlarm').style.display = isH ? '' : 'none';
+  if (isH) $('selAlarm').textContent = alarmActive(D.sel.alarmId) ? '⏰ Alarmı kaldır' : '⏰ Alarm kur';
+  const isT = !!D.sel && D.sel.type === 'trend';
+  $('selExt').style.display = isT ? '' : 'none';
+  if (isT) $('selExt').textContent = D.sel.ext ? '→ Uzatma' : '→ Uzat';
   bar.classList.toggle('show', !!D.sel);
   updateOverlay(); D.ver++;
 }
@@ -812,10 +995,10 @@ ov.addEventListener('pointerdown', e => {
   try{ ov.setPointerCapture(e.pointerId); }catch(_){}
   const [x, y] = evXY(e);
   if (D.tool){
-    const pt = ptAt(x, y);
+    const pt = ptAt(x, y, D.tool === 'alarm');
     if (!pt) return;
-    if (D.tool === 'hray' || D.tool === 'vline'){
-      D.pending = { type: D.tool, p1: pt };              // parmağı kaldırınca kesinleşir
+    if (D.tool === 'hray' || D.tool === 'vline' || D.tool === 'alarm'){
+      D.pending = { type: D.tool === 'alarm' ? 'hray' : D.tool, p1: pt, isAlarm: D.tool === 'alarm' };  // parmağı kaldırınca kesinleşir
       D.press = { x, y, first: true, moved: true };
     } else if (!D.pending){
       D.pending = { type: D.tool, p1: pt, p2: { ...pt } };
@@ -841,7 +1024,7 @@ ov.addEventListener('pointermove', e => {
   if (!D.press && !D.drag) return;
   const [x, y] = evXY(e);
   if (D.press && D.pending){
-    const pt = ptAt(x, y);
+    const pt = ptAt(x, y, D.pending.isAlarm);
     if (!pt) return;
     if (D.pending.type === 'hray' || D.pending.type === 'vline') D.pending.p1 = pt; else D.pending.p2 = pt;
     if (D.press.first && Math.hypot(x - D.press.x, y - D.press.y) > 10) D.press.moved = true;
@@ -854,6 +1037,16 @@ function endPress(){
   if (D.press && D.pending){
     if (!D.press.first || D.press.moved){
       const d = D.pending;
+      if (d.isAlarm){                                      // alarm aracı: çizgi değil, alarm üretir
+        const pr = d.p1.p;
+        D.press = null; D.cursor = null; D.pending = null;
+        setTool(null);
+        const a = createAlarm(S.symbol, pr);
+        if (a) flash('⏰ Alarm kuruldu: ' + fp(a.price));
+        D.ver++;
+        return;
+      }
+      d.id = uid();
       if (DEF_COLOR[d.type]) d.color = DEF_COLOR[d.type];
       D.list.push(d); saveDraw();
       setTool(null); select(d);                           // yeni çizim seçili gelir: hemen ayarla/sil
@@ -862,7 +1055,14 @@ function endPress(){
     }
     D.press = null; D.cursor = null; D.ver++;
   }
-  if (D.drag){ D.drag = null; saveDraw(); }
+  if (D.drag){
+    const dd = D.drag.d;
+    D.drag = null; saveDraw();
+    if (dd.alarmId){                                       // bağlı çizgi taşınırsa alarm da taşınır
+      if (dd.type === 'trend') moveAlarmLine(dd.alarmId, { t1: dd.p1.t, p1: dd.p1.p, t2: dd.p2.t, p2: dd.p2.p });
+      else moveAlarm(dd.alarmId, dd.p1.p);
+    }
+  }
 }
 ov.addEventListener('pointerup', endPress);
 ov.addEventListener('pointercancel', endPress);
@@ -887,13 +1087,17 @@ $('drawBar').addEventListener('click', e => {
   else if (b.dataset.act === 'magnet'){ D.magnet = !D.magnet; store.set('vg_magnet', D.magnet); renderDrawBar(); }
   else if (b.dataset.act === 'clear'){
     if (!D.list.length) return;
-    if (confirm(`${S.symbol} üzerindeki tüm çizimler silinsin mi?`)){ D.list = []; setTool(null); select(null); saveDraw(); }
+    if (confirm(`${S.symbol} üzerindeki tüm çizimler silinsin mi?`)){
+      D.list.filter(d => d.alarmId).forEach(d => removeAlarm(d.alarmId));
+      D.list = []; setTool(null); select(null); saveDraw();
+    }
   }
 });
 $('hintCancel').addEventListener('click', () => setTool(null));
 $('selClose').addEventListener('click', () => select(null));
 $('selDel').addEventListener('click', () => {
   if (!D.sel) return;
+  if (D.sel.alarmId) removeAlarm(D.sel.alarmId);
   D.list = D.list.filter(d => d !== D.sel);
   saveDraw(); select(null);
 });
@@ -903,6 +1107,469 @@ $('selColors').addEventListener('click', e => {
   D.sel.color = b.dataset.color; saveDraw(); select(D.sel);
 });
 renderDrawBar();
+
+/* =====================================================================
+   ALARMLAR
+   Alarm: {id, symbol, price, dir:'up'|'down', active, created, [drawingId], [triggeredAt]}
+   dir, kurulduğu andaki fiyata göre belirlenir: hedef fiyat üstteyse yukarı geçince,
+   altındaysa aşağı geçince tetiklenir. Tüm piyasa tek WebSocket ile izlenir.
+   Uygulama kapalıyken/arka plandayken geçilen seviyeler, açılışta 1 dk'lık
+   mumların en yüksek/en düşük değerine bakılarak yakalanır (catchUp).
+   ===================================================================== */
+const A = {
+  list: store.get('vg_alarms', []),
+  lines: {},
+  mute: store.get('vg_mute', false),
+  audio: null,
+  seen: store.get('vg_seen', Date.now()),
+  lastTick: 0
+};
+if (!Array.isArray(A.list)) A.list = [];
+
+function uid(){ return 'x' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function saveAlarms(){ store.set('vg_alarms', A.list); updateBadge(); }
+function activeAlarms(){ return A.list.filter(a => a.active); }
+function alarmActive(id){ return !!id && A.list.some(a => a.id === id && a.active); }
+function curPrice(sym){
+  if (sym === S.symbol && S.candles.length) return S.candles[S.candles.length - 1].close;
+  const t = S.tickers[sym];
+  return t ? t.last : null;
+}
+function whenStr(ms){
+  return new Date(ms).toLocaleString('tr-TR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+function updateBadge(){
+  const n = activeAlarms().length, b = $('alBadge');
+  b.textContent = n; b.style.display = n ? 'block' : 'none';
+}
+
+/* --- Bildirim: toast, ses, titreşim, sistem bildirimi --- */
+function toast(text, sub, o){
+  o = o || {};
+  const el = document.createElement('div');
+  el.className = 'toast';
+  const tx = document.createElement('div'); tx.className = 'tx'; tx.textContent = text;
+  if (sub){ const s = document.createElement('small'); s.textContent = sub; tx.appendChild(s); }
+  el.appendChild(tx);
+  const close = () => el.remove();
+  if (o.sticky){
+    const b = document.createElement('button'); b.className = 'pillbtn'; b.textContent = 'Tamam';
+    b.addEventListener('click', ev => { ev.stopPropagation(); close(); });
+    el.appendChild(b);
+    if (o.onTap) el.addEventListener('click', () => { o.onTap(); close(); });
+  } else {
+    el.style.pointerEvents = 'none';
+    setTimeout(close, o.ms || 2500);
+  }
+  $('toasts').appendChild(el);
+}
+function flash(text){ toast(text, '', { ms: 2500 }); }
+
+function unlockAudio(){
+  try{
+    if (!A.audio){ const C = window.AudioContext || window.webkitAudioContext; if (C) A.audio = new C(); }
+    if (A.audio && A.audio.state === 'suspended') A.audio.resume();
+  }catch(e){}
+}
+['pointerdown', 'touchend', 'click'].forEach(ev => document.addEventListener(ev, unlockAudio, { passive: true }));
+
+function beep(){
+  if (A.mute || !A.audio) return;
+  try{
+    const ctx = A.audio, t0 = ctx.currentTime + 0.03;
+    for (let i = 0; i < 3; i++) [880, 1175].forEach((f, j) => {
+      const o = ctx.createOscillator(), g = ctx.createGain(), t = t0 + i * 0.7 + j * 0.18;
+      o.type = 'sine'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.35, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g); g.connect(ctx.destination); o.start(t); o.stop(t + 0.18);
+    });
+  }catch(e){}
+}
+function askNotifyPermission(){
+  try{ if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); }catch(e){}
+}
+function sysNotify(title, body){
+  try{
+    if ('Notification' in window && Notification.permission === 'granted' && document.hidden)
+      new Notification(title, { body, tag: 'vg-alarm' });
+  }catch(e){}
+}
+
+function notifyAlarm(a, late){
+  const m = S.symbols[a.symbol], name = m ? m.base : a.symbol;
+  const what = a.line ? `trend çizgisine (${fp(a.hitPrice, a.symbol)})` : `${fp(a.price, a.symbol)} seviyesine`;
+  const txt = `⏰ ${name} ${what} ${a.dir === 'up' ? 'yükselerek' : 'düşerek'} ulaştı`;
+  const sub = late ? `Uygulama kapalıyken gerçekleşti · ${whenStr(a.triggeredAt)}` : 'Şimdi';
+  toast(txt, sub, { sticky: true, onTap: () => { if (a.symbol !== S.symbol) selectSymbol(a.symbol); } });
+  beep();
+  try{ if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 400]); }catch(e){}
+  sysNotify('Vadeli Grafik', txt.replace('⏰ ', ''));
+}
+
+/* --- Oluştur / sil / taşı --- */
+// Trend çizgisinin verilen andaki fiyatı (zaman: UTC saniye). Çizgi sağa doğru uzatılmış sayılır.
+function lineAt(l, tSec){
+  const dt = l.t2 - l.t1;
+  return dt ? l.p1 + (l.p2 - l.p1) * (tSec - l.t1) / dt : l.p1;
+}
+function alarmLevel(a, tMs){ return a.line ? lineAt(a.line, tMs / 1000) : a.price; }
+
+function createAlarm(sym, price, drawingId, line){
+  const m = S.symbols[sym], cur = curPrice(sym);
+  if (cur == null){ flash('Güncel fiyat alınamadı'); return null; }
+  if (line) price = lineAt(line, Date.now() / 1000);
+  price = Number(Number(price).toFixed(m ? m.prec : 2));
+  if (!(price > 0)){ flash('Geçerli bir fiyat gir'); return null; }
+  if (Math.abs(price - cur) < (m ? m.tick : 0) / 2 + 1e-12){ flash(line ? 'Fiyat şu an çizginin üzerinde' : 'Alarm fiyatı güncel fiyatla aynı'); return null; }
+  const a = { id: uid(), symbol: sym, price, dir: price > cur ? 'up' : 'down', active: true, created: Date.now() };
+  if (drawingId) a.drawingId = drawingId;
+  if (line) a.line = line;
+  A.list.push(a);
+  saveAlarms(); syncSet(a); refreshAlarmLines(); renderAlarmList(); D.ver++;
+  askNotifyPermission(); unlockAudio();
+  return a;
+}
+function unlinkDrawing(a){
+  if (!a.drawingId) return;
+  if (a.symbol === S.symbol){
+    const d = D.list.find(x => x.id === a.drawingId);
+    if (d && d.alarmId === a.id){ delete d.alarmId; saveDraw(); }
+  } else {
+    const arr = store.get('vg_draw_' + a.symbol, []);
+    let ch = false;
+    if (Array.isArray(arr)) for (const d of arr) if (d.id === a.drawingId && d.alarmId === a.id){ delete d.alarmId; ch = true; }
+    if (ch) store.set('vg_draw_' + a.symbol, arr);
+  }
+}
+function removeAlarm(id){
+  const i = A.list.findIndex(a => a.id === id);
+  if (i < 0) return;
+  const a = A.list[i];
+  A.list.splice(i, 1);
+  unlinkDrawing(a);
+  saveAlarms(); syncDel(a.id); refreshAlarmLines(); renderAlarmList(); D.ver++;
+  if (D.sel) select(D.sel);
+}
+function moveAlarm(id, price){
+  const a = A.list.find(x => x.id === id && x.active);
+  if (!a) return;
+  const m = S.symbols[a.symbol], cur = curPrice(a.symbol);
+  a.price = Number(Number(price).toFixed(m ? m.prec : 2));
+  if (cur != null) a.dir = a.price > cur ? 'up' : 'down';
+  a.created = Date.now();                                  // taşıma = yeniden kurma: eski mumlar sayılmasın
+  saveAlarms(); syncSet(a); refreshAlarmLines(); renderAlarmList();
+}
+function moveAlarmLine(id, line){
+  const a = A.list.find(x => x.id === id && x.active);
+  if (!a) return;
+  const m = S.symbols[a.symbol], cur = curPrice(a.symbol);
+  a.line = line;
+  a.price = Number(lineAt(line, Date.now() / 1000).toFixed(m ? m.prec : 2));
+  if (cur != null) a.dir = a.price > cur ? 'up' : 'down';
+  a.created = Date.now();
+  saveAlarms(); syncSet(a); renderAlarmList();
+}
+function rearm(id){
+  const a = A.list.find(x => x.id === id);
+  if (!a) return;
+  const m = S.symbols[a.symbol], cur = curPrice(a.symbol);
+  const lvl = Number(alarmLevel(a, Date.now()).toFixed(m ? m.prec : 2));
+  if (cur == null || Math.abs(lvl - cur) < (m ? m.tick : 0) / 2){ flash('Fiyat şu an alarm seviyesinde'); return; }
+  a.price = lvl; a.active = true; a.dir = lvl > cur ? 'up' : 'down'; a.created = Date.now();
+  delete a.triggeredAt; delete a.hitPrice;
+  saveAlarms(); syncSet(a); refreshAlarmLines(); renderAlarmList(); D.ver++;
+}
+
+/* --- Grafikte alarm çizgileri (çizgiye bağlı olanlar çizginin kendisinde ⏰ ile görünür) --- */
+function refreshAlarmLines(){
+  for (const id in A.lines){ try{ candle.removePriceLine(A.lines[id]); }catch(e){} }
+  A.lines = {};
+  for (const a of A.list){
+    if (!a.active || a.symbol !== S.symbol || a.drawingId) continue;
+    A.lines[a.id] = candle.createPriceLine({
+      price: a.price, color: '#f0b90b', lineWidth: 1,
+      lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '⏰'
+    });
+  }
+}
+
+/* --- Tetikleme --- */
+function fireAlarm(a, price, when, late){
+  a.active = false; a.triggeredAt = when; a.hitPrice = price;
+  notifyAlarm(a, late);
+}
+function checkAlarms(sym, price){
+  let fired = false;
+  for (const a of A.list){
+    if (!a.active || a.symbol !== sym) continue;
+    const lvl = alarmLevel(a, Date.now());
+    if (a.dir === 'up' ? price >= lvl : price <= lvl){ fireAlarm(a, lvl, Date.now(), false); fired = true; }
+  }
+  if (!fired) return;
+  saveAlarms(); refreshAlarmLines(); renderAlarmList(); D.ver++;
+  if (D.sel) select(D.sel);
+}
+async function catchUp(){
+  const act = activeAlarms();
+  if (!act.length) return;
+  const now = Date.now(), seen = A.seen, bySym = {};
+  for (const a of act) (bySym[a.symbol] = bySym[a.symbol] || []).push(a);
+  // kurulumdan sonra açılan mumlar sayılır; uygulamanın son canlı izlendiği dakika dahildir
+  const startOf = a => Math.max(Math.ceil(a.created / 60000), Math.floor(seen / 60000)) * 60000;
+  let changed = false;
+  await Promise.all(Object.keys(bySym).map(async sym => {
+    if (!S.symbols[sym]) return;
+    const alarms = bySym[sym];
+    const from = Math.max(Math.min(...alarms.map(startOf)), now - 1499 * 60000);
+    if (from > now) return;
+    try{
+      const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1m&limit=1500&startTime=${from}`);
+      if (!r.ok) return;
+      const ks = await r.json();
+      if (!Array.isArray(ks)) return;
+      for (const a of alarms){
+        if (!a.active) continue;
+        const st = startOf(a);
+        for (const k of ks){
+          if (k[0] < st) continue;
+          const lv = a.line ? lineAt(a.line, (k[0] + 30000) / 1000) : a.price;   // trend: mumun ortasındaki çizgi fiyatı
+          if (a.dir === 'up' ? +k[2] >= lv : +k[3] <= lv){
+            fireAlarm(a, lv, Math.min(k[6], now), true); changed = true; break;
+          }
+        }
+      }
+    }catch(e){ /* ağ yoksa sonraki açılışta tekrar denenir */ }
+  }));
+  if (changed){ saveAlarms(); refreshAlarmLines(); renderAlarmList(); D.ver++; if (D.sel) select(D.sel); }
+}
+function markSeen(){ A.seen = Date.now(); store.set('vg_seen', A.seen); }
+setInterval(() => {
+  if (!document.hidden && A.lastTick && Date.now() - A.lastTick < 10000) markSeen();   // canlı izlenen son an
+}, 5000);
+
+/* --- Alarm paneli --- */
+function renderMute(){ $('alMute').textContent = A.mute ? '🔕 Ses kapalı' : '🔔 Ses açık'; }
+function renderAlarmList(){
+  const el = $('alList');
+  if (!$('alSheet').classList.contains('open')) return;
+  const act = A.list.filter(a => a.active).sort((a, b) => b.created - a.created);
+  const done = A.list.filter(a => !a.active).sort((a, b) => (b.triggeredAt || 0) - (a.triggeredAt || 0));
+  const row = a => {
+    const m = S.symbols[a.symbol], nm = m ? m.base : a.symbol, q = m ? m.quote : '';
+    const cur = curPrice(a.symbol);
+    let sub, ico;
+    const lvl = a.active ? alarmLevel(a, Date.now()) : (a.hitPrice != null ? a.hitPrice : a.price);
+    const kind = a.line ? 'Trend çizgisi · ' : '';
+    if (a.active){
+      const d = cur ? (lvl - cur) / cur * 100 : null;
+      sub = kind + (a.dir === 'up' ? 'Yukarı geçerse' : 'Aşağı geçerse') + (d != null ? ` · ${fpct(d)} uzakta` : '');
+      ico = a.dir === 'up' ? '↗' : '↘';
+    } else { sub = kind + 'Tetiklendi · ' + whenStr(a.triggeredAt || Date.now()); ico = '✓'; }
+    return `<div class="al-row${a.active ? '' : ' done'}" data-sym="${a.symbol}">
+      <span class="al-ico ${a.active ? (a.dir === 'up' ? 'up-t' : 'down-t') : ''}">${ico}</span>
+      <div class="al-mid"><b>${nm}</b><span class="q">${q}</span><small>${sub}</small></div>
+      <div class="al-px">${fp(lvl, a.symbol)}</div>
+      ${a.active ? '' : `<button class="al-btn" data-re="${a.id}" aria-label="Tekrar kur">↻</button>`}
+      <button class="al-btn" data-del="${a.id}" aria-label="Sil">✕</button>
+    </div>`;
+  };
+  let h = '';
+  if (!A.list.length) h = '<div class="empty">Henüz alarm yok.<br>Bir fiyat yaz, yüzde düğmelerine dokun ya da “Grafikten seç” ile grafik üzerinde belirle.</div>';
+  else {
+    if (act.length) h += `<div class="al-sub"><span>Aktif (${act.length})</span></div>` + act.map(row).join('');
+    if (done.length) h += `<div class="al-sub"><span>Tetiklenen</span><button class="linkbtn" data-clear="1">Temizle</button></div>` + done.map(row).join('');
+  }
+  el.innerHTML = h;
+}
+function refreshAlarmHeader(){
+  const m = S.symbols[S.symbol];
+  $('alSym').textContent = m ? `${m.base}${m.quote} Sürekli` : S.symbol;
+  const c = curPrice(S.symbol);
+  $('alCur').textContent = fp(c);
+}
+function openAlarms(){
+  $('alPrice').value = '';
+  refreshAlarmHeader();
+  $('alSheet').classList.add('open');
+  renderMute(); renderAlarmList();
+  history.pushState({ al: 1 }, '');
+  unlockAudio();
+}
+function closeAlarms(fromPop){
+  if (!$('alSheet').classList.contains('open')) return;
+  $('alSheet').classList.remove('open');
+  $('alPrice').blur();
+  if (!fromPop && history.state && history.state.al) history.back();
+}
+setInterval(() => {
+  if ($('alSheet').classList.contains('open')){ refreshAlarmHeader(); renderAlarmList(); }
+}, 1500);
+
+$('alarmBtn').addEventListener('click', openAlarms);
+$('alClose').addEventListener('click', () => closeAlarms());
+$('alMute').addEventListener('click', () => {
+  A.mute = !A.mute; store.set('vg_mute', A.mute); renderMute(); unlockAudio();
+  if (!A.mute) beep();
+});
+function submitAlarm(){
+  const v = parseFloat($('alPrice').value.replace(',', '.'));
+  if (!(v > 0)){ flash('Geçerli bir fiyat gir'); return; }
+  const a = createAlarm(S.symbol, v);
+  if (a){ $('alPrice').value = ''; $('alPrice').blur(); flash('⏰ Alarm kuruldu: ' + fp(a.price)); }
+}
+$('alAdd').addEventListener('click', submitAlarm);
+$('alPrice').addEventListener('keydown', e => { if (e.key === 'Enter') submitAlarm(); });
+$('alQuick').addEventListener('click', e => {
+  const b = e.target.closest('[data-pct]');
+  if (b){
+    const c = curPrice(S.symbol);
+    if (c != null) $('alPrice').value = (c * (1 + (+b.dataset.pct) / 100)).toFixed(prec(S.symbol));
+    return;
+  }
+  if (e.target.closest('#alPick')){ closeAlarms(); setTool('alarm'); }
+});
+$('alList').addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (del){ removeAlarm(del.dataset.del); return; }
+  const re = e.target.closest('[data-re]');
+  if (re){ rearm(re.dataset.re); return; }
+  if (e.target.closest('[data-clear]')){
+    A.list.filter(a => !a.active).forEach(a => removeAlarm(a.id));
+    return;
+  }
+  const r = e.target.closest('[data-sym]');
+  if (r){ closeAlarms(); selectSymbol(r.dataset.sym); }
+});
+
+// Çizgi seçiliyken ⏰ butonu: o çizgiye alarm kur / kaldır
+$('selAlarm').addEventListener('click', () => {
+  const d = D.sel;
+  if (!d || (d.type !== 'hray' && d.type !== 'trend')) return;
+  if (alarmActive(d.alarmId)){
+    removeAlarm(d.alarmId); delete d.alarmId; flash('Alarm kaldırıldı');
+  } else {
+    if (!d.id) d.id = uid();
+    const line = d.type === 'trend' ? { t1: d.p1.t, p1: d.p1.p, t2: d.p2.t, p2: d.p2.p } : null;
+    const a = createAlarm(S.symbol, line ? null : d.p1.p, d.id, line);
+    if (a){
+      d.alarmId = a.id;
+      if (line && !d.ext){ d.ext = true; flash('⏰ Alarm kuruldu · çizgi sağa uzatıldı'); }
+      else flash('⏰ Alarm kuruldu: ' + fp(a.price));
+    }
+  }
+  saveDraw(); select(d); D.ver++;
+});
+// Trend çizgisini sağa uzat / uzatma
+$('selExt').addEventListener('click', () => {
+  const d = D.sel;
+  if (!d || d.type !== 'trend') return;
+  if (d.ext && alarmActive(d.alarmId)){ flash('Alarmlı çizgi sağa uzatılmış kalır'); return; }
+  d.ext = !d.ext; saveDraw(); select(d); D.ver++;
+});
+/* =====================================================================
+   TELEFON BİLDİRİMİ İÇİN SUNUCU SENKRONU
+   Alarmlar, ntfy.sh üzerinde gizli (rastgele kodlu) bir konuya küçük mesajlar olarak gönderilir.
+   Bir bilgisayarda/sunucuda çalışan alarm_server.py aynı konuyu dinler, fiyatı 7/24 izler ve
+   alarm tetiklenince Telegram'dan telefona bildirim yollar. Tarayıcı kapalıyken de çalışır.
+   ===================================================================== */
+const NTFY = 'https://ntfy.sh';
+const Y = {
+  on: store.get('vg_sync_on', false),
+  topic: store.get('vg_sync_topic', ''),
+  q: store.get('vg_sync_q', []),
+  busy: false, fail: 0,
+  lastOk: store.get('vg_sync_ok', 0),
+  lastFull: store.get('vg_sync_full', 0)
+};
+if (!Array.isArray(Y.q)) Y.q = [];
+function newTopic(){
+  const b = new Uint8Array(16); crypto.getRandomValues(b);
+  return 'vg-' + [...b].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+function syncPayload(a){
+  const o = { id: a.id, symbol: a.symbol, dir: a.dir, price: a.price, created: a.created };
+  if (a.line) o.line = a.line;
+  return o;
+}
+function opKey(op){ return op.op === 'keep' ? 'keep' : 'a' + (op.op === 'set' ? op.a.id : op.id); }
+function syncPush(op){
+  if (!Y.on || !Y.topic) return;
+  const k = opKey(op);
+  Y.q = Y.q.filter(x => opKey(x) !== k);        // aynı alarm için eski bekleyen işlemi at
+  Y.q.push(op);
+  store.set('vg_sync_q', Y.q);
+  syncFlush();
+}
+function syncSet(a){ if (a.active) syncPush({ v: 1, op: 'set', a: syncPayload(a) }); }
+function syncDel(id){ syncPush({ v: 1, op: 'del', id }); }
+function syncAll(){
+  if (!Y.on) return;
+  const act = activeAlarms();
+  act.forEach(a => syncPush({ v: 1, op: 'set', a: syncPayload(a) }));
+  syncPush({ v: 1, op: 'keep', ids: act.map(a => a.id) });   // sunucuda artık olmayan alarmları temizler
+  Y.lastFull = Date.now(); store.set('vg_sync_full', Y.lastFull);
+}
+async function syncFlush(){
+  if (Y.busy || !Y.on || !Y.topic) return;
+  Y.busy = true;
+  try{
+    while (Y.q.length){
+      const r = await fetch(`${NTFY}/${Y.topic}`, { method: 'POST', body: JSON.stringify(Y.q[0]) });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      Y.q.shift(); store.set('vg_sync_q', Y.q);
+      Y.lastOk = Date.now(); store.set('vg_sync_ok', Y.lastOk); Y.fail = 0;
+      await new Promise(res => setTimeout(res, 300));       // ntfy hız sınırına takılma
+    }
+  }catch(e){ Y.fail++; }
+  finally{ Y.busy = false; renderSync(); }
+}
+setInterval(syncFlush, 15000);
+window.addEventListener('online', syncFlush);
+
+function fmtClock(ms){ return ms ? new Date(ms).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' }) : '–'; }
+function renderSync(){
+  $('alSync').classList.toggle('on', Y.on);
+  $('syncTopic').value = Y.topic || '';
+  const nt = Y.topic ? Y.topic + '-bildirim' : '';
+  $('notifTopic').value = nt;
+  $('ntfyApp').href = nt ? 'ntfy://ntfy.sh/' + nt : '#';
+  $('ntfyWeb').href = nt ? 'https://ntfy.sh/' + nt : '#';
+  $('syncToggle').textContent = Y.on ? 'Kapat' : 'Aç';
+  const st = $('syncState');
+  if (!Y.on){ st.className = 'sync-s'; st.textContent = 'Kapalı. Açınca alarmlar sunucuya gönderilir; uygulama kapalıyken de telefonuna bildirim gelir.'; }
+  else if (Y.fail >= 2){ st.className = 'sync-s bad'; st.textContent = `Gönderilemedi (${Y.fail} deneme) · bekleyen ${Y.q.length}. İnterneti kontrol et.`; }
+  else { st.className = 'sync-s ok'; st.textContent = `Açık · son gönderim ${fmtClock(Y.lastOk)} · bekleyen ${Y.q.length}`; }
+}
+$('alSync').addEventListener('click', () => { $('syncBox').classList.toggle('show'); renderSync(); });
+$('syncToggle').addEventListener('click', () => {
+  if (!Y.on){
+    if (!Y.topic){ Y.topic = newTopic(); store.set('vg_sync_topic', Y.topic); }
+    Y.on = true; store.set('vg_sync_on', true); syncAll();
+  } else { Y.on = false; store.set('vg_sync_on', false); }
+  renderSync();
+});
+$('syncResend').addEventListener('click', () => {
+  if (!Y.on){ flash('Önce senkronu aç'); return; }
+  syncAll(); flash('Alarmlar sunucuya gönderiliyor');
+});
+$('syncNew').addEventListener('click', () => {
+  if (!confirm('Yeni kod üretilsin mi? Sunucudaki kodu da değiştirmen gerekir.')) return;
+  Y.topic = newTopic(); store.set('vg_sync_topic', Y.topic);
+  Y.q = []; store.set('vg_sync_q', []);
+  if (Y.on) syncAll();
+  renderSync();
+});
+$('syncCopy').addEventListener('click', async () => {
+  if (!Y.topic){ flash('Önce senkronu aç'); return; }
+  try{ await navigator.clipboard.writeText(Y.topic); flash('Kod kopyalandı'); }
+  catch(e){ $('syncTopic').select(); flash('Kodu seçip kopyala'); }
+});
+renderSync();
+if (Y.on){ syncFlush(); if (Date.now() - Y.lastFull > 6 * 3600 * 1000) syncAll(); }
+
+updateBadge();
 
 /* ---------- Başlangıç ---------- */
 async function init(){
@@ -931,6 +1598,7 @@ async function init(){
     setStatus('Binance Futures verisine ulaşılamadı. İnterneti kontrol et; bazı ülkelerde/ağlarda Binance erişimi engelli olabilir.');
     return;
   }
+  catchUp();                                             // uygulama kapalıyken geçilen alarmlar
   openTickerWs();
   loadChart();
 }
