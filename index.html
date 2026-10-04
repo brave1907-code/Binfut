@@ -269,7 +269,7 @@ a.chip{text-decoration:none;display:inline-block}
     <button id="closeSheet">Kapat</button>
   </div>
   <div id="sortBar"></div>
-  <div class="lh"><span></span><span>Kontrat / Hacim</span><span>Fiyat</span><span>03:00 %</span></div>
+  <div class="lh"><span></span><span>Kontrat / Hacim</span><span>Fiyat</span><span id="lhChg">03:00 %</span></div>
   <div id="list"></div>
 </div>
 
@@ -440,8 +440,37 @@ function applyPrecision(){
   if (m) candle.applyOptions({ priceFormat: { type: 'price', precision: m.prec, minMove: m.tick } });
 }
 
-/* ---------- TradFi (hisse) grafikleri: günlük ve haftalıkta Cumartesi-Pazar atlanır ----------
-   Günlük: hafta sonu mumları gösterilmez. Haftalık: hafta sonu işlemleri hesaba katılmasın diye
+/* ---------- TradFi seans saatleri (New York saatine göre) ----------
+   Binance emtia TradFi kontratları: Pazar 18:00 ET -> Cuma 17:00 ET açık, hafta sonu kapalı (duyuru).
+   18:00 ET = Türkiye'de 01:00 (ABD yaz saati) / 02:00 (ABD kış saati). Seans saatleri ABD saatine bağlıdır,
+   bu yüzden yaz/kış değişimini otomatik hesaplarız. Hisse kontratlarının saatleri için kaynak bulamadım;
+   aynı takvim kullanılır. */
+const NYF = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23',
+  year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', weekday: 'short' });
+const WDI = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+function nyParts(ms){
+  const o = {};
+  for (const p of NYF.formatToParts(new Date(ms))) o[p.type] = p.value;
+  return { y: +o.year, mo: +o.month, d: +o.day, h: (+o.hour) % 24, mi: +o.minute, w: WDI[o.weekday] };
+}
+function nyOffsetMs(ms){ const q = nyParts(ms); return Date.UTC(q.y, q.mo - 1, q.d, q.h, q.mi) - Math.floor(ms / 60000) * 60000; }
+// Piyasa kapalı mı? Cuma 17:00 ET'ten Pazar 18:00 ET'ye kadar
+function isClosedMs(ms){ const q = nyParts(ms); return q.w === 6 || (q.w === 5 && q.h >= 17) || (q.w === 0 && q.h < 18); }
+// İçinde bulunduğumuz işlem gününün başlangıcı: en son Pazar-Perşembe 18:00 ET
+function sessionStartMs(nowMs){
+  for (let back = 0; back < 9; back++){
+    const q = nyParts(nowMs - back * 86400000);
+    if (q.w >= 5) continue;                                 // Cuma/Cumartesi 18:00'de seans başlamaz
+    const local = Date.UTC(q.y, q.mo - 1, q.d, 18, 0);
+    let t = local - nyOffsetMs(local + 4 * 3600000);
+    t = local - nyOffsetMs(t);
+    if (t <= nowMs) return t;
+  }
+  return nowMs - 86400000;
+}
+
+/* ---------- TradFi (hisse) grafikleri: Cumartesi-Pazar (UTC) mumları atlanır ----------
+   Günlük: UTC Cumartesi-Pazar mumları gösterilmez. Dakika/saatlik: piyasa kapalıyken (Cuma 17:00 ET - Pazar 18:00 ET) açılan mumlar gösterilmez. Haftalık: hafta sonu işlemleri hesaba katılmasın diye
    Pazartesi-Cuma günlük mumlarından birleştirilir (kaynak 1d). Kripto coinlerde değişiklik yok. */
 const isTradfi = sym => !!(S.symbols[sym] && S.symbols[sym].tradfi);
 const isWeekendMs = ms => { const d = new Date(ms).getUTCDay(); return d === 0 || d === 6; };
@@ -449,7 +478,10 @@ function weekStartMs(ms){
   const d = new Date(ms), dow = (d.getUTCDay() + 6) % 7;                  // Pazartesi = 0
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - dow * 86400000;
 }
-const weekdayMode = (sym, iv) => isTradfi(sym) && (iv === '1d' || iv === '1w');
+const INTRADAY = new Set(['1m','3m','5m','15m','30m','1h','2h','4h','6h','8h','12h']);
+const weekdayMode = (sym, iv) => isTradfi(sym) && (iv === '1d' || iv === '1w' || INTRADAY.has(iv));
+// Bu zaman diliminde (iv) o mum atlanmalı mı?
+const skipBar = (iv, ms) => (iv === '1d' || iv === '1w') ? isWeekendMs(ms) : isClosedMs(ms);
 const srcInterval = (sym, iv) => (iv === '1w' && isTradfi(sym)) ? '1d' : iv;
 function weekBar(ws, rows){
   let hi = -Infinity, lo = Infinity, v = 0;
@@ -458,8 +490,8 @@ function weekBar(ws, rows){
 }
 function buildBars(rows, sym, iv, truncated){
   if (!weekdayMode(sym, iv)) return rows.map(toBar);
-  const wk = rows.filter(k => !isWeekendMs(k[0]));
-  if (iv === '1d') return wk.map(toBar);
+  const wk = rows.filter(k => !skipBar(iv, k[0]));
+  if (iv !== '1w') return wk.map(toBar);                   // günlük ve dakika/saatlik: hafta sonu mumları atılır
   const groups = new Map();
   for (const k of wk){ const ws = weekStartMs(k[0]); if (!groups.has(ws)) groups.set(ws, []); groups.get(ws).push(k); }
   const out = [...groups.entries()].sort((a, b) => a[0] - b[0]);
@@ -469,7 +501,7 @@ function buildBars(rows, sym, iv, truncated){
 function initialCloseMs(rows, sym, iv){
   if (!rows.length) return 0;
   if (weekdayMode(sym, iv)){
-    const wk = rows.filter(k => !isWeekendMs(k[0]));
+    const wk = rows.filter(k => !skipBar(iv, k[0]));
     if (!wk.length) return 0;
     return iv === '1w' ? weekStartMs(wk[wk.length - 1][0]) + 7 * 86400000 : wk[wk.length - 1][6] + 1;
   }
@@ -487,7 +519,7 @@ function initWeek(rows){
 function pushRaw(row){
   const sym = S.symbol, iv = S.interval;
   if (weekdayMode(sym, iv)){
-    if (isWeekendMs(row[0])) return;
+    if (skipBar(iv, row[0])) return;
     if (iv === '1w'){
       const ws = weekStartMs(row[0]);
       if (!S.wk || S.wk.ws !== ws){ if (S.wk && ws < S.wk.ws) return; S.wk = { ws, days: {} }; }
@@ -536,6 +568,14 @@ async function loadChart(){
     if (token !== loadToken) return;
     S.candles = buildBars(data, symbol, interval, data.length >= FIRST_N);
     if (weekdayMode(symbol, interval) && interval === '1w') initWeek(data); else S.wk = null;
+    S.rawFirst = data.length ? data[0][0] : 0;
+    // Hafta sonu mumları atılınca ekran boş kalmasın (ör. Pazar günü 1 dakikalık grafik): yeterli mum gelene kadar geriye git
+    if (weekdayMode(symbol, interval) && interval !== '1w' && S.candles.length < 150 && data.length >= FIRST_N){
+      for (let i = 0; i < 6 && S.candles.length < 150; i++){
+        if (!(await fetchOlderBars(token))) break;
+      }
+      if (token !== loadToken) return;
+    }
     candle.setData(S.candles);
     vol.setData(S.candles.map(volBar));
     const n = S.candles.length;
@@ -552,21 +592,32 @@ async function loadChart(){
   }
 }
 
+// Eski mumları getir. Hafta sonu boşlukları (tamamı atılan parçalar) için en fazla 8 parça dener.
+async function fetchOlderBars(token){
+  for (let i = 0; i < 8; i++){
+    const weekly = S.interval === '1w' && isTradfi(S.symbol);
+    const end = weekly ? (S.candles[0].time - TZ) * 1000 - 1 : S.rawFirst - 1;
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${S.symbol}&interval=${srcInterval(S.symbol, S.interval)}&limit=1000&endTime=${end}`);
+    const data = await r.json();
+    if (token !== loadToken) return false;
+    if (!Array.isArray(data) || !data.length){ S.noMoreOld = true; return false; }
+    if (!weekly) S.rawFirst = data[0][0];
+    const first = S.candles.length ? S.candles[0].time : Infinity;
+    const older = buildBars(data, S.symbol, S.interval, data.length >= 1000).filter(b => b.time < first);
+    if (older.length){ S.candles = older.concat(S.candles); return true; }
+    if (weekly){ S.noMoreOld = true; return false; }
+  }
+  return false;
+}
 async function loadOlder(){
   if (S.loadingOld || S.noMoreOld || !S.candles.length) return;
   S.loadingOld = true;
   const token = loadToken;
-  const end = (S.candles[0].time - TZ) * 1000 - 1;
   try{
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${S.symbol}&interval=${srcInterval(S.symbol, S.interval)}&limit=1000&endTime=${end}`);
-    const data = await r.json();
-    if (token !== loadToken) return;
-    const first = S.candles[0].time;
-    const older = Array.isArray(data) ? buildBars(data, S.symbol, S.interval, data.length >= 1000).filter(b => b.time < first) : [];
-    if (!older.length){ S.noMoreOld = true; return; }
-    S.candles = older.concat(S.candles);
-    candle.setData(S.candles);
-    vol.setData(S.candles.map(volBar));
+    if (await fetchOlderBars(token)){
+      candle.setData(S.candles);
+      vol.setData(S.candles.map(volBar));
+    }
   }catch(e){ /* sessizce geç, bir sonraki kaydırmada tekrar dener */ }
   finally{ S.loadingOld = false; }
 }
@@ -775,6 +826,7 @@ $('search').addEventListener('input', e => {
 function openSheet(mode){
   S.listMode = mode === 'tradfi' ? 'tradfi' : 'coin';
   $('search').placeholder = S.listMode === 'tradfi' ? 'Hisse ara (ör. TSLA)' : 'Coin ara (ör. SOL)';
+  $('lhChg').textContent = S.listMode === 'tradfi' ? 'Seans %' : '03:00 %';
   $('search').value = ''; S.query = '';
   renderSort(); renderList(true);
   $('sheet').classList.add('open');
@@ -822,7 +874,7 @@ async function loadDayOpens(){
   if (DAYO.running) return;
   DAYO.running = true;
   const start = utcDayStart(), key = new Date(start).toISOString().slice(0, 10);
-  const syms = Object.keys(S.symbols).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
+  const syms = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
   let i = 0, ok = 0, stop = false;
   const worker = async () => {
     for (;;){
@@ -851,6 +903,47 @@ async function loadDayOpens(){
 setInterval(() => {                                       // gün (00:00 UTC) değişince ya da eksik kalınca yenile
   const key = new Date(utcDayStart()).toISOString().slice(0, 10);
   if (!DAYO.running && Object.keys(S.symbols).length && DAYO.key !== key && Date.now() >= DAYO.next) loadDayOpens();
+}, 15000);
+
+/* ---------- TradFi (hisse/emtia): işlem günü başlangıcına göre değişim ----------
+   Kripto için gün 03:00 TR'de (00:00 UTC) başlar. TradFi kontratlarında işlem günü Pazar-Perşembe
+   18:00 New York saatinde başlar (Türkiye'de 01:00 yaz / 02:00 kış). % değişim, o andan sonraki
+   ilk işlem fiyatına göre hesaplanır. */
+const DAYT = { running: false, key: 0, next: 0 };
+async function loadTfOpens(){
+  if (DAYT.running) return;
+  DAYT.running = true;
+  const B = sessionStartMs(Date.now());
+  const syms = Object.keys(S.symbols).filter(s => S.symbols[s].tradfi);
+  let i = 0, ok = 0, stop = false;
+  const worker = async () => {
+    for (;;){
+      const k = i++; if (stop || k >= syms.length) return;
+      const sym = syms[k];
+      try{
+        const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1m&limit=1&startTime=${B}`);
+        if (r.status === 429 || r.status === 418){ stop = true; return; }
+        if (!r.ok) continue;
+        const j = await r.json();
+        if (!Array.isArray(j)) continue;
+        ok++;
+        const o = j.length ? +j[0][1] : 0;
+        if (o > 0 && +j[0][0] <= Date.now() + 60000){
+          S.dayOpen[sym] = o;
+          const t = S.tickers[sym];
+          if (t) t.chg = (t.last - o) / o * 100;
+        } else delete S.dayOpen[sym];                        // bu işlem gününde henüz işlem yok
+      }catch(e){}
+    }
+  };
+  await Promise.all(Array.from({ length: 4 }, worker));
+  if (ok >= syms.length * 0.9) DAYT.key = B; else DAYT.next = Date.now() + 60000;
+  DAYT.running = false;
+  listDirty = true; updateHeader();
+}
+setInterval(() => {
+  if (DAYT.running || !Object.keys(S.symbols).length || Date.now() < DAYT.next) return;
+  if (DAYT.key !== sessionStartMs(Date.now())) loadTfOpens();
 }, 15000);
 
 /* ---------- Tüm piyasa fiyatları ---------- */
@@ -2079,6 +2172,7 @@ async function init(){
   catchUp();                                             // uygulama kapalıyken geçilen alarmlar
   openTickerWs();
   loadDayOpens();
+  loadTfOpens();
   loadChart();
 }
 init();
