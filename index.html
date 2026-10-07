@@ -2307,6 +2307,7 @@ if (Y.on){ syncFlush(); if (Date.now() - Y.lastFull > 6 * 3600 * 1000) syncAll()
    - Kurulum: firebase-config.js dosyası yoksa bu bölüm hiç devreye girmez.
    ===================================================================== */
 const FBC = window.VG_FIREBASE && window.VG_FIREBASE.apiKey ? window.VG_FIREBASE : null;
+const FBC_PLACEHOLDER = !!(FBC && /BURAYA/.test(JSON.stringify(FBC)));
 const CL = { user: null, db: null, auth: null, col: null, ready: false, timers: {}, flushing: false, state: FBC ? 'load' : 'off', err: '', lastOk: 0 };
 const CLOUD_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_topic|vg_sync_on)$/;
 const rawUid = () => { try{ return localStorage.getItem('vg_uid') || ''; }catch(e){ return ''; } };
@@ -2454,13 +2455,24 @@ async function cloudInit(){
   }catch(e){ CL.state = 'offline'; renderAcc(); }
 }
 async function googleLogin(){
+  if (FBC_PLACEHOLDER){ toast('Giriş olmadı', 'firebase-config.js dosyasındaki BURAYA_… yazan 4 yeri Firebase’deki kendi değerlerinle değiştirip GitHub’a tekrar yükle.', { sticky: true }); return; }
   if (!CL.auth){ flash('Hesap sistemi yüklenemedi; interneti kontrol et'); return; }
   const prov = new firebase.auth.GoogleAuthProvider();
   prov.setCustomParameters({ prompt: 'select_account' });
   try{ await CL.auth.signInWithPopup(prov); }
   catch(e){
     if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment'){ try{ await CL.auth.signInWithRedirect(prov); return; }catch(e2){ e = e2; } }
-    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') flash('Giriş olmadı: ' + (e.code || e.message));
+    if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+    const H = {
+      'auth/unauthorized-domain': "Firebase'de bu site izinli değil. Firebase → Authentication → Settings → Authorized domains → Add domain: " + location.hostname,
+      'auth/operation-not-allowed': 'Google girişi açık değil. Firebase → Authentication → Sign-in method → Google → Enable → Save',
+      'auth/configuration-not-found': 'Google girişi açık değil. Firebase → Authentication → Sign-in method → Google → Enable → Save',
+      'auth/invalid-api-key': 'firebase-config.js içindeki apiKey yanlış. Firebase → Project settings → Your apps bölümünden doğru değeri kopyala',
+      'auth/api-key-not-valid.-please-pass-a-valid-api-key.': 'firebase-config.js içindeki apiKey yanlış. Firebase → Project settings → Your apps bölümünden doğru değeri kopyala',
+      'auth/network-request-failed': 'İnternet bağlantısı yok ya da zayıf. Tekrar dene.',
+      'auth/popup-blocked': 'Tarayıcı giriş penceresini engelledi. Tekrar dene; olmazsa uygulamayı Chrome’da aç.'
+    };
+    toast('Giriş olmadı', H[e.code] || ('Hata: ' + (e.code || e.message)), { sticky: true });
   }
 }
 async function cloudLogout(){
