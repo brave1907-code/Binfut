@@ -1,0 +1,16 @@
+{
+  "name": "Vadeli Grafik",
+  "short_name": "Vadeli",
+  "description": "Binance Futures grafikleri, çizimler ve alarmlar",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0e11",
+  "theme_color": "#0b0e11",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

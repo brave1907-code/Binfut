@@ -4,11 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0b0e11">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Vadeli Grafik">
 <title>Vadeli Grafik</title>
+<script src="firebase-config.js"></script>
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root{
@@ -53,6 +56,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 #tfBar::-webkit-scrollbar{display:none}
 .tf{flex:0 0 auto;padding:6px 10px;border-radius:6px;font-size:13px;color:var(--muted)}
 .tf.on{background:var(--panel2);color:var(--accent);font-weight:600}
+.tf.c2on{color:var(--accent);font-weight:600;background:var(--panel2)}
 
 /* Grafik */
 #chartWrap{position:relative;flex:1;min-height:0}
@@ -66,7 +70,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* Alt araç çubuğu */
 .tools{display:flex;border-top:1px solid var(--line);background:var(--panel)}
-.tools button{flex:1;min-width:0;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);white-space:nowrap}
+.tools button{flex:1;min-width:0;padding:10px 0 8px;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);white-space:nowrap}
 .tools button .i{font-size:19px;line-height:1;position:relative}
 .tools button:disabled{opacity:.4}
 .tools button.main{color:var(--text)}
@@ -207,6 +211,50 @@ input{-webkit-user-select:text;user-select:text}
   transform:translateY(100%);transition:transform .25s ease;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 #wSheet.open{transform:none}
+#c2Wrap{display:none;flex:0 0 38%;min-height:0;flex-direction:column;border-top:2px solid var(--line);position:relative}
+#c2Wrap.on{display:flex}
+#c2Bar{display:flex;gap:2px;align-items:center;overflow-x:auto;scrollbar-width:none;padding:2px 6px;background:var(--bg);touch-action:pan-x}
+#c2Bar::-webkit-scrollbar{display:none}
+#c2Bar .tf{padding:4px 8px;font-size:12px}
+#c2{position:relative;flex:1;min-height:0;touch-action:none}
+#c2Name{flex:0 0 auto;font-size:11px;color:var(--muted);padding:0 6px;font-variant-numeric:tabular-nums}
+#lsMenu{position:fixed;inset:0;z-index:41;background:var(--scrim);display:none;align-items:center;justify-content:center;padding:16px}
+#lsMenu.open{display:flex}
+.ls-row{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--rowline);font-size:15px}
+.ls-row .nm{flex:1} .ls-row .tick{width:24px;height:24px;border-radius:6px;border:2px solid var(--staroff);display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;color:#000}
+.ls-row.on .tick{background:var(--accent);border-color:var(--accent)}
+.ls-row .mini{color:var(--muted);font-size:15px;padding:4px 6px}
+#tarSheet{position:fixed;inset:0;z-index:26;background:var(--bg);display:flex;flex-direction:column;
+  transform:translateY(100%);transition:transform .25s ease;
+  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);touch-action:pan-x pan-y}
+#tarSheet.open{transform:none}
+#tarTabs,#tarBar{display:flex;gap:6px;padding:0 12px 8px;align-items:center;touch-action:pan-x;overflow-x:auto;scrollbar-width:none}
+#tarTabs::-webkit-scrollbar,#tarBar::-webkit-scrollbar{display:none}
+#tarBar .sepv{flex:0 0 1px;align-self:stretch;background:var(--line);margin:0 2px}
+#tarList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.t-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--rowline)}
+.t-row:active{background:var(--panel)}
+.t-row b{font-size:15px} .t-row small{display:block;color:var(--muted);font-size:11px;margin-top:1px;font-variant-numeric:tabular-nums}
+.t-px{font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.t-pct{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;text-align:right;min-width:72px}
+#instBtn{font-size:18px;width:34px;height:34px;color:var(--accent)}
+#accBtn{font-size:17px;width:34px;height:34px;color:var(--muted);border-radius:50%}
+#accBtn.in{color:#000;background:var(--accent);font-size:14px;font-weight:700;width:28px;height:28px;margin:0 3px}
+#accSheet{position:fixed;inset:0;z-index:40;background:var(--scrim);display:none;align-items:center;justify-content:center;padding:16px}
+#accSheet.open{display:flex}
+.acc-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;max-height:90dvh;overflow:auto}
+.acc-top{display:flex;align-items:center;gap:8px;font-size:17px;margin-bottom:10px}
+.acc-top .sp{flex:1}
+#accClose{color:var(--muted);font-size:14px;padding:6px 2px}
+.acc-card p{margin:0 0 10px;font-size:13px;color:var(--muted);line-height:1.5}
+.acc-card .big{display:block;width:100%;padding:12px;border-radius:10px;background:var(--accent);color:#000;font-weight:700;font-size:15px;margin-top:6px}
+.acc-card .big.ghost{background:var(--panel2);color:var(--text);font-weight:500}
+.acc-who{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.acc-who .av{width:40px;height:40px;border-radius:50%;background:var(--accent);color:#000;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex:0 0 40px}
+.acc-who .av img{width:100%;height:100%;object-fit:cover}
+.acc-who b{display:block;font-size:15px}
+.acc-who small{color:var(--muted);font-size:12px;word-break:break-all}
+.acc-st{font-size:12px;margin:0 0 8px;color:var(--muted)} .acc-st.ok{color:var(--up)} .acc-st.bad{color:var(--down)}
 #kSheet{position:fixed;inset:0;z-index:26;background:var(--bg);display:flex;flex-direction:column;
   transform:translateY(100%);transition:transform .25s ease;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);touch-action:pan-x pan-y}
@@ -259,12 +307,15 @@ a.chip{text-decoration:none;display:inline-block}
     <button id="symBtn" aria-label="Coin seç"><span id="symBase">BTC</span><span class="q" id="symQuote">USDT</span><span class="caret">▾</span></button>
     <button id="favBtn" aria-label="Favori">☆</button>
     <button id="themeBtn" aria-label="Koyu / açık tema">🌙</button>
+    <button id="accBtn" aria-label="Hesap" hidden>👤</button>
+    <button id="instBtn" aria-label="Uygulamayı yükle" hidden>📲</button>
     <div class="px"><div id="price">–</div><div id="chg">–</div></div>
   </header>
   <div class="stats">
     <span>24s Y <b id="hi">–</b></span>
     <span>24s D <b id="lo">–</b></span>
     <span>Hacim <b id="qv">–</b></span>
+    <span>Fonlama <b id="fr">–</b></span>
   </div>
   <nav id="tfBar"></nav>
   <div id="chartWrap">
@@ -276,12 +327,14 @@ a.chip{text-decoration:none;display:inline-block}
     <div id="cd"></div>
     <div id="status"></div>
   </div>
+  <div id="c2Wrap"><div id="c2Bar"></div><div id="c2"></div></div>
   <div id="drawBar">
     <button class="dt" data-tool="hray"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"/><path d="M7.5 12H22"/></svg>Yatay ışın</button>
     <button class="dt" data-tool="vline"><svg viewBox="0 0 24 24"><path d="M12 2v7.5M12 14.5V22"/><circle cx="12" cy="12" r="2.5"/></svg>Dikey çizgi</button>
     <button class="dt" data-tool="trend"><svg viewBox="0 0 24 24"><path d="M6.8 17.2L17.2 6.8"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="5" r="2.5"/></svg>Trend</button>
-    <button class="dt" data-tool="measure"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 16V8M9 11l3-3 3 3"/></svg>Ölçü %</button>
+    <button class="dt" data-tool="measure"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 16V8M9 11l3-3 3 3"/></svg>Ölçü (% / süre)</button>
     <button class="dt sep" data-act="magnet"><svg viewBox="0 0 24 24"><path d="M6 3v9a6 6 0 0 0 12 0V3"/><path d="M6 7h3.5M14.5 7H18"/></svg>Mıknatıs</button>
+    <button class="dt" data-act="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Paylaş</button>
     <button class="dt" data-act="clear"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Temizle</button>
   </div>
   <footer class="tools">
@@ -291,7 +344,8 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="main" id="alarmBtn"><span class="i">⏰<em class="badge" id="alBadge"></em></span>Alarm</button>
     <button class="main" id="wallBtn"><span class="i">🧱</span>Wall</button>
     <button class="main" id="wkBtn"><span class="i">📊</span>Hafta</button>
-    <button class="main" id="goLive"><span class="i">⇥</span>Canlıya dön</button>
+    <button class="main" id="tarBtn"><span class="i">📡</span>Tara</button>
+    <button class="main" id="goLive"><span class="i">⇥</span>Canlı</button>
   </footer>
 </div>
 
@@ -367,6 +421,25 @@ a.chip{text-decoration:none;display:inline-block}
   </div>
   <div id="kList"></div>
 </div>
+<div id="lsMenu">
+  <div class="acc-card">
+    <div class="acc-top"><b id="lsTitle">📋 Listeler</b><span class="sp"></span><button id="lsClose">Kapat</button></div>
+    <div id="lsBody"></div>
+  </div>
+</div>
+<div id="tarSheet">
+  <div class="al-head"><span>📡 Tara</span><span class="sp"></span><button id="tarClose">Kapat</button></div>
+  <div id="tarTabs"><button class="chip" data-tt="scr">⚡ Screener</button><button class="chip" data-tt="fund">💸 Fonlama</button></div>
+  <div class="w-info" id="tarInfo"></div>
+  <div id="tarBar"></div>
+  <div id="tarList"></div>
+</div>
+<div id="accSheet">
+  <div class="acc-card">
+    <div class="acc-top"><b>👤 Hesap</b><span class="sp"></span><button id="accClose">Kapat</button></div>
+    <div id="accBody"></div>
+  </div>
+</div>
 <div id="toasts"></div>
 
 <script>
@@ -383,9 +456,15 @@ const INTERVALS = [
 ];
 const SORTS = [['vol','Hacim'],['up','Yükselen'],['down','Düşen'],['fav','★ Favoriler'],['az','A-Z']];
 
+/* Hesap: giriş yapılmışsa hesaba ait anahtarlar "u_<uid>:" önekiyle saklanır; böylece hesaplar (ve misafir)
+   aynı telefonda bile birbirine karışmaz. Cihaza ait ayarlar (tema, çubuk konumu…) öneksizdir. */
+const NS = (() => { try{ const u = localStorage.getItem('vg_uid'); return u ? 'u_' + u + ':' : ''; }catch(e){ return ''; } })();
+const PRIV_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_.+|vg_seen|vg_cdirty|vg_guestasked)$/;
+const nsKey = k => NS && PRIV_RE.test(k) ? NS + k : k;
+let cloudHook = null;
 const store = {
-  get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  get(k, d){ try{ const v = localStorage.getItem(nsKey(k)); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(nsKey(k), JSON.stringify(v)); }catch(e){} if (cloudHook) cloudHook(k); }
 };
 
 const S = {
@@ -395,6 +474,7 @@ const S = {
   symbol: store.get('vg_symbol', 'BTCUSDT'),
   interval: store.get('vg_interval', '1h'),
   favs: new Set(store.get('vg_favs', ['BTCUSDT','ETHUSDT','SOLUSDT'])),
+  lists: (() => { const l = store.get('vg_lists', []); return Array.isArray(l) ? l.filter(x => x && x.id && Array.isArray(x.syms)) : []; })(),
   sort: store.get('vg_sort', 'vol'),
   query: '',
   candles: [],
@@ -473,6 +553,7 @@ function applyTheme(name, save){
   chart.applyOptions({ layout: { background: { type: 'solid', color: T.bg }, textColor: T.text },
     rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border } });
   $('themeBtn').textContent = T.icon;
+  if (window.__c2Theme) window.__c2Theme();
   if (save) store.set('vg_theme', name);
   if (typeof D !== 'undefined') D.ver++;
 }
@@ -622,6 +703,8 @@ let loadToken = 0;
 async function loadChart(){
   const token = ++loadToken;
   const { symbol, interval } = S;
+  if (window.__c2Load) window.__c2Load();
+  if (window.__frLoad) window.__frLoad();
   closeKlineWs();
   S.candles = []; S.noMoreOld = false; S.loadingOld = false; S.closeMs = 0;
   clearWallLine();
@@ -795,19 +878,22 @@ function updateHeader(){
   $('hi').textContent = fp(t.hi);
   $('lo').textContent = fp(t.lo);
   $('qv').textContent = fvol(t.qv);
-  $('favBtn').textContent = S.favs.has(S.symbol) ? '★' : '☆';
-  $('favBtn').classList.toggle('on', S.favs.has(S.symbol));
+  const inAny = S.favs.has(S.symbol) || S.lists.some(l => l.syms.includes(S.symbol));
+  $('favBtn').textContent = inAny ? '★' : '☆';
+  $('favBtn').classList.toggle('on', inAny);
   document.title = `${fp(last)} ${S.symbol}`;
 }
 
 /* ---------- Zaman dilimleri ---------- */
 function renderTf(){
   $('tfBar').innerHTML = INTERVALS.map(([v, l]) =>
-    `<button class="tf${v === S.interval ? ' on' : ''}" data-tf="${v}">${l}</button>`).join('');
+    `<button class="tf${v === S.interval ? ' on' : ''}" data-tf="${v}">${l}</button>`).join('')
+    + `<button class="tf${window.__c2On && window.__c2On() ? ' c2on' : ''}" data-c2="1" title="İkinci grafik">▤ 2.grafik</button>`;
   const on = $('tfBar').querySelector('.on');
   if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
 $('tfBar').addEventListener('click', e => {
+  if (e.target.closest('[data-c2]')){ if (window.__c2Toggle) window.__c2Toggle(); return; }
   const b = e.target.closest('[data-tf]');
   if (!b || b.dataset.tf === S.interval) return;
   S.interval = b.dataset.tf;
@@ -824,12 +910,15 @@ const tfIsStock = m => !TF_NONSTOCK.has(String(m.base).toUpperCase());
 function renderSort(){
   let h = SORTS.map(([v, l]) =>
     `<button class="chip${v === S.sort ? ' on' : ''}" data-sort="${v}">${l}</button>`).join('');
+  h += S.lists.map(l => `<button class="chip${S.sort === 'L:' + l.id ? ' on' : ''}" data-sort="L:${l.id}">📋 ${esc(l.name)}</button>`).join('');
+  h += '<button class="chip" data-newlist="1">＋ Liste</button>';
   if (S.listMode === 'tradfi')
     h += '<span class="sepv"></span>' + [['all', 'Hepsi'], ['stock', 'Hisse'], ['cmd', 'Emtia/Diğer']].map(([v, l]) =>
       `<button class="chip${v === S.tfKind ? ' on' : ''}" data-tfk="${v}">${l}</button>`).join('');
   $('sortBar').innerHTML = h;
 }
 $('sortBar').addEventListener('click', e => {
+  if (e.target.closest('[data-newlist]')){ const l = newList(); if (l){ S.sort = 'L:' + l.id; store.set('vg_sort', S.sort); renderSort(); renderList(true); } return; }
   const k = e.target.closest('[data-tfk]');
   if (k){ S.tfKind = k.dataset.tfk; store.set('vg_tfkind', S.tfKind); renderSort(); renderList(true); return; }
   const b = e.target.closest('[data-sort]');
@@ -842,8 +931,9 @@ $('sortBar').addEventListener('click', e => {
 
 function listItems(){
   const tf = S.listMode === 'tradfi';
-  let arr = Object.keys(S.symbols).filter(s => !!S.symbols[s].tradfi === tf);
-  if (tf && S.tfKind !== 'all') arr = arr.filter(s => tfIsStock(S.symbols[s]) === (S.tfKind === 'stock'));
+  const cl = S.sort.startsWith('L:') ? S.lists.find(x => 'L:' + x.id === S.sort) : null;
+  let arr = Object.keys(S.symbols).filter(s => cl ? cl.syms.includes(s) : !!S.symbols[s].tradfi === tf);   // özel liste: coin ve TradFi birlikte
+  if (!cl && tf && S.tfKind !== 'all') arr = arr.filter(s => tfIsStock(S.symbols[s]) === (S.tfKind === 'stock'));
   const q = S.query.trim().toUpperCase();
   if (q) arr = arr.filter(s => s.includes(q));
   if (S.sort === 'fav') arr = arr.filter(s => S.favs.has(s));
@@ -851,22 +941,23 @@ function listItems(){
   const sorters = {
     vol:  (a, b) => (t(b).qv || 0) - (t(a).qv || 0),
     fav:  (a, b) => (t(b).qv || 0) - (t(a).qv || 0),
+    list: (a, b) => (t(b).qv || 0) - (t(a).qv || 0),
     up:   (a, b) => (t(b).chg ?? -1e9) - (t(a).chg ?? -1e9),
     down: (a, b) => (t(a).chg ?? 1e9) - (t(b).chg ?? 1e9),
     az:   (a, b) => a.localeCompare(b)
   };
-  return arr.sort(sorters[S.sort] || sorters.vol);
+  return arr.sort(sorters[cl ? 'list' : S.sort] || sorters.vol);
 }
 
 function renderList(resetScroll){
   const items = listItems();
   if (!items.length){
-    $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : (S.listMode === 'tradfi' && !Object.values(S.symbols).some(m => m.tradfi) ? 'Binance Futures’ta TradFi kontratı bulunamadı.' : 'Sonuç bulunamadı.')}</div>`;
+    $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : S.sort.startsWith('L:') && !S.query ? 'Bu liste boş. Bir coinin yıldızına dokunup bu listeyi işaretle.' : (S.listMode === 'tradfi' && !Object.values(S.symbols).some(m => m.tradfi) ? 'Binance Futures’ta TradFi kontratı bulunamadı.' : 'Sonuç bulunamadı.')}</div>`;
     return;
   }
   $('list').innerHTML = items.map(s => {
     const m = S.symbols[s], t = S.tickers[s] || {};
-    const fav = S.favs.has(s);
+    const fav = S.favs.has(s) || S.lists.some(l => l.syms.includes(s));
     return `<div class="row${s === S.symbol ? ' cur' : ''}" data-s="${s}">
       <button class="star${fav ? ' on' : ''}" data-fav="${s}">${fav ? '★' : '☆'}</button>
       <div class="nm"><b>${m.base}</b><small>${m.quote}</small><span class="v">Hac ${fvol(t.qv)}</span></div>
@@ -879,7 +970,7 @@ function renderList(resetScroll){
 
 $('list').addEventListener('click', e => {
   const f = e.target.closest('[data-fav]');
-  if (f){ toggleFav(f.dataset.fav); renderList(); return; }
+  if (f){ if (S.lists.length) openListMenu(f.dataset.fav); else { toggleFav(f.dataset.fav); renderList(); } return; }
   const r = e.target.closest('[data-s]');
   if (r) selectSymbol(r.dataset.s);
 });
@@ -905,7 +996,7 @@ function closeSheet(fromPop){
   $('search').blur();
   if (!fromPop && history.state && history.state.sheet) history.back();
 }
-window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); }); // Android geri tuşu listeyi kapatır
+window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); closeTar(true); }); // Android geri tuşu listeyi kapatır
 $('list').addEventListener('pointerdown', e => {
   const r = e.target.closest('.row[data-s]');
   if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
@@ -921,7 +1012,51 @@ function toggleFav(s){
   store.set('vg_favs', [...S.favs]);
   updateHeader();
 }
-$('favBtn').addEventListener('click', () => toggleFav(S.symbol));
+function saveLists(){ store.set('vg_lists', S.lists); }
+function newList(){
+  const name = (prompt('Yeni liste adı:', '') || '').trim().slice(0, 24);
+  if (!name) return null;
+  const l = { id: 'l' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name, syms: [] };
+  S.lists.push(l); saveLists();
+  return l;
+}
+let lsSym = null;
+function renderListMenu(){
+  const s = lsSym; if (!s) return;
+  const nm = S.symbols[s] ? S.symbols[s].base : s;
+  $('lsTitle').textContent = '📋 ' + nm + ' → listeler';
+  const row = (id, name, on, extra) => `<div class="ls-row${on ? ' on' : ''}" data-lid="${id}"><span class="tick">${on ? '✓' : ''}</span><span class="nm">${esc(name)}</span>${extra || ''}</div>`;
+  let h = row('fav', '★ Favoriler', S.favs.has(s));
+  h += S.lists.map(l => row(l.id, l.name, l.syms.includes(s), `<button class="mini" data-lren="${l.id}">✎</button><button class="mini" data-ldel="${l.id}">🗑</button>`)).join('');
+  h += '<button class="big ghost" data-lnew="1">＋ Yeni liste</button>';
+  $('lsBody').innerHTML = h;
+}
+function openListMenu(sym){ lsSym = sym; $('lsMenu').classList.add('open'); renderListMenu(); }
+function closeListMenu(){ $('lsMenu').classList.remove('open'); lsSym = null; updateHeader(); renderList(); renderSort(); }
+$('lsClose').addEventListener('click', closeListMenu);
+$('lsMenu').addEventListener('click', e => {
+  if (e.target === $('lsMenu')){ closeListMenu(); return; }
+  const ren = e.target.closest('[data-lren]'), del = e.target.closest('[data-ldel]'), nw = e.target.closest('[data-lnew]'), r = e.target.closest('[data-lid]');
+  if (ren){
+    const l = S.lists.find(x => x.id === ren.dataset.lren); if (!l) return;
+    const n = (prompt('Liste adı:', l.name) || '').trim().slice(0, 24);
+    if (n){ l.name = n; saveLists(); renderListMenu(); }
+  } else if (del){
+    const l = S.lists.find(x => x.id === del.dataset.ldel); if (!l) return;
+    if (!confirm('"' + l.name + '" listesi silinsin mi?')) return;
+    S.lists = S.lists.filter(x => x !== l); saveLists();
+    if (S.sort === 'L:' + l.id){ S.sort = 'vol'; store.set('vg_sort', S.sort); }
+    renderListMenu();
+  } else if (nw){
+    const l = newList(); if (l){ l.syms.push(lsSym); saveLists(); renderListMenu(); }
+  } else if (r){
+    const id = r.dataset.lid;
+    if (id === 'fav') toggleFav(lsSym);
+    else { const l = S.lists.find(x => x.id === id); if (l){ const i = l.syms.indexOf(lsSym); i >= 0 ? l.syms.splice(i, 1) : l.syms.push(lsSym); saveLists(); } }
+    renderListMenu();
+  }
+});
+$('favBtn').addEventListener('click', () => { if (S.lists.length) openListMenu(S.symbol); else toggleFav(S.symbol); });
 
 function selectSymbol(s){
   closeSheet();
@@ -1028,6 +1163,7 @@ function openTickerWs(){
       const d0 = S.dayOpen[x.s] || o;                        // 03:00 açılışı yüklendiyse ona göre, yoksa geçici olarak 24s açılışına göre
       S.tickers[x.s] = { last: c, chg: d0 ? (c - d0) / d0 * 100 : 0, hi: +x.h, lo: +x.l, qv: +x.q };
       if (A.list.length) checkAlarms(x.s, c);
+      if (SCR.h[x.s]) SCR.h[x.s][Math.floor(Date.now() / 60000)] = c;
     }
     listDirty = true;
     updateHeader();
@@ -1516,6 +1652,7 @@ $('drawBar').addEventListener('click', e => {
   if (!b) return;
   if (b.dataset.tool) setTool(D.tool === b.dataset.tool ? null : b.dataset.tool);
   else if (b.dataset.act === 'magnet'){ D.magnet = !D.magnet; store.set('vg_magnet', D.magnet); renderDrawBar(); }
+  else if (b.dataset.act === 'share'){ shareChart(); }
   else if (b.dataset.act === 'clear'){
     if (!D.list.length) return;
     if (confirm(`${S.symbol} üzerindeki tüm çizimler silinsin mi?`)){
@@ -2079,6 +2216,219 @@ $('syncCopy').addEventListener('click', async () => {
 renderSync();
 if (Y.on){ syncFlush(); if (Date.now() - Y.lastFull > 6 * 3600 * 1000) syncAll(); }
 
+/* =====================================================================
+   HESAP: Google ile giriş + bulutta (Firebase) kalıcı veri
+   - Her hesabın çizimleri, alarmları, favorileri ve alarm kodu sadece kendi hesabında saklanır.
+   - Giriş yapılmamışsa (misafir) uygulama eskisi gibi sadece bu telefonda çalışır.
+   - Kurulum: firebase-config.js dosyası yoksa bu bölüm hiç devreye girmez.
+   ===================================================================== */
+const FBC = window.VG_FIREBASE && window.VG_FIREBASE.apiKey ? window.VG_FIREBASE : null;
+const CL = { user: null, db: null, auth: null, col: null, ready: false, timers: {}, flushing: false, state: FBC ? 'load' : 'off', err: '', lastOk: 0 };
+const CLOUD_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_topic|vg_sync_on)$/;
+const rawUid = () => { try{ return localStorage.getItem('vg_uid') || ''; }catch(e){ return ''; } };
+const loadScript = src => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('yüklenemedi')); document.head.appendChild(el); });
+
+function dirtySet(){ const l = store.get('vg_cdirty', []); return new Set(Array.isArray(l) ? l : []); }
+function dirtyAdd(k){ const d = dirtySet(); if (!d.has(k)){ d.add(k); store.set('vg_cdirty', [...d]); } }
+function dirtyDel(k){ const d = dirtySet(); if (d.delete(k)) store.set('vg_cdirty', [...d]); }
+
+cloudHook = k => {
+  if (!NS) return;                                   // misafir: bulut yok
+  if (k === 'vg_sync_topic' || k === 'vg_sync_on') topicDocSoon();
+  if (!CLOUD_RE.test(k)) return;
+  dirtyAdd(k);
+  if (!CL.col) return;                               // henüz hazır değil: hazır olunca gönderilir
+  clearTimeout(CL.timers[k]);
+  CL.timers[k] = setTimeout(() => cloudPut(k), 1200);
+};
+async function cloudPut(k){
+  if (!CL.col) return false;
+  clearTimeout(CL.timers[k]); delete CL.timers[k];
+  let raw = null; try{ raw = localStorage.getItem(NS + k); }catch(e){}
+  if (raw == null) { dirtyDel(k); return true; }
+  try{
+    await CL.col.doc(k).set({ k, v: raw, t: Date.now() });
+    dirtyDel(k); CL.lastOk = Date.now(); CL.state = 'ok'; renderAcc();
+    return true;
+  }catch(e){ CL.state = 'bad'; CL.err = e.code || e.message || ''; renderAcc(); return false; }
+}
+async function cloudFlushAll(){
+  const ks = [...dirtySet()].filter(k => CLOUD_RE.test(k));
+  await Promise.all(ks.map(cloudPut));
+}
+let topicTimer = null;
+function topicDocSoon(){ clearTimeout(topicTimer); topicTimer = setTimeout(topicDocNow, 800); }
+async function topicDocNow(){
+  if (!CL.user || !CL.db) return;
+  const ref = CL.db.collection('topics').doc(CL.user.uid);
+  try{
+    if (Y.on && Y.topic) await ref.set({ topic: Y.topic, email: CL.user.email || '', t: Date.now() });
+    else await ref.delete();
+  }catch(e){}
+}
+
+function applyRemote(k, vs){
+  let val; try{ val = JSON.parse(vs); }catch(e){ return; }
+  let cur = null; try{ cur = localStorage.getItem(NS + k); }catch(e){}
+  if (cur === vs) return;
+  try{ localStorage.setItem(NS + k, vs); }catch(e){}
+  if (k === 'vg_alarms'){
+    if (!Array.isArray(val)) return;
+    A.list = val; updateBadge(); refreshAlarmLines(); renderAlarmList(); D.ver++;
+  } else if (k === 'vg_draw_' + S.symbol){
+    if (!Array.isArray(val)) return;
+    D.list = val; D.drag = null; select(null); D.ver++;
+  } else if (k === 'vg_favs'){
+    if (!Array.isArray(val)) return;
+    S.favs = new Set(val); updateHeader(); if (typeof listDirty !== 'undefined') listDirty = true;
+  } else if (k === 'vg_lists'){
+    if (!Array.isArray(val)) return;
+    S.lists = val.filter(x => x && x.id && Array.isArray(x.syms)); updateHeader(); renderSort(); if (typeof listDirty !== 'undefined') listDirty = true;
+  } else if (k === 'vg_sync_topic'){ Y.topic = typeof val === 'string' ? val : ''; renderSync(); }
+  else if (k === 'vg_sync_on'){ Y.on = !!val; renderSync(); }
+  else if (k === 'vg_mute'){ A.mute = !!val; renderMute(); }
+  else if (k === 'vg_magnet'){ D.magnet = !!val; renderDrawBar(); }
+}
+
+function guestKeys(){
+  const out = [];
+  try{ for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (k && CLOUD_RE.test(k)) out.push(k); } }catch(e){}
+  return out;
+}
+function maybeImportGuest(){
+  if (store.get('vg_guestasked', false)) return false;
+  store.set('vg_guestasked', true);
+  const ks = guestKeys();
+  const real = ks.filter(k => { try{ const v = JSON.parse(localStorage.getItem(k)); return Array.isArray(v) ? v.length > 0 : !!v; }catch(e){ return false; } });
+  if (!real.length) return false;
+  if (!confirm('Bu telefondaki çizim, alarm ve favorilerin bu hesaba aktarılsın mı?\n\n(Evet: hesabına taşınır, misafir kayıtları silinir. Hayır: hesap boş başlar.)')) return false;
+  for (const k of ks){
+    try{ localStorage.setItem(NS + k, localStorage.getItem(k)); localStorage.removeItem(k); }catch(e){}
+    dirtyAdd(k);
+  }
+  return true;
+}
+
+function onSnap(snap){
+  const dirty = dirtySet();
+  const first = !CL.ready;
+  if (first){
+    CL.ready = true;
+    if (snap.empty && !snap.metadata.fromCache && maybeImportGuest()){ location.reload(); return; }
+  }
+  snap.docChanges().forEach(ch => {
+    if (ch.type === 'removed') return;
+    const d = ch.doc;
+    if (d.metadata.hasPendingWrites) return;
+    const x = d.data(), k = x && x.k;
+    if (!k || !CLOUD_RE.test(k) || dirty.has(k) || typeof x.v !== 'string') return;   // bekleyen yerel değişiklik bulut kopyasının önüne geçer
+    applyRemote(k, x.v);
+  });
+  if (first){
+    const have = new Set(); snap.forEach(d => { const x = d.data(); if (x && x.k) have.add(x.k); });
+    // bulutta olmayan yerel anahtarları gönder (ilk giriş / çevrimdışı yapılanlar)
+    try{
+      for (let i = 0; i < localStorage.length; i++){
+        const kk = localStorage.key(i);
+        if (kk && kk.startsWith(NS)){ const k = kk.slice(NS.length); if (CLOUD_RE.test(k) && !have.has(k)) dirtyAdd(k); }
+      }
+    }catch(e){}
+    cloudFlushAll();
+    topicDocNow();
+  }
+  CL.state = snap.metadata.fromCache ? 'cache' : 'ok';
+  if (!snap.metadata.fromCache) CL.lastOk = Date.now();
+  renderAcc();
+}
+function startCloud(){
+  CL.col = CL.db.collection('users').doc(CL.user.uid).collection('kv');
+  CL.col.onSnapshot(onSnap, err => { CL.state = 'bad'; CL.err = err.code || err.message || ''; renderAcc(); });
+  renderAcc();
+}
+function onAuth(u){
+  const cur = rawUid();
+  if (u){
+    if (cur !== u.uid){ try{ localStorage.setItem('vg_uid', u.uid); }catch(e){} location.reload(); return; }
+    CL.user = u; startCloud();
+  } else {
+    CL.user = null;
+    if (cur){ try{ localStorage.removeItem('vg_uid'); }catch(e){} location.reload(); return; }
+    CL.state = 'out'; renderAcc();
+  }
+}
+async function cloudInit(){
+  if (!FBC) return;
+  $('accBtn').hidden = false;
+  renderAcc();
+  try{
+    const b = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-';
+    await loadScript(b + 'app-compat.js');
+    await Promise.all([loadScript(b + 'auth-compat.js'), loadScript(b + 'firestore-compat.js')]);
+    firebase.initializeApp(FBC);
+    CL.auth = firebase.auth(); CL.db = firebase.firestore();
+    CL.auth.onAuthStateChanged(onAuth);
+  }catch(e){ CL.state = 'offline'; renderAcc(); }
+}
+async function googleLogin(){
+  if (!CL.auth){ flash('Hesap sistemi yüklenemedi; interneti kontrol et'); return; }
+  const prov = new firebase.auth.GoogleAuthProvider();
+  prov.setCustomParameters({ prompt: 'select_account' });
+  try{ await CL.auth.signInWithPopup(prov); }
+  catch(e){
+    if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment'){ try{ await CL.auth.signInWithRedirect(prov); return; }catch(e2){ e = e2; } }
+    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') flash('Giriş olmadı: ' + (e.code || e.message));
+  }
+}
+async function cloudLogout(){
+  if (!CL.user) return;
+  await cloudFlushAll();
+  if (dirtySet().size && !confirm('Buluta gönderilemeyen değişiklikler var (internet?). Yine de çıkılsın mı? Bu değişiklikler kaybolur.')) return;
+  try{
+    const del = [];
+    for (let i = 0; i < localStorage.length; i++){ const k = localStorage.key(i); if (k && k.startsWith(NS)) del.push(k); }
+    del.forEach(k => localStorage.removeItem(k));            // bu telefondaki yerel kopya silinir; veriler hesapta durur
+  }catch(e){}
+  try{ await CL.auth.signOut(); }catch(e){ try{ localStorage.removeItem('vg_uid'); }catch(_){} location.reload(); }
+}
+function renderAcc(){
+  const b = $('accBtn'); if (!FBC){ b.hidden = true; return; }
+  b.hidden = false;
+  const u = CL.user, name = u ? (u.displayName || u.email || '?') : '';
+  b.classList.toggle('in', !!u);
+  b.textContent = u ? name.trim().charAt(0).toUpperCase() : '👤';
+  const el = $('accBody'); if (!$('accSheet').classList.contains('open')) return;
+  let h = '';
+  if (u || rawUid()){
+    const nm = u ? esc(u.displayName || '') : '', em = u ? esc(u.email || '') : '';
+    h += `<div class="acc-who"><div class="av">${u && u.photoURL ? `<img src="${esc(u.photoURL)}" referrerpolicy="no-referrer" alt="">` : esc(name.trim().charAt(0).toUpperCase() || '👤')}</div><div><b>${nm || 'Giriş yapıldı'}</b><small>${em}</small></div></div>`;
+    const n = dirtySet().size;
+    let st = ['', ''];
+    if (CL.state === 'ok') st = ['ok', `Bulutla eşitlendi · ${fmtClock(CL.lastOk)}${n ? ' · bekleyen ' + n : ''}`];
+    else if (CL.state === 'cache') st = ['', 'Çevrimdışı gibi görünüyor; internet gelince eşitlenir'];
+    else if (CL.state === 'bad') st = ['bad', 'Eşitleme hatası (' + esc(CL.err) + ')' + (n ? ' · bekleyen ' + n : '')];
+    else if (CL.state === 'offline') st = ['bad', 'Hesap sistemi yüklenemedi (internet?). Bu telefondaki kayıtlar çalışıyor.'];
+    else st = ['', 'Bağlanıyor…'];
+    h += `<p class="acc-st ${st[0]}">${st[1]}</p><p>Çizimlerin, alarmların ve favorilerin yalnızca bu hesapta saklanır. Başka bir hesapla girenin kayıtlarıyla karışmaz.</p>`;
+    h += `<button class="big ghost" id="accOut">Çıkış yap</button>`;
+  } else {
+    h += `<p>Google hesabınla girersen çizdiğin çizgiler, trend çizgileri, alarmlar ve favorilerin hesabında kalıcı saklanır; başka telefondan girsen de aynısı gelir. Başkasının kayıtlarıyla karışmaz.</p>
+          <p>Girmezsen uygulama eskisi gibi sadece bu telefonda çalışır.</p>
+          <button class="big" id="accIn">Google ile giriş yap</button>`;
+  }
+  el.innerHTML = h;
+}
+$('accBtn').addEventListener('click', () => { $('accSheet').classList.add('open'); renderAcc(); });
+$('accClose').addEventListener('click', () => $('accSheet').classList.remove('open'));
+$('accSheet').addEventListener('click', e => {
+  if (e.target === $('accSheet')) $('accSheet').classList.remove('open');
+  else if (e.target.id === 'accIn') googleLogin();
+  else if (e.target.id === 'accOut') cloudLogout();
+});
+window.addEventListener('pagehide', () => { Object.keys(CL.timers).forEach(k => cloudPut(k)); });
+document.addEventListener('visibilitychange', () => { if (document.hidden) Object.keys(CL.timers).forEach(k => cloudPut(k)); });
+setInterval(() => { if (CL.col && CL.ready && dirtySet().size) cloudFlushAll(); if ($('accSheet').classList.contains('open')) renderAcc(); }, 20000);
+cloudInit();
+
 updateBadge();
 
 /* =====================================================================
@@ -2380,6 +2730,325 @@ setInterval(() => {
   if (!WK.running && WK.key !== utcWeekStart()) loadWeekOpens();
   kRender();
 }, 1000);
+
+/* =====================================================================
+   TARA: Screener (hızlı yükselenler) + Fonlama oranları
+   Screener: her coinin son ~1 saatlik 1 dakikalık kapanışları bir kez çekilir (coin başına 1 istek),
+   sonrası canlı fiyat akışıyla güncellenir. "5 dk önceki fiyat" = 5 dk önce biten dakika mumunun
+   kapanışıdır (en fazla ~1 dk'lık yaklaşıklık payı vardır).
+   ===================================================================== */
+const SCR = { h: {}, seeded: 0, running: false, done: 0, total: 0, err: '',
+  rule: store.get('vg_scr_rule', '5'), dir: store.get('vg_scr_dir', 'up') };
+const SCR_RULES = { '5': { min: 5, pct: 3 }, '15': { min: 15, pct: 5 }, '60': { min: 60, pct: 10 } };
+const SCR_NAME = { '5': '5 dk · %3', '15': '15 dk · %5', '60': '1 sa · %10' };
+const TAR = { tab: store.get('vg_tar_tab', 'scr'), html: '' };
+const tarOpen = () => $('tarSheet').classList.contains('open');
+
+async function seedScreener(){
+  if (SCR.running) return;
+  SCR.running = true; SCR.err = '';
+  const syms = Object.keys(S.symbols).filter(x => S.tickers[x]).sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0));
+  SCR.done = 0; SCR.total = syms.length;
+  const fresh = {};
+  let i = 0, stop = false;
+  const worker = async () => {
+    for (;;){
+      const k = i++; if (stop || k >= syms.length) return;
+      const sym = syms[k];
+      try{
+        const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1m&limit=65`);
+        if (r.status === 429 || r.status === 418){ stop = true; SCR.err = 'Binance istek sınırı: biraz sonra tekrar denenecek.'; return; }
+        if (r.ok){
+          const j = await r.json();
+          if (Array.isArray(j)){ const h = {}; for (const c of j) h[Math.floor(c[0] / 60000)] = +c[4]; fresh[sym] = h; }
+        }
+      }catch(e){}
+      SCR.done++;
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  if (Object.keys(fresh).length){ SCR.h = fresh; SCR.seeded = Date.now(); }
+  SCR.running = false;
+  scrRender();
+}
+function scrChange(sym, min){
+  const h = SCR.h[sym], t = S.tickers[sym];
+  if (!h || !t || !(t.last > 0)) return null;
+  const cm = Math.floor(Date.now() / 60000);
+  for (let m = cm - min - 1; m >= cm - min - 4; m--) if (h[m] > 0) return (t.last - h[m]) / h[m] * 100;
+  return null;
+}
+function scrRows(){
+  const r = SCR_RULES[SCR.rule], out = [];
+  for (const sym in SCR.h){
+    const m = S.symbols[sym]; if (!m) continue;
+    const c = scrChange(sym, r.min);
+    if (c == null) continue;
+    if (SCR.dir === 'up' ? c < r.pct : c > -r.pct) continue;
+    out.push({ sym, base: m.base, last: S.tickers[sym].last, c, c5: scrChange(sym, 5), c15: scrChange(sym, 15), c60: scrChange(sym, 60) });
+  }
+  out.sort((a, b) => SCR.dir === 'up' ? b.c - a.c : a.c - b.c);
+  return out;
+}
+const FND = { rows: [], t: 0, loading: false, err: '', sort: store.get('vg_fnd_sort', 'hi'), iv: {}, ivT: 0 };
+async function loadFundingAll(){
+  if (FND.loading) return;
+  FND.loading = true;
+  try{
+    const r = await fetch(`${API}/fapi/v1/premiumIndex`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    FND.rows = j.filter(x => S.symbols[x.symbol] && x.lastFundingRate !== '' && x.lastFundingRate != null)
+      .map(x => ({ sym: x.symbol, mark: +x.markPrice, rate: +x.lastFundingRate * 100, next: +x.nextFundingTime }));
+    FND.t = Date.now(); FND.err = '';
+  }catch(e){ FND.err = 'Fonlama verisi alınamadı (' + (e.message || e) + ')'; }
+  FND.loading = false;
+  if (Date.now() - FND.ivT > 6 * 3600 * 1000){
+    FND.ivT = Date.now();
+    try{ const r = await fetch(`${API}/fapi/v1/fundingInfo`); if (r.ok){ const j = await r.json(); for (const x of j) FND.iv[x.symbol] = +x.fundingIntervalHours || 8; } }catch(e){}
+  }
+  tarRender();
+}
+function fCountdown(ms){
+  const d = Math.max(0, Math.floor((ms - Date.now()) / 1000));
+  const h = Math.floor(d / 3600), m = Math.floor(d % 3600 / 60), sc = d % 60;
+  return h ? `${h}s ${m}d ${sc}sn` : `${m}d ${sc}sn`;
+}
+const fRate = v => (v > 0 ? '+' : '') + v.toFixed(4) + '%';
+function fundRows(){
+  const a = FND.rows.slice();
+  if (FND.sort === 'hi') a.sort((x, y) => y.rate - x.rate);
+  else if (FND.sort === 'lo') a.sort((x, y) => x.rate - y.rate);
+  else a.sort((x, y) => Math.abs(y.rate) - Math.abs(x.rate));
+  return a;
+}
+function tarRender(){
+  if (!tarOpen()) return;
+  $('tarTabs').querySelectorAll('[data-tt]').forEach(b => b.classList.toggle('on', b.dataset.tt === TAR.tab));
+  let info = '', bar = '', html = '';
+  if (TAR.tab === 'scr'){
+    bar = Object.keys(SCR_RULES).map(k => `<button class="chip${SCR.rule === k ? ' on' : ''}" data-sr="${k}">${SCR_NAME[k]}</button>`).join('')
+      + '<span class="sepv"></span>'
+      + `<button class="chip${SCR.dir === 'up' ? ' on' : ''}" data-sd="up">📈 Yükselen</button><button class="chip${SCR.dir === 'down' ? ' on' : ''}" data-sd="down">📉 Düşen</button>`;
+    const rows = scrRows(), r = SCR_RULES[SCR.rule];
+    info = `Son <b>${r.min} dk</b>'da ${SCR.dir === 'up' ? '≥ +' : '≤ −'}<b>%${r.pct}</b> hareket edenler · canlı`;
+    if (SCR.running) info += `<br>Geçmiş yükleniyor… <b>${SCR.done}/${SCR.total}</b>`;
+    else if (SCR.seeded) info += ` · <b>${rows.length}</b> coin`;
+    if (SCR.err) info += `<br><span class="bad">${esc(SCR.err)}</span>`;
+    if (!rows.length) html = `<div class="empty">${SCR.running || !SCR.seeded ? 'Yükleniyor, liste birazdan dolacak…' : 'Şu an bu ölçüte uyan coin yok. Liste canlı güncelleniyor.'}</div>`;
+    else html = rows.slice(0, 200).map(x => {
+      const f = v => v == null ? '–' : fpct(v);
+      return `<div class="t-row" data-sym="${x.sym}"><div><b>${esc(x.base)}</b><small>5dk ${f(x.c5)} · 15dk ${f(x.c15)} · 1sa ${f(x.c60)}</small></div>
+        <div class="t-px">${fp(x.last, x.sym)}</div><div class="t-pct ${x.c >= 0 ? 'up-t' : 'down-t'}">${fpct(x.c)}</div></div>`;
+    }).join('');
+  } else {
+    bar = [['hi', '↑ En yüksek (+)'], ['lo', '↓ En düşük (−)'], ['abs', '± Mutlak']].map(([k, l]) => `<button class="chip${FND.sort === k ? ' on' : ''}" data-fs="${k}">${l}</button>`).join('');
+    const rows = fundRows();
+    info = 'Son fonlama oranı · <b>+</b> ise long\'lar short\'lara öder, <b>−</b> ise tersi';
+    if (FND.t) info += ` · güncellendi ${fmtClock(FND.t)}`;
+    if (FND.err) info += `<br><span class="bad">${esc(FND.err)}</span>`;
+    if (!rows.length) html = `<div class="empty">${FND.loading || !FND.t ? 'Yükleniyor…' : 'Veri yok.'}</div>`;
+    else html = rows.slice(0, 300).map(x => {
+      const m = S.symbols[x.sym], iv = FND.iv[x.sym] || 8;
+      return `<div class="t-row" data-sym="${x.sym}"><div><b>${esc(m.base)}</b><small>her ${iv} sa · sonraki ${fCountdown(x.next)}</small></div>
+        <div class="t-px">${fp(x.mark, x.sym)}</div><div class="t-pct ${x.rate > 0 ? 'up-t' : x.rate < 0 ? 'down-t' : ''}">${fRate(x.rate)}</div></div>`;
+    }).join('');
+  }
+  $('tarInfo').innerHTML = info;
+  if ($('tarBar').dataset.h !== bar){ $('tarBar').dataset.h = bar; $('tarBar').innerHTML = bar; }
+  const el = $('tarList'), st = el.scrollTop;
+  if (TAR.html !== html){ TAR.html = html; el.innerHTML = html; el.scrollTop = st; }
+}
+function scrRender(){ tarRender(); }
+function openTar(){
+  $('tarSheet').classList.add('open');
+  history.pushState({ tar: 1 }, '');
+  TAR.html = ''; $('tarBar').dataset.h = '';
+  tarRender();
+  tarKick();
+}
+function tarKick(){
+  if (TAR.tab === 'scr'){ if (!SCR.running && Date.now() - SCR.seeded > 10 * 60000) seedScreener(); }
+  else if (Date.now() - FND.t > 20000) loadFundingAll();
+}
+function closeTar(fromPop){
+  if (!tarOpen()) return;
+  $('tarSheet').classList.remove('open');
+  if (!fromPop && history.state && history.state.tar) history.back();
+}
+$('tarBtn').addEventListener('click', openTar);
+$('tarClose').addEventListener('click', () => closeTar());
+$('tarTabs').addEventListener('click', e => {
+  const b = e.target.closest('[data-tt]'); if (!b) return;
+  TAR.tab = b.dataset.tt; store.set('vg_tar_tab', TAR.tab); TAR.html = ''; $('tarBar').dataset.h = '';
+  tarRender(); tarKick();
+});
+$('tarBar').addEventListener('click', e => {
+  const r = e.target.closest('[data-sr]'), d = e.target.closest('[data-sd]'), f = e.target.closest('[data-fs]');
+  if (r){ SCR.rule = r.dataset.sr; store.set('vg_scr_rule', SCR.rule); }
+  else if (d){ SCR.dir = d.dataset.sd; store.set('vg_scr_dir', SCR.dir); }
+  else if (f){ FND.sort = f.dataset.fs; store.set('vg_fnd_sort', FND.sort); }
+  else return;
+  TAR.html = ''; tarRender();
+});
+$('tarList').addEventListener('click', e => {
+  const r = e.target.closest('.t-row[data-sym]');
+  if (r){ closeTar(); selectSymbol(r.dataset.sym); }
+});
+setInterval(() => {
+  if (!tarOpen() || document.hidden) return;
+  if (TAR.tab === 'fund' && !FND.loading && Date.now() - FND.t > 20000) loadFundingAll();
+  tarRender();
+}, 1000);
+
+/* Başlıkta seçili coinin fonlama oranı */
+const FR = { rate: null, next: 0 };
+async function frLoad(){
+  const sym = S.symbol;
+  try{
+    const r = await fetch(`${API}/fapi/v1/premiumIndex?symbol=${sym}`);
+    if (!r.ok) return;
+    const j = await r.json();
+    if (sym !== S.symbol) return;
+    FR.rate = j.lastFundingRate === '' || j.lastFundingRate == null ? null : +j.lastFundingRate * 100; FR.next = +j.nextFundingTime;
+    frPaint();
+  }catch(e){}
+}
+function frPaint(){
+  const el = $('fr');
+  if (FR.rate == null){ el.textContent = '–'; return; }
+  const left = Math.max(0, Math.floor((FR.next - Date.now()) / 60000));
+  el.textContent = `${fRate(FR.rate)} · ${Math.floor(left / 60)}s${String(left % 60).padStart(2, '0')}d`;
+  el.className = FR.rate > 0 ? 'up-t' : FR.rate < 0 ? 'down-t' : '';
+}
+window.__frLoad = () => { FR.rate = null; frPaint(); frLoad(); };
+setInterval(() => { if (!document.hidden){ if (Date.now() % 60000 < 5000 || FR.rate == null) frLoad(); else frPaint(); } }, 5000);
+
+/* =====================================================================
+   İKİNCİ GRAFİK: aynı coin, farklı zaman dilimi (çizim yok, canlı mumlar var)
+   ===================================================================== */
+const C2 = { on: store.get('vg_c2', false), iv: store.get('vg_c2iv', '15m'), chart: null, candle: null, vol: null, token: 0, ws: null };
+window.__c2On = () => C2.on;
+function c2Make(){
+  if (C2.chart) return;
+  C2.chart = LightweightCharts.createChart($('c2'), {
+    autoSize: true,
+    layout: { background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 11 },
+    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+    rightPriceScale: { borderColor: T.border },
+    timeScale: { borderColor: T.border, timeVisible: true, secondsVisible: false, rightOffset: 6 },
+    kineticScroll: { touch: true, mouse: false }
+  });
+  C2.candle = C2.chart.addCandlestickSeries({ upColor: '#0ecb81', downColor: '#f6465d', borderVisible: false, wickUpColor: '#0ecb81', wickDownColor: '#f6465d' });
+  C2.candle.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0.22 } });
+  C2.vol = C2.chart.addHistogramSeries({ priceScaleId: 'vol', priceFormat: { type: 'volume' }, lastValueVisible: false, priceLineVisible: false });
+  C2.chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+}
+window.__c2Theme = () => { if (C2.chart) C2.chart.applyOptions({ layout: { background: { type: 'solid', color: T.bg }, textColor: T.text }, rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border } }); };
+function c2Bar(){
+  $('c2Bar').innerHTML = `<span id="c2Name">${esc((S.symbols[S.symbol] || {}).base || S.symbol)}</span>` +
+    INTERVALS.map(([v, l]) => `<button class="tf${v === C2.iv ? ' on' : ''}" data-c2tf="${v}">${l}</button>`).join('') +
+    '<button class="tf" data-c2x="1">✕</button>';
+}
+function c2CloseWs(){ const w = C2.ws; C2.ws = null; if (w){ w.onclose = null; w.onmessage = null; try{ w.close(); }catch(e){} } }
+async function c2Load(){
+  if (!C2.on) return;
+  c2Make(); c2Bar();
+  const token = ++C2.token, sym = S.symbol, iv = C2.iv;
+  c2CloseWs();
+  try{
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${srcInterval(sym, iv)}&limit=${FIRST_N}`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const data = await r.json();
+    if (token !== C2.token) return;
+    const bars = buildBars(data, sym, iv, data.length >= FIRST_N);
+    C2.candle.setData(bars);
+    C2.vol.setData(bars.map(volBar));
+    const n = bars.length;
+    C2.chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 80), to: n + 6 });
+    C2.candle.priceScale().applyOptions({ autoScale: true });
+    const pf = S.symbols[sym] ? S.symbols[sym].prec : 2;
+    if (S.symbols[sym]) C2.candle.applyOptions({ priceFormat: { type: 'price', precision: S.symbols[sym].prec, minMove: S.symbols[sym].tick } });
+    if (!(weekdayMode(sym, iv) && iv === '1w')) c2OpenWs(token, sym, iv);
+  }catch(e){}
+}
+function c2OpenWs(token, sym, iv){
+  const ws = new WebSocket(`${WS}/${sym.toLowerCase()}@kline_${srcInterval(sym, iv)}`);
+  C2.ws = ws;
+  ws.onmessage = e => {
+    if (token !== C2.token) return;
+    const k = JSON.parse(e.data).k; if (!k) return;
+    if (weekdayMode(sym, iv) && skipBar(iv, k.t)) return;
+    const b = toBar([k.t, k.o, k.h, k.l, k.c, k.v]);
+    C2.candle.update(b); C2.vol.update(volBar(b));
+  };
+  ws.onclose = () => { if (C2.ws === ws && token === C2.token) setTimeout(() => { if (C2.ws === ws && token === C2.token) c2OpenWs(token, sym, iv); }, 2000); };
+}
+function c2Apply(){
+  $('c2Wrap').classList.toggle('on', C2.on);
+  renderTf();
+  if (C2.on) c2Load(); else { C2.token++; c2CloseWs(); }
+}
+window.__c2Load = () => { if (C2.on) c2Load(); };
+window.__c2Toggle = () => { C2.on = !C2.on; store.set('vg_c2', C2.on); c2Apply(); };
+$('c2Bar').addEventListener('click', e => {
+  if (e.target.closest('[data-c2x]')){ window.__c2Toggle(); return; }
+  const b = e.target.closest('[data-c2tf]'); if (!b) return;
+  C2.iv = b.dataset.c2tf; store.set('vg_c2iv', C2.iv); c2Load();
+});
+if (C2.on) $('c2Wrap').classList.add('on');
+
+/* =====================================================================
+   PAYLAŞ: grafik + çizimler tek resim olarak
+   ===================================================================== */
+async function shareChart(){
+  try{
+    let src = null;
+    if (typeof chart.takeScreenshot === 'function') src = chart.takeScreenshot();
+    if (!src){ flash('Bu tarayıcıda resim alınamadı'); return; }
+    if (!P.active || !P.drawn){                                  // çizimler yedek kanvastaysa üstüne bindir
+      try{ const g = src.getContext('2d'); g.drawImage(ov, 0, 0, src.width, src.height); }catch(e){}
+    }
+    const band = Math.round(46 * (src.width / Math.max(1, cw)));
+    const out = document.createElement('canvas'); out.width = src.width; out.height = src.height + band;
+    const g = out.getContext('2d'), k = src.width / Math.max(1, cw);
+    g.fillStyle = T.bg; g.fillRect(0, 0, out.width, out.height);
+    g.drawImage(src, 0, band);
+    const m = S.symbols[S.symbol], last = S.candles.length ? S.candles[S.candles.length - 1].close : 0;
+    const t = S.tickers[S.symbol] || {};
+    g.fillStyle = T.text; g.font = `700 ${Math.round(17 * k)}px -apple-system,Segoe UI,Roboto,sans-serif`; g.textBaseline = 'middle';
+    g.fillText(`${m ? m.base : S.symbol}/${m ? m.quote : ''} · ${(INTERVALS.find(x => x[0] === S.interval) || [0, S.interval])[1]}`, 10 * k, band * 0.36);
+    g.font = `500 ${Math.round(12 * k)}px -apple-system,Segoe UI,Roboto,sans-serif`; g.fillStyle = T.border === '#2b3139' ? '#848e9c' : '#6b7480';
+    g.fillText(`${fp(last)}  ${fpct(t.chg)}  ·  ${new Date().toLocaleString('tr-TR')}`, 10 * k, band * 0.74);
+    g.textAlign = 'right'; g.fillText('Vadeli Grafik', out.width - 10 * k, band * 0.5);
+    const blob = await new Promise(res => out.toBlob(res, 'image/png'));
+    if (!blob){ flash('Resim oluşturulamadı'); return; }
+    const file = new File([blob], `${S.symbol}-${S.interval}.png`, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })){
+      try{ await navigator.share({ files: [file], title: S.symbol + ' grafiği' }); return; }
+      catch(e){ if (e && e.name === 'AbortError') return; }
+    }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    flash('Resim indirildi');
+  }catch(e){ flash('Paylaşılamadı: ' + (e.message || e)); }
+}
+
+/* ---------- Uygulama olarak yükleme (PWA) ---------- */
+let instEvt = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); instEvt = e; $('instBtn').hidden = false; });
+window.addEventListener('appinstalled', () => { instEvt = null; $('instBtn').hidden = true; flash('Uygulama yüklendi'); });
+$('instBtn').addEventListener('click', async () => {
+  if (!instEvt) return;
+  instEvt.prompt();
+  try{ await instEvt.userChoice; }catch(e){}
+  instEvt = null; $('instBtn').hidden = true;
+});
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+}
 
 /* ---------- Başlangıç ---------- */
 async function init(){
