@@ -33,6 +33,17 @@ Ortam değişkenleri
   STATE_FILE          varsayılan: alarm_state.json
   POLL_SECONDS        varsayılan: 2
   QUIET=1             "kaydedildi" onay mesajlarını kapat
+  LISTING_ALERTS      1/0: Binance Futures'a yeni kontrat eklenince / yakında açılacaksa bildir (varsayılan 1)
+
+Çok kullanıcılı mod (hesaplı uygulama, isteğe bağlı)
+  Uygulamada Google ile giren herkesin alarm kodu (gizli konu) Firebase'e yazılır. Bu sunucu o listeyi
+  periyodik okur ve HER HESAP İÇİN ayrı alarm listesi tutar; hesaplar birbirine karışmaz, bildirim
+  herkesin kendi ntfy kanalına (<kod>-bildirim) gider. Şunları verirsen açılır:
+  FIREBASE_API_KEY, FIREBASE_PROJECT, FIREBASE_ADMIN_EMAIL, FIREBASE_ADMIN_PASSWORD
+  alarm.env           Bu değişkenleri her seferinde yazmak yerine sunucunun yanındaki alarm.env dosyasına
+                      KEY=VALUE satırları olarak yazabilirsin (örn. FIREBASE_API_KEY=...).
+  CLOUD_POLL          kullanıcı listesinin kaç saniyede bir okunacağı (varsayılan 120)
+  Bu modda NTFY_TOPIC vermek zorunda değilsin (verirsen eski tek-kullanıcı kanalın da çalışır).
 
 Önemli: Binance Futures bazı ülkelerin IP'lerini engeller (ABD gibi, HTTP 451). Sunucuyu Türkiye ya da
 Avrupa'daki bir makinede çalıştır. Mevcut sinyal botun nerede çalışıyorsa orası uygundur.
@@ -55,6 +66,7 @@ import requests
 
 
 # --------------------------------------------------------------------------- yardımcılar
+TOPIC_RE = re.compile(r"^vg-[0-9a-f]{32}$")
 def env(name, default=None):
     v = os.environ.get(name)
     return v if v not in (None, "") else default
@@ -192,6 +204,9 @@ class Server:
         self.last_price = {}
         self.last_ok_ms = None
         self.warned_451 = False
+        self.extra = {}                       # çok kullanıcılı mod: konu -> Server
+        self.extra_lock = threading.RLock()
+        self.own = bool(cfg.get("topic"))     # kendi (tek kullanıcı) konusu var mı
 
     # ---- bildirim kuyruğu: gönderilemezse tekrar dener, alarm kaybolmaz
     def enqueue(self, text):
@@ -389,6 +404,141 @@ class Server:
                         self.fire(a["id"], lv, self.last_price.get(sym), min(int(k[6]), now), late)
                         break
 
+    # ---- çok kullanıcılı mod
+    def tenants(self):
+        with self.extra_lock:
+            return ([self] if self.own else []) + list(self.extra.values())
+
+    def start_workers(self):
+        for fn in (self.outbox_loop, self.ntfy_loop):
+            threading.Thread(target=fn, daemon=True).start()
+
+    def add_tenant(self, topic):
+        with self.extra_lock:
+            if topic in self.extra or topic == self.cfg.get("topic"):
+                return
+            cfg2 = dict(self.cfg, topic=topic, tg_token=None, tg_chat=None, push_ntfy=True,
+                        state_file=os.path.join(os.path.dirname(os.path.abspath(self.cfg["state_file"])),
+                                                "alarm_state_%s.json" % topic[3:15]))
+            t = Server(cfg2)
+            t.last_price = self.last_price
+            self.extra[topic] = t
+        t.st.prune()
+        t.st.save()
+        t.start_workers()
+        log("Yeni hesap eklendi (%s…) · %d aktif alarm" % (topic[:7], len(t.active_alarms())))
+        if not self.cfg["quiet"]:
+            t.enqueue("🟢 Alarm sunucusu hesabına bağlandı · %d aktif alarm" % len(t.active_alarms()))
+
+    def drop_tenant(self, topic):
+        with self.extra_lock:
+            t = self.extra.pop(topic, None)
+        if t:
+            t.stop.set()
+            t.wake.set()
+            log("Hesap kaldırıldı (%s…)" % topic[:7])
+
+    def cloud_topics(self):
+        """Firebase'e giriş yapıp tüm hesapların alarm konularını okur."""
+        c = self.cfg
+        if time.time() > self.cloud_exp:
+            r = requests.post(c["fb_auth"] + "/v1/accounts:signInWithPassword",
+                              params={"key": c["fb_key"]},
+                              json={"email": c["fb_email"], "password": c["fb_pass"], "returnSecureToken": True}, timeout=15)
+            if not r.ok:
+                raise RuntimeError("Firebase girişi olmadı (%s): %s" % (r.status_code, r.text[:160]))
+            self.cloud_token = r.json()["idToken"]
+            self.cloud_exp = time.time() + 50 * 60
+        topics, page = [], None
+        while True:
+            params = {"pageSize": 300}
+            if page:
+                params["pageToken"] = page
+            r = requests.get("%s/v1/projects/%s/databases/(default)/documents/topics" % (c["fb_store"], c["fb_project"]),
+                             params=params, headers={"Authorization": "Bearer " + self.cloud_token}, timeout=20)
+            if r.status_code == 401:
+                self.cloud_exp = 0
+            if not r.ok:
+                raise RuntimeError("Kullanıcı listesi okunamadı (%s): %s" % (r.status_code, r.text[:160]))
+            j = r.json()
+            for d in j.get("documents", []):
+                t = ((d.get("fields") or {}).get("topic") or {}).get("stringValue", "")
+                if TOPIC_RE.match(t):
+                    topics.append(t)
+            page = j.get("nextPageToken")
+            if not page:
+                return topics
+
+    def cloud_loop(self):
+        self.cloud_exp = 0
+        self.cloud_token = None
+        fails = 0
+        while not self.stop.is_set():
+            try:
+                want = set(self.cloud_topics())
+                fails = 0
+                for t in want:
+                    self.add_tenant(t)
+                with self.extra_lock:
+                    gone = [t for t in self.extra if t not in want]
+                for t in gone:
+                    self.drop_tenant(t)
+            except Exception as e:
+                fails += 1
+                if fails in (1, 5) or fails % 30 == 0:
+                    log("Bulut hesap listesi hatası: %s" % e)
+            self.stop.wait(self.cfg["cloud_poll"] if fails == 0 else min(60 * fails, 600))
+
+    # ---- yeni listeleme bildirimi
+    def broadcast(self, text):
+        """Mesajı bu sunucudaki HER hesaba (kendi kanalın + çok kullanıcılı hesaplar) gönderir."""
+        for t in self.tenants():
+            t.enqueue(text)
+
+    def listing_loop(self):
+        """Binance Futures kontrat listesini izler; yeni açılan ve yakında açılacak kontratları bildirir."""
+        path = os.path.join(os.path.dirname(os.path.abspath(self.cfg["state_file"])), "listings_state.json")
+        known, up_seen = None, set()
+        try:
+            with open(path, encoding="utf-8") as f:
+                d = json.load(f)
+            known, up_seen = set(d.get("known") or []), set(d.get("up") or [])
+        except Exception:
+            pass
+        while not self.stop.is_set():
+            try:
+                r = requests.get("%s/fapi/v1/exchangeInfo" % self.cfg["binance"], timeout=20)
+                r.raise_for_status()
+                syms = [x for x in r.json().get("symbols", []) if x.get("contractType") in ("PERPETUAL", "TRADIFI_PERPETUAL")]
+                trading = {x["symbol"] for x in syms if x.get("status") == "TRADING"}
+                now = now_ms()
+                upcoming = [x for x in syms if x.get("status") == "PENDING_TRADING"
+                            or (x.get("status") != "TRADING" and int(x.get("onboardDate") or 0) > now)]
+                if known is None:
+                    known = trading                                   # ilk çalışma: mevcutlar bilinen sayılır
+                    up_seen |= {x["symbol"] for x in upcoming}
+                    log("Listeleme takibi başladı · %d kontrat" % len(trading))
+                else:
+                    for sym in sorted(trading - known):
+                        log("YENİ LİSTELEME: %s" % sym)
+                        self.broadcast("🆕 Binance Futures'a yeni kontrat eklendi: %s\nYeni listelemeler ilk saatlerde çok sert hareket edebilir." % sym)
+                    known |= trading
+                    for x in upcoming:
+                        if x["symbol"] in up_seen:
+                            continue
+                        up_seen.add(x["symbol"])
+                        od = int(x.get("onboardDate") or 0)
+                        when = time.strftime("%d.%m %H:%M", time.gmtime(od / 1000 + 3 * 3600)) + " (TR)" if od > now else "saat belli değil"
+                        log("YAKINDA: %s %s" % (x["symbol"], when))
+                        self.broadcast("⏳ Yakında Binance Futures'ta: %s · açılış %s" % (x["symbol"], when))
+                tmp = path + ".tmp"
+                with open(tmp, "w", encoding="utf-8") as f:
+                    json.dump({"known": sorted(known), "up": sorted(up_seen)}, f)
+                os.replace(tmp, path)
+            except Exception as e:
+                log("Listeleme kontrolü hatası: %s" % e)
+            self.stop.wait(self.cfg["listing_every"])
+
     # ---- ana döngü
     def poll_loop(self):
         c = self.cfg
@@ -400,10 +550,15 @@ class Server:
                 prices = self.get_prices()
                 self.last_price = prices
                 now = now_ms()
+                ts = self.tenants()
+                for t in ts:
+                    t.last_price = prices
                 if self.last_ok_ms and now - self.last_ok_ms > c["gap"] * 1000:
                     log("Fiyat akışında %.0f sn kopukluk oldu; mumlardan geriye dönük kontrol" % ((now - self.last_ok_ms) / 1000))
-                    self.wick_check(self.last_ok_ms - 5000, True)
-                self.check_prices(prices, now)
+                    for t in ts:
+                        t.wick_check(self.last_ok_ms - 5000, True)
+                for t in ts:
+                    t.check_prices(prices, now)
                 self.last_ok_ms = now
                 fails = 0
             except Exception as e:
@@ -412,10 +567,11 @@ class Server:
                     log("Fiyat alınamadı (%d. deneme): %s" % (fails, e))
             if time.time() - last_wick >= c["wick_every"]:
                 last_wick = time.time()
-                try:
-                    self.wick_check(now_ms() - 120000, False)
-                except Exception as e:
-                    log("Mum kontrolü hatası: %s" % e)
+                for t in self.tenants():
+                    try:
+                        t.wick_check(now_ms() - 120000, False)
+                    except Exception as e:
+                        log("Mum kontrolü hatası: %s" % e)
             self.stop.wait(max(0.0, c["poll"] - (time.time() - t0)) + (min(fails, 10) * 2.0))
 
     def run(self):
@@ -423,12 +579,17 @@ class Server:
         self.st.prune()
         self.st.save()
         n = len(self.active_alarms())
-        log("Alarm sunucusu başladı · %d aktif alarm · kanal: %s" % (
-            n, ", ".join(x for x, on in (("Telegram", c["tg_token"] and c["tg_chat"]), ("ntfy", c["push_ntfy"])) if on)))
-        if not c["quiet"]:
-            self.enqueue("🟢 Alarm sunucusu çalışıyor · %d aktif alarm" % n)
-        for fn in (self.outbox_loop, self.ntfy_loop):
-            threading.Thread(target=fn, daemon=True).start()
+        log("Alarm sunucusu başladı · %d aktif alarm · kanal: %s%s" % (
+            n, ", ".join(x for x, on in (("Telegram", c["tg_token"] and c["tg_chat"]), ("ntfy", c["push_ntfy"])) if on),
+            " · çok kullanıcılı mod" if c["fb_key"] else ""))
+        if self.own:
+            if not c["quiet"]:
+                self.enqueue("🟢 Alarm sunucusu çalışıyor · %d aktif alarm" % n)
+            self.start_workers()
+        if c["fb_key"]:
+            threading.Thread(target=self.cloud_loop, daemon=True).start()
+        if c["listings"]:
+            threading.Thread(target=self.listing_loop, daemon=True).start()
         self.poll_loop()
 
 
@@ -449,12 +610,48 @@ def load_config():
         "app_url": env("APP_URL"),
         "quiet": env("QUIET", "0") == "1",
         "retry": float(env("OUTBOX_RETRY", "10")),
+        "fb_key": env("FIREBASE_API_KEY"),
+        "fb_project": env("FIREBASE_PROJECT"),
+        "fb_email": env("FIREBASE_ADMIN_EMAIL"),
+        "fb_pass": env("FIREBASE_ADMIN_PASSWORD"),
+        "fb_auth": env("FIREBASE_AUTH_URL", "https://identitytoolkit.googleapis.com").rstrip("/"),
+        "fb_store": env("FIREBASE_FIRESTORE_URL", "https://firestore.googleapis.com").rstrip("/"),
+        "listings": env("LISTING_ALERTS", "1") == "1",
+        "listing_every": float(env("LISTING_EVERY", "300")),
+        "cloud_poll": float(env("CLOUD_POLL", "120")),
     }
 
 
+def load_env_file():
+    """alarm.env dosyası varsa (KEY=VALUE satırları) oradaki ayarları okur; zaten verilmiş ortam değişkenlerini ezmez."""
+    for path in (env("ALARM_ENV"), "alarm.env", os.path.join(os.path.dirname(os.path.abspath(__file__)), "alarm.env")):
+        if path and os.path.isfile(path):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith("#") or "=" not in line:
+                            continue
+                        k, v = line.split("=", 1)
+                        k = k.strip()
+                        if k.startswith("export "):
+                            k = k[7:].strip()
+                        v = v.strip().strip('"').strip("'")
+                        if k and k not in os.environ:
+                            os.environ[k] = v
+                log("Ayarlar okundu: %s" % path)
+            except Exception as e:
+                log("UYARI: %s okunamadı: %s" % (path, e))
+            return
+
+
 def main():
+    load_env_file()
     cfg = load_config()
-    if not cfg["topic"]:
+    cloud = bool(cfg["fb_key"])
+    if cloud and not (cfg["fb_project"] and cfg["fb_email"] and cfg["fb_pass"]):
+        sys.exit("Çok kullanıcılı mod için FIREBASE_API_KEY, FIREBASE_PROJECT, FIREBASE_ADMIN_EMAIL ve FIREBASE_ADMIN_PASSWORD hepsi gerekli.")
+    if not cfg["topic"] and not cloud:
         sys.exit("NTFY_TOPIC gerekli: uygulamada Alarm > 📱 Telefon bölümündeki kodu ver.")
     if not ((cfg["tg_token"] and cfg["tg_chat"]) or cfg["push_ntfy"]):
         sys.exit("Bildirim kanalı yok: NTFY_PUSH=1 yap ya da TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID ver.")
