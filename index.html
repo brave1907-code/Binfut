@@ -212,6 +212,23 @@ input{-webkit-user-select:text;user-select:text}
   transform:translateY(100%);transition:transform .25s ease;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 #wSheet.open{transform:none}
+#mnSheet{position:fixed;inset:0;z-index:30;background:var(--scrim);display:none;align-items:flex-end;justify-content:center}
+#mnSheet.open{display:flex}
+.mn-card{width:100%;max-width:480px;background:var(--panel);border-radius:16px 16px 0 0;padding:6px 0 calc(8px + env(safe-area-inset-bottom));
+  max-height:85dvh;overflow-y:auto;border-top:1px solid var(--line)}
+.mn-group{display:none} #mnSheet[data-g="mkt"] .mn-group[data-group="mkt"], #mnSheet[data-g="tools"] .mn-group[data-group="tools"]{display:block}
+.mn-h{padding:12px 16px 6px;font-weight:700;font-size:16px}
+.mn-h small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
+.mn-i{display:flex;align-items:center;gap:12px;width:100%;padding:11px 16px;text-align:left}
+.mn-i:active{background:var(--panel2)}
+.mn-i .ic{font-size:22px;width:30px;text-align:center;flex:0 0 30px}
+.mn-i .tx{flex:1;min-width:0}
+.mn-i b{display:block;font-size:15px;font-weight:600}
+.mn-i small{display:block;color:var(--muted);font-size:12px;margin-top:2px;line-height:1.35}
+.mn-i .st{font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;background:var(--panel2);color:var(--muted)}
+.mn-i .st.on{background:var(--accent);color:#000}
+.mn-x{display:block;width:calc(100% - 32px);margin:8px 16px 0;padding:11px;border-radius:10px;background:var(--panel2);font-size:15px}
+.badge.dot{display:none} .badge.dot.on{display:block;min-width:8px;width:8px;height:8px;padding:0;right:-4px;top:-2px}
 #whBox{position:absolute;left:6px;bottom:30px;z-index:3;width:178px;max-height:42%;display:none;flex-direction:column;
   background:color-mix(in srgb,var(--bg) 82%,transparent);border:1px solid var(--line);border-radius:8px;font-size:11px;overflow:hidden}
 #whBox.on{display:flex}
@@ -372,9 +389,8 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="main" id="tfBtn"><span class="i">📈</span>TradFi</button>
     <button class="main" id="drawToggle"><span class="i">✎</span>Çizim</button>
     <button class="main" id="alarmBtn"><span class="i">⏰<em class="badge" id="alBadge"></em></span>Alarm</button>
-    <button class="main" id="wallBtn"><span class="i">🧱</span>Wall</button>
-    <button class="main" id="wkBtn"><span class="i">📊</span>Hafta</button>
-    <button class="main" id="tarBtn"><span class="i">📡</span>Tara</button>
+    <button class="main" id="mktBtn"><span class="i">📈</span>Piyasa</button>
+    <button class="main" id="toolsBtn"><span class="i">🛠<em class="badge dot" id="toolsDot"></em></span>Araçlar</button>
     <button class="main" id="goLive"><span class="i">⇥</span>Canlı</button>
   </footer>
 </div>
@@ -452,6 +468,26 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="chip" data-kf="all">Hepsi</button><button class="chip" data-kf="coin">Coin</button><button class="chip" data-kf="tradfi">TradFi</button>
   </div>
   <div id="kList"></div>
+</div>
+<div id="mnSheet">
+  <div class="mn-card">
+    <div class="mn-group" data-group="mkt">
+      <div class="mn-h">📈 Piyasa <small>tüm coinleri tarayan bölümler</small></div>
+      <button class="mn-i" id="wallBtn"><span class="ic">🧱</span><span class="tx"><b>Wall · emir duvarları</b><small>Büyük alış/satış emirleri; fiyat yaklaşınca çekilen “sahte” duvarlar</small></span></button>
+      <button class="mn-i" id="wkBtn"><span class="ic">📊</span><span class="tx"><b>Haftalık değişim</b><small>Pazartesi 03:00 açılışına göre en çok yükselen / düşen</small></span></button>
+      <button class="mn-i" data-tar="scr"><span class="ic">⚡</span><span class="tx"><b>Screener</b><small>5 dk %3, 15 dk %5, 1 sa %10 hareket edenler</small></span></button>
+      <button class="mn-i" data-tar="fund"><span class="ic">💸</span><span class="tx"><b>Fonlama oranları</b><small>Long mu short mu ödüyor; sonraki fonlamaya kalan süre</small></span></button>
+      <button class="mn-i" data-tar="liq"><span class="ic">💥</span><span class="tx"><b>Likidasyonlar</b><small>Zorla kapatılan pozisyonlar, kaskad uyarısı</small></span></button>
+    </div>
+    <div class="mn-group" data-group="tools">
+      <div class="mn-h">🛠 Grafik araçları <small>seçili coin için</small></div>
+      <button class="mn-i" data-c2="1"><span class="ic">▤</span><span class="tx"><b>İkinci grafik</b><small>Aynı coin, farklı zaman dilimi, altta</small></span><span class="st" id="stC2"></span></button>
+      <button class="mn-i" data-wh="1"><span class="ic">🐋</span><span class="tx"><b>Balina işlemleri</b><small>Büyük tekil alım/satımlar canlı + grafikte oklar</small></span><span class="st" id="stWh"></span></button>
+      <button class="mn-i" data-cr="1"><span class="ic">👥</span><span class="tx"><b>Kalabalık</b><small>Açık pozisyon, long/short oranı, kim baskın</small></span></button>
+      <button class="mn-i" data-share="1"><span class="ic">📤</span><span class="tx"><b>Grafiği paylaş</b><small>Grafik + çizimler tek resim olarak</small></span></button>
+    </div>
+    <button class="mn-x" id="mnClose">Kapat</button>
+  </div>
 </div>
 <div id="lsMenu">
   <div class="acc-card">
@@ -932,9 +968,8 @@ function updateHeader(){
 function renderTf(){
   $('tfBar').innerHTML = INTERVALS.map(([v, l]) =>
     `<button class="tf${v === S.interval ? ' on' : ''}" data-tf="${v}">${l}</button>`).join('')
-    + `<button class="tf${window.__c2On && window.__c2On() ? ' c2on' : ''}" data-c2="1" title="İkinci grafik">▤ 2.grafik</button>`
-    + `<button class="tf${window.__whOn && window.__whOn() ? ' c2on' : ''}" data-wh="1">🐋 Balina</button>`
-    + `<button class="tf" data-cr="1">👥 Kalabalık</button>`;
+;
+  if (window.__mnState) window.__mnState();
   const on = $('tfBar').querySelector('.on');
   if (on) on.scrollIntoView({ inline: 'center', block: 'nearest' });
 }
@@ -1044,7 +1079,7 @@ function closeSheet(fromPop){
   $('search').blur();
   if (!fromPop && history.state && history.state.sheet) history.back();
 }
-window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); closeTar(true); closeCrowd(true); }); // Android geri tuşu listeyi kapatır
+window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); closeTar(true); closeCrowd(true); closeMenu(true); }); // Android geri tuşu listeyi kapatır
 $('list').addEventListener('pointerdown', e => {
   const r = e.target.closest('.row[data-s]');
   if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
@@ -2717,7 +2752,7 @@ function closeWall(fromPop){
   $('wSheet').classList.remove('open');
   if (!fromPop && history.state && history.state.wall) history.back();
 }
-$('wallBtn').addEventListener('click', openWall);
+$('wallBtn').addEventListener('click', () => fromMenu(openWall));
 $('wClose').addEventListener('click', () => closeWall());
 $('wBar').addEventListener('click', e => {
   const a = e.target.closest('[data-ws]'), b = e.target.closest('[data-wd]'), c = e.target.closest('[data-wm]'), v = e.target.closest('[data-wv]');
@@ -2820,7 +2855,7 @@ function closeWeek(fromPop){
   $('kSheet').classList.remove('open');
   if (!fromPop && history.state && history.state.week) history.back();
 }
-$('wkBtn').addEventListener('click', openWeek);
+$('wkBtn').addEventListener('click', () => fromMenu(openWeek));
 $('kClose').addEventListener('click', () => closeWeek());
 $('kBar').addEventListener('click', e => {
   const a = e.target.closest('[data-kt]'), b = e.target.closest('[data-kf]');
@@ -2986,7 +3021,7 @@ function closeTar(fromPop){
   $('tarSheet').classList.remove('open');
   if (!fromPop && history.state && history.state.tar) history.back();
 }
-$('tarBtn').addEventListener('click', openTar);
+function openTarTab(tab){ TAR.tab = tab; store.set('vg_tar_tab', TAR.tab); openTar(); }
 $('tarClose').addEventListener('click', () => closeTar());
 $('tarTabs').addEventListener('click', e => {
   const b = e.target.closest('[data-tt]'); if (!b) return;
@@ -3215,7 +3250,7 @@ function whOpen(){
 }
 window.__whLoad = () => { WH.html = ''; whRender(); if (WH.on) whOpen(); markersSoon(); };
 window.__whOn = () => WH.on;
-window.__whToggle = () => { WH.on = !WH.on; store.set('vg_wh_on', WH.on); renderTf(); window.__whLoad(); if (!WH.on) whClose(); };
+window.__whToggle = () => { WH.on = !WH.on; store.set('vg_wh_on', WH.on); renderTf(); mnState(); window.__whLoad(); if (!WH.on) whClose(); };
 $('whHead').addEventListener('click', e => {
   const m = e.target.closest('[data-whm]'), x = e.target.closest('[data-whx]');
   if (x){ window.__whToggle(); return; }
@@ -3391,6 +3426,49 @@ $('crBar').addEventListener('click', e => {
   if (p){ CR.per = p.dataset.crp; crLoad(); } else if (r) crLoad();
 });
 setInterval(() => { if (crOpenQ() && !document.hidden && !CR.loading && Date.now() - CR.t > 60000) crLoad(); }, 5000);
+
+/* ---------- Alt menüler: Piyasa / Araçlar ---------- */
+const mnOpenQ = () => $('mnSheet').classList.contains('open');
+function mnState(){
+  const c2 = !!(window.__c2On && window.__c2On()), wh = !!(window.__whOn && window.__whOn());
+  const st = (id, on) => { const el = $(id); if (el){ el.textContent = on ? 'AÇIK' : 'KAPALI'; el.classList.toggle('on', on); } };
+  st('stC2', c2); st('stWh', wh);
+  $('toolsDot').classList.toggle('on', c2 || wh);
+}
+window.__mnState = mnState;
+function openMenu(g){
+  $('mnSheet').dataset.g = g;
+  mnState();
+  if (!mnOpenQ()){ $('mnSheet').classList.add('open'); history.pushState({ menu: 1 }, ''); }
+}
+function closeMenu(fromPop){
+  if (!mnOpenQ()) return;
+  $('mnSheet').classList.remove('open');
+  if (!fromPop && history.state && history.state.menu) history.back();
+}
+// Menüden bir bölüm açılınca: önce menünün geçmiş kaydı silinir, sonra bölüm kendi kaydını ekler (geri tuşu düzgün çalışsın)
+function fromMenu(fn){
+  $('mnSheet').classList.remove('open');
+  if (history.state && history.state.menu){
+    const go = () => { window.removeEventListener('popstate', go); setTimeout(fn, 0); };
+    window.addEventListener('popstate', go);
+    history.back();
+  } else fn();
+}
+$('mktBtn').addEventListener('click', () => openMenu('mkt'));
+$('toolsBtn').addEventListener('click', () => openMenu('tools'));
+$('mnClose').addEventListener('click', () => closeMenu());
+$('mnSheet').addEventListener('click', e => {
+  if (e.target === $('mnSheet')){ closeMenu(); return; }
+  const i = e.target.closest('.mn-i'); if (!i) return;
+  if (i.id === 'wallBtn' || i.id === 'wkBtn') return;           // kendi dinleyicileri var (aşağıda yeniden bağlanır)
+  if (i.dataset.tar) fromMenu(() => openTarTab(i.dataset.tar));
+  else if (i.dataset.c2) fromMenu(() => { window.__c2Toggle(); flash(window.__c2On() ? 'İkinci grafik açıldı' : 'İkinci grafik kapandı'); });
+  else if (i.dataset.wh) fromMenu(() => { window.__whToggle(); flash(window.__whOn() ? 'Balina bandı açıldı' : 'Balina bandı kapandı'); });
+  else if (i.dataset.cr) fromMenu(() => window.__crOpen());
+  else if (i.dataset.share) fromMenu(() => shareChart());
+});
+mnState();
 
 /* ---------- Uygulama olarak yükleme (PWA) ---------- */
 let instEvt = null;
