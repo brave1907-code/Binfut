@@ -243,14 +243,26 @@ input{-webkit-user-select:text;user-select:text}
 .mn-i .st.on{background:var(--accent);color:#000}
 .mn-x{display:block;width:calc(100% - 32px);margin:8px 16px 0;padding:11px;border-radius:10px;background:var(--panel2);font-size:15px}
 .badge.dot{display:none} .badge.dot.on{display:block;min-width:8px;width:8px;height:8px;padding:0;right:-4px;top:-2px}
-#whBox{position:absolute;left:6px;bottom:30px;z-index:3;width:178px;max-height:42%;display:none;flex-direction:column;
+#whBox{position:absolute;left:6px;bottom:30px;z-index:3;width:212px;max-height:52%;display:none;flex-direction:column;
   background:color-mix(in srgb,var(--bg) 82%,transparent);border:1px solid var(--line);border-radius:8px;font-size:11px;overflow:hidden}
 #whBox.on{display:flex}
-#whHead{display:flex;gap:3px;align-items:center;padding:4px 5px;border-bottom:1px solid var(--line);flex-wrap:wrap}
-#whHead b{font-size:11px;margin-right:auto}
-#whHead button{padding:2px 5px;border-radius:5px;font-size:10px;color:var(--muted);background:var(--panel2)}
+#whHead{padding:3px 5px;border-bottom:1px solid var(--line)}
+.wh-top{display:flex;gap:3px;align-items:center}
+.wh-top b{font-size:12px;margin-right:auto}
+.wh-thr{color:var(--muted);font-size:10px;margin-right:2px}
+.wh-steps{display:flex;gap:3px;margin-top:3px}
+#whHead button{padding:2px 5px;border-radius:5px;font-size:10px;color:var(--muted);background:var(--panel2);flex:1 1 auto}
+.wh-top button{flex:0 0 auto !important}
 #whHead button.on{background:var(--accent);color:#000;font-weight:700}
-#whList{overflow:hidden;pointer-events:none;font-variant-numeric:tabular-nums}
+#whBox .wh-pr{padding:4px 6px 5px;pointer-events:auto;cursor:pointer;border-bottom:1px solid var(--line)}
+.wh-prl{display:flex;justify-content:space-between;gap:4px;font-size:10.5px}
+.wh-prl.sm{font-size:10px;margin-top:2px}
+.wh-g{height:6px;border-radius:3px;background:var(--down);margin-top:3px;overflow:hidden}
+.wh-g i{display:block;height:100%;background:var(--up)}
+.wh-r small{color:var(--muted);font-size:9px;margin-left:2px}
+#whBox.mini{width:168px}
+#whList{overflow:hidden;font-variant-numeric:tabular-nums}
+#whList .wh-r{pointer-events:none}
 .wh-r{display:grid;grid-template-columns:50px 1fr auto;gap:4px;padding:2px 6px}
 .wh-r.b .u{color:var(--up);font-weight:700} .wh-r.s .u{color:var(--down);font-weight:700}
 .wh-r .tm{color:var(--muted)}
@@ -492,13 +504,14 @@ a.chip{text-decoration:none;display:inline-block}
       <button class="mn-i" data-tar="scr"><span class="ic">⚡</span><span class="tx"><b>Screener</b><small>5 dk %3, 15 dk %5, 1 sa %10 hareket edenler</small></span></button>
       <button class="mn-i" data-tar="fund"><span class="ic">💸</span><span class="tx"><b>Fonlama oranları</b><small>Long mu short mu ödüyor; sonraki fonlamaya kalan süre</small></span></button>
       <button class="mn-i" data-tar="liq"><span class="ic">💥</span><span class="tx"><b>Likidasyonlar</b><small>Zorla kapatılan pozisyonlar, kaskad uyarısı</small></span></button>
+      <button class="mn-i" data-tar="whr"><span class="ic">🐋</span><span class="tx"><b>Balina radarı</b><small>20 coinde aynı anda büyük emirler ve net balina akışı</small></span></button>
       <button class="mn-i" data-tar="corr"><span class="ic">🧭</span><span class="tx"><b>BTC'den bağımsız</b><small>BTC'ye rağmen yükselen / düşen, kendi yolunda gidenler</small></span></button>
       <button class="mn-i" data-tar="new"><span class="ic">🆕</span><span class="tx"><b>Yeni listelemeler</b><small>Binance'e yeni eklenen ve yakında açılacak kontratlar</small></span></button>
     </div>
     <div class="mn-group" data-group="tools">
       <div class="mn-h">🛠 Grafik araçları <small>seçili coin için</small></div>
       <button class="mn-i" data-c2="1"><span class="ic">▤</span><span class="tx"><b>İkinci grafik</b><small>Aynı coin, farklı zaman dilimi, altta</small></span><span class="st" id="stC2"></span></button>
-      <button class="mn-i" data-wh="1"><span class="ic">🐋</span><span class="tx"><b>Balina işlemleri</b><small>Büyük tekil alım/satımlar canlı + grafikte oklar</small></span><span class="st" id="stWh"></span></button>
+      <button class="mn-i" data-wh="1"><span class="ic">🐋</span><span class="tx"><b>Balina işlemleri</b><small>Büyük emirler grafikte baloncuk olarak, alıcı/satıcı baskısı, dev balina uyarısı</small></span><span class="st" id="stWh"></span></button>
       <button class="mn-i" data-cr="1"><span class="ic">👥</span><span class="tx"><b>Kalabalık</b><small>Açık pozisyon, long/short oranı, kim baskın</small></span></button>
       <button class="mn-i" data-cvd="1"><span class="ic">〽️</span><span class="tx"><b>CVD</b><small>Piyasa emriyle alan − satan; yükselişi kim itiyor</small></span><span class="st" id="stCvd"></span></button>
       <button class="mn-i" data-lm="1"><span class="ic">💧</span><span class="tx"><b>Likidite haritası (tahmini)</b><small>Likidasyonların yığıldığı tahmini fiyat bantları</small></span><span class="st" id="stLm"></span></button>
@@ -517,7 +530,7 @@ a.chip{text-decoration:none;display:inline-block}
 </div>
 <div id="tarSheet">
   <div class="al-head"><span>📡 Tara</span><span class="sp"></span><button id="tarClose">Kapat</button></div>
-  <div id="tarTabs"><button class="chip" data-tt="scr">⚡ Screener</button><button class="chip" data-tt="fund">💸 Fonlama</button><button class="chip" data-tt="liq">💥 Likidasyon</button><button class="chip" data-tt="corr">🧭 BTC'den bağımsız</button><button class="chip" data-tt="new">🆕 Yeni</button></div>
+  <div id="tarTabs"><button class="chip" data-tt="scr">⚡ Screener</button><button class="chip" data-tt="fund">💸 Fonlama</button><button class="chip" data-tt="liq">💥 Likidasyon</button><button class="chip" data-tt="whr">🐋 Radar</button><button class="chip" data-tt="corr">🧭 BTC'den bağımsız</button><button class="chip" data-tt="new">🆕 Yeni</button></div>
   <div class="w-info" id="tarInfo"></div>
   <div id="tarBar"></div>
   <div id="tarList"></div>
@@ -1510,6 +1523,7 @@ function paintAll(W, H){
   if (!S.candles.length) return;
   octx.save(); octx.beginPath(); octx.rect(0, 0, W, H); octx.clip();
   if (window.__lmPaint) window.__lmPaint(W, H);
+  if (window.__whPaint) window.__whPaint(W, H);
   for (const d of D.list) drawOne(d, d === D.sel, W, H);
   if (D.pending) drawOne(D.pending, true, W, H);
   if (D.cursor){ // parmak altındaki noktayı göster
@@ -3037,6 +3051,8 @@ function tarRender(){
     }).join('');
   } else if (TAR.tab === 'liq'){
     const L = lqTab(); bar = L.bar; info = L.info; html = L.html;
+  } else if (TAR.tab === 'whr'){
+    const L = wrTab(); bar = L.bar; info = L.info; html = L.html;
   } else if (TAR.tab === 'corr'){
     const L = coTab(); bar = L.bar; info = L.info; html = L.html;
   } else if (TAR.tab === 'new'){
@@ -3070,12 +3086,13 @@ function openTar(){
 function tarKick(){
   if (TAR.tab === 'scr'){ if (!SCR.running && Date.now() - SCR.seeded > 10 * 60000) seedScreener(); }
   else if (TAR.tab === 'corr'){ if (!CO.running && Date.now() - CO.t > 15 * 60000) coLoad(); }
-  else if (TAR.tab === 'liq' || TAR.tab === 'new'){}
-  else if (Date.now() - FND.t > 20000) loadFundingAll();
+  else if (TAR.tab === 'fund'){ if (Date.now() - FND.t > 20000) loadFundingAll(); }
+  if (TAR.tab === 'whr') wrOpen(); else wrClose();
 }
 function closeTar(fromPop){
   if (!tarOpen()) return;
   $('tarSheet').classList.remove('open');
+  wrClose();
   if (!fromPop && history.state && history.state.tar) history.back();
 }
 function openTarTab(tab){ TAR.tab = tab; store.set('vg_tar_tab', TAR.tab); openTar(); }
@@ -3088,8 +3105,9 @@ $('tarTabs').addEventListener('click', e => {
 $('tarBar').addEventListener('click', e => {
   const r = e.target.closest('[data-sr]'), d = e.target.closest('[data-sd]'), f = e.target.closest('[data-fs]');
   const lv = e.target.closest('[data-lv]'), lm = e.target.closest('[data-lm]'), la = e.target.closest('[data-la]'), lau = e.target.closest('[data-lau]');
-  const com = e.target.closest('[data-com]'), cor = e.target.closest('[data-cor]');
-  if (com){ CO.mode = com.dataset.com; store.set('vg_co_mode', CO.mode); }
+  const com = e.target.closest('[data-com]'), cor = e.target.closest('[data-cor]'), wrv = e.target.closest('[data-wrv]');
+  if (wrv){ WR.view = wrv.dataset.wrv; store.set('vg_wr_view', WR.view); }
+  else if (com){ CO.mode = com.dataset.com; store.set('vg_co_mode', CO.mode); }
   else if (cor){ coLoad(); }
   else if (lv){ LQ.view = lv.dataset.lv; }
   else if (lm){ LQ.min = +lm.dataset.lm; store.set('vg_lq_min', LQ.min); markersSoon(); }
@@ -3250,10 +3268,168 @@ async function shareChart(){
    BALİNA BANDI: seçili coinde belli tutarın üstündeki tekil işlemler (aggTrade akışı)
    Yeşil = piyasa emriyle ALIŞ, kırmızı = piyasa emriyle SATIŞ. Grafikte mumun altına/üstüne ok konur.
    ===================================================================== */
-const WH_STEPS = [10000, 50000, 100000, 500000, 1000000];
-const WH = { on: store.get('vg_wh_on', false), min: store.get('vg_wh_min', 100000), list: [], ws: null, sym: '', html: '' };
+const WH_STEPS = ['auto', 25000, 100000, 500000, 1000000];
+const WH_WINS = [[5, '5 dk'], [15, '15 dk'], [60, '1 sa']];
+const WH = { on: store.get('vg_wh_on', false), mode: store.get('vg_wh_mode', 'auto'), win: store.get('vg_wh_win', 5),
+  alert: store.get('vg_wh_alert', true), mini: store.get('vg_wh_mini', false),
+  by: {}, ws: null, sym: '', pend: null, pendT: null, html: '', hist: {}, histBusy: false, lastAlert: 0 };
 const LQ = { list: [], ws: null, min: store.get('vg_lq_min', 50000), view: 'feed', alert: store.get('vg_lq_alert', false),
   alertUsd: store.get('vg_lq_aUsd', 1000000), warned: {}, html: '' };
+
+/* =====================================================================
+   BALİNA İŞLEMLERİ
+   Binance "aggTrade" akışı bir piyasa emrini FİYAT SEVİYESİ başına parçalar: 1 milyon $'lık bir emir
+   5 farklı fiyatı süpürürse 5 ayrı kayıt gelir. Burada aynı zaman damgası (T) ve aynı yöndeki parçalar
+   tek emir olarak birleştirilir; böylece gerçek emir büyüklüğü görünür.
+   Eşik "Oto" iken coinin 24 saatlik hacmine göre ayarlanır (BTC'de ~1M$, küçük coinlerde ~10-25K$).
+   ===================================================================== */
+function niceNum(v){ const e = Math.pow(10, Math.floor(Math.log10(v))), f = v / e; return (f < 1.5 ? 1 : f < 3.5 ? 2.5 : f < 7.5 ? 5 : 10) * e; }
+function whThr(sym){
+  if (WH.mode !== 'auto') return +WH.mode;
+  const qv = (S.tickers[sym] || {}).qv || 0;
+  return Math.min(2000000, Math.max(10000, niceNum(Math.max(1, qv / 8000))));
+}
+function whList(sym){ return WH.by[sym] || (WH.by[sym] = []); }
+function whAdd(o){                                    // o: {sym,t,p,usd,qty,buy,n,lv}
+  const l = whList(o.sym);
+  if (o.usd < Math.min(10000, whThr(o.sym) / 4)) return false;   // çok küçükleri hiç tutma
+  let i = 0; while (i < l.length && l[i].t > o.t) i++;              // yeniden eskiye sıralı tut
+  if (l.some(z => z.id === o.id)) return false;      // geçmiş + canlı akış çakışması: aynı emir iki kez eklenmesin
+  l.splice(i, 0, o);
+  if (l.length > 600) l.length = 600;
+  return true;
+}
+// aggTrade parçalarını emirlere çevirir (sıralı parça listesi → emir listesi)
+function whFold(parts, sym){
+  const out = []; let cur = null;
+  for (const x of parts){
+    const buy = !x.m, T = +x.T, p = +x.p, q = +x.q;
+    if (cur && cur.t === T && cur.buy === buy){ cur.usd += p * q; cur.qty += q; cur.n++; cur.lo = Math.min(cur.lo, p); cur.hi = Math.max(cur.hi, p); cur.last = p; }
+    else { if (cur) out.push(cur); cur = { sym, t: T, buy, usd: p * q, qty: q, n: 1, lo: p, hi: p, first: p, last: p, id: T + (buy ? 'b' : 's') + x.f }; }
+  }
+  if (cur) out.push(cur);
+  for (const o of out) o.p = o.usd / o.qty;          // ortalama fiyat
+  return out;
+}
+function whFlush(){
+  clearTimeout(WH.pendT); WH.pendT = null;
+  const o = WH.pend; WH.pend = null;
+  if (!o) return;
+  o.p = o.usd / o.qty;
+  if (whAdd(o) && o.sym === S.symbol && o.usd >= whThr(o.sym)){
+    whRender(); D.ver++;
+    if (WH.alert && o.usd >= whThr(o.sym) * 5 && Date.now() - WH.lastAlert > 15000){
+      WH.lastAlert = Date.now();
+      const nm = (S.symbols[o.sym] || {}).base || o.sym;
+      toast(`🐋 DEV BALİNA · ${nm} ${o.buy ? 'ALIŞ' : 'SATIŞ'} $${fvol(o.usd)}`, `${fp(o.p, o.sym)} · ${o.n} fiyat seviyesi süpürüldü · normal balinanın ${(o.usd / whThr(o.sym)).toFixed(1)} katı`, { ms: 6000 });
+      try{ beep(); }catch(e){}
+    }
+  }
+}
+function whOnTrade(x, sym){
+  const buy = !x.m, T = +x.T, p = +x.p, q = +x.q;
+  const c = WH.pend;
+  if (c && c.t === T && c.buy === buy && c.sym === sym){
+    c.usd += p * q; c.qty += q; c.n++; c.lo = Math.min(c.lo, p); c.hi = Math.max(c.hi, p); c.last = p;
+  } else {
+    whFlush();
+    WH.pend = { sym, t: T, buy, usd: p * q, qty: q, n: 1, lo: p, hi: p, first: p, last: p, id: T + (buy ? 'b' : 's') + x.f };
+  }
+  clearTimeout(WH.pendT); WH.pendT = setTimeout(whFlush, 250);   // aynı emrin parçaları art arda gelir
+}
+// Son birkaç bin işlemi REST'ten çekip geçmiş balinaları doldurur (en fazla ~6 saat geriye)
+async function whHistory(sym){
+  if (WH.histBusy || (WH.hist[sym] && Date.now() - WH.hist[sym] < 120000)) return;
+  WH.histBusy = true;
+  try{
+    let parts = [], fromId = null;
+    for (let page = 0; page < 5; page++){
+      const url = `${API}/fapi/v1/aggTrades?symbol=${sym}&limit=1000` + (fromId != null ? `&fromId=${Math.max(0, fromId)}` : '');
+      const r = await fetch(url); if (!r.ok) break;
+      const j = await r.json(); if (!Array.isArray(j) || !j.length) break;
+      parts = j.concat(parts.filter(x => x.a > j[j.length - 1].a));
+      if (sym !== S.symbol) return;
+      if (j[0].a <= 0 || Date.now() - +j[0].T > 6 * 3600000) break;
+      fromId = j[0].a - 1000;
+    }
+    parts.sort((a, b) => a.a - b.a);
+    parts = parts.filter((x, i) => i === 0 || x.a !== parts[i - 1].a);
+    for (const o of whFold(parts, sym)) whAdd(o);
+    WH.hist[sym] = Date.now();
+    WH.histFrom = parts.length ? +parts[0].T : 0; WH.histSym = sym;
+  }catch(e){}
+  finally{ WH.histBusy = false; }
+  if (sym === S.symbol){ WH.html = ''; whRender(); D.ver++; }
+}
+function whPressure(sym, min){
+  const cut = Date.now() - min * 60000, thr = whThr(sym); let b = 0, sl = 0, nb = 0, ns = 0;
+  for (const o of whList(sym)){ if (o.t < cut) break; if (o.usd < thr) continue; if (o.buy){ b += o.usd; nb++; } else { sl += o.usd; ns++; } }
+  return { b, s: sl, nb, ns };
+}
+function whRender(){
+  $('whBox').classList.toggle('on', WH.on);
+  $('whBox').classList.toggle('mini', WH.mini);
+  if (!WH.on) return;
+  const sym = S.symbol, thr = whThr(sym), nm = (S.symbols[sym] || {}).base || sym;
+  const head = `<div class="wh-top"><b>🐋 ${esc(nm)}</b><span class="wh-thr">≥$${fvol(thr)}</span><button data-wha="1" class="${WH.alert ? 'on' : ''}" title="Dev balina uyarısı">🔔</button><button data-whmini="1">${WH.mini ? '▢' : '—'}</button><button data-whx="1">✕</button></div>`
+    + (WH.mini ? '' : `<div class="wh-steps">${WH_STEPS.map(v => `<button data-whm="${v}" class="${String(v) === String(WH.mode) ? 'on' : ''}">${v === 'auto' ? 'Oto' : fvol(v)}</button>`).join('')}</div>`);
+  if ($('whHead').dataset.h !== head){ $('whHead').dataset.h = head; $('whHead').innerHTML = head; }
+  const pr = whPressure(sym, WH.win), tot = pr.b + pr.s, bp = tot ? pr.b / tot * 100 : 50, net = pr.b - pr.s;
+  const wl = (WH_WINS.find(w => w[0] === WH.win) || WH_WINS[0])[1];
+  const bar = `<div class="wh-pr" data-whw="1"><div class="wh-prl"><span>${wl} balina baskısı</span><b class="${net >= 0 ? 'up-t' : 'down-t'}">${tot ? (net >= 0 ? '+' : '−') + '$' + fvol(Math.abs(net)) : '–'}</b></div>
+    <div class="wh-g"><i style="width:${bp.toFixed(1)}%"></i></div>
+    <div class="wh-prl sm"><span class="up-t">Alış ${tot ? bp.toFixed(0) + '%' : '–'} (${pr.nb})</span><span class="down-t">(${pr.ns}) ${tot ? (100 - bp).toFixed(0) + '%' : '–'} Satış</span></div></div>`;
+  const rows = whList(sym).filter(o => o.usd >= thr).slice(0, WH.mini ? 0 : 8);
+  let html = bar;
+  if (!WH.mini){
+    if (rows.length) html += rows.map(o => `<div class="wh-r ${o.buy ? 'b' : 's'}"><span class="tm">${new Date(o.t).toLocaleTimeString('tr-TR')}</span><span>${fp(o.p, sym)}${o.n > 1 ? `<small>×${o.n}</small>` : ''}</span><span class="u">${o.buy ? '▲' : '▼'} $${fvol(o.usd)}</span></div>`).join('');
+    else html += `<div class="wh-r"><span class="tm" style="grid-column:1/4">${WH.histBusy ? 'Geçmiş yükleniyor…' : `Son saatlerde ≥$${fvol(thr)} emir yok; bekleniyor…`}</span></div>`;
+  }
+  if (WH.html !== html){ WH.html = html; $('whList').innerHTML = html; }
+}
+// Grafikte baloncuk: tam fiyat ve zamanda, büyüklüğe göre boyutlu (yeşil alış, kırmızı satış)
+window.__whPaint = (W, H) => {
+  if (!WH.on) return;
+  const sym = S.symbol, thr = whThr(sym), l = whList(sym);
+  if (!l.length || !S.candles.length) return;
+  const first = S.candles[0].time - TZ, vis = [];
+  for (let i = l.length - 1; i >= 0; i--){
+    const o = l[i];
+    if (o.usd < thr || o.t / 1000 < first) continue;
+    const c = toXY({ t: o.t / 1000, p: o.p });
+    if (c.x == null || c.y == null || c.x < -30 || c.x > W + 30) continue;
+    const k = o.usd / thr, r = Math.min(22, 3 + 4 * Math.sqrt(k));
+    octx.beginPath(); octx.arc(c.x, c.y, r, 0, Math.PI * 2);
+    octx.fillStyle = o.buy ? 'rgba(14,203,129,.25)' : 'rgba(246,70,93,.25)'; octx.fill();
+    octx.lineWidth = k >= 5 ? 2 : 1; octx.strokeStyle = o.buy ? '#0ecb81' : '#f6465d'; octx.stroke();
+    vis.push({ o, x: c.x, y: c.y, r, k });
+  }
+  // Tutar etiketi: sadece en büyük emirler, birbirinin üstüne binmeyecek şekilde (en fazla 6)
+  vis.sort((a, b) => b.o.usd - a.o.usd);
+  const boxes = [];
+  octx.font = FONT; octx.textAlign = 'center'; octx.textBaseline = 'middle';
+  for (const v of vis){
+    if (boxes.length >= 6 || v.k < 2) break;
+    const txt = '$' + fvol(v.o.usd), w = octx.measureText(txt).width + 8, y = v.y - v.r - 9;
+    const bx = { x0: v.x - w / 2, x1: v.x + w / 2, y0: y - 8, y1: y + 8 };
+    if (boxes.some(b => bx.x0 < b.x1 && bx.x1 > b.x0 && bx.y0 < b.y1 && bx.y1 > b.y0)) continue;
+    boxes.push(bx);
+    octx.fillStyle = v.o.buy ? '#0ecb81' : '#f6465d';
+    octx.beginPath(); rr(bx.x0, bx.y0, w, 16, 4); octx.fill();
+    octx.fillStyle = '#fff'; octx.fillText(txt, v.x, y + 0.5);
+  }
+};
+function whClose(){ whFlush(); const w = WH.ws; WH.ws = null; if (w){ w.onclose = null; w.onmessage = null; try{ w.close(); }catch(e){} } }
+function whOpen(){
+  whClose();
+  if (!WH.on) return;
+  const sym = S.symbol; WH.sym = sym;
+  const ws = new WebSocket(`${WS}/${sym.toLowerCase()}@aggTrade`);
+  WH.ws = ws;
+  ws.onmessage = e => { const x = JSON.parse(e.data); if (x && x.s === sym) whOnTrade(x, sym); };
+  ws.onclose = () => { if (WH.ws === ws) setTimeout(() => { if (WH.ws === ws) whOpen(); }, 2000); };
+  whHistory(sym);
+}
 function barTimeOf(ms){
   const t = ms / 1000 + TZ, c = S.candles;
   if (!c.length || t < c[0].time) return null;
@@ -3261,16 +3437,13 @@ function barTimeOf(ms){
   while (lo < hi){ const m = (lo + hi + 1) >> 1; if (c[m].time <= t) lo = m; else hi = m - 1; }
   return c[lo].time;
 }
-function paintMarkers(){
+function paintMarkers(){                              // grafikte sadece likidasyon işaretleri (balinalar baloncuk olarak çizilir)
   if (typeof candle.setMarkers !== 'function') return;
   const by = new Map();
-  const add = (ms, k, v) => { const bt = barTimeOf(ms); if (bt == null) return; const o = by.get(bt) || { b: 0, s: 0, ll: 0, sl: 0 }; o[k] += v; by.set(bt, o); };
-  if (WH.on) for (const x of WH.list) if (x.sym === S.symbol && x.usd >= WH.min) add(x.t, x.buy ? 'b' : 's', x.usd);
+  const add = (ms, k, v) => { const bt = barTimeOf(ms); if (bt == null) return; const o = by.get(bt) || { ll: 0, sl: 0 }; o[k] += v; by.set(bt, o); };
   for (const x of LQ.list) if (x.sym === S.symbol && x.usd >= LQ.min) add(x.t, x.long ? 'll' : 'sl', x.usd);
   const mk = [];
   for (const [time, o] of [...by.entries()].sort((a, b) => a[0] - b[0])){
-    if (o.b) mk.push({ time, position: 'belowBar', color: '#0ecb81', shape: 'arrowUp', text: '$' + fvol(o.b) });
-    if (o.s) mk.push({ time, position: 'aboveBar', color: '#f6465d', shape: 'arrowDown', text: '$' + fvol(o.s) });
     if (o.ll) mk.push({ time, position: 'belowBar', color: '#f0b90b', shape: 'circle', text: '💥L $' + fvol(o.ll) });
     if (o.sl) mk.push({ time, position: 'aboveBar', color: '#f0b90b', shape: 'circle', text: '💥S $' + fvol(o.sl) });
   }
@@ -3279,43 +3452,82 @@ function paintMarkers(){
 let mkTimer = null;
 window.__markers = () => paintMarkers();
 const markersSoon = () => { if (!mkTimer) mkTimer = setTimeout(() => { mkTimer = null; paintMarkers(); }, 400); };
-function whRender(){
-  $('whBox').classList.toggle('on', WH.on);
-  if (!WH.on) return;
-  const head = `<b>🐋 ${esc((S.symbols[S.symbol] || {}).base || '')}</b>` + WH_STEPS.map(v => `<button data-whm="${v}" class="${v === WH.min ? 'on' : ''}">${fvol(v)}</button>`).join('') + '<button data-whx="1">✕</button>';
-  if ($('whHead').dataset.h !== head){ $('whHead').dataset.h = head; $('whHead').innerHTML = head; }
-  const rows = WH.list.filter(x => x.sym === S.symbol && x.usd >= WH.min).slice(0, 10);
-  const html = rows.length ? rows.map(x => `<div class="wh-r ${x.buy ? 'b' : 's'}"><span class="tm">${new Date(x.t).toLocaleTimeString('tr-TR')}</span><span>${fp(x.p, x.sym)}</span><span class="u">${x.buy ? '▲' : '▼'} $${fvol(x.usd)}</span></div>`).join('')
-    : `<div class="wh-r"><span class="tm" style="grid-column:1/4">≥ $${fvol(WH.min)} işlem bekleniyor…</span></div>`;
-  if (WH.html !== html){ WH.html = html; $('whList').innerHTML = html; }
-}
-function whClose(){ const w = WH.ws; WH.ws = null; if (w){ w.onclose = null; w.onmessage = null; try{ w.close(); }catch(e){} } }
-function whOpen(){
-  whClose();
-  if (!WH.on) return;
-  const sym = S.symbol;
-  if (WH.sym !== sym){ WH.list = WH.list.filter(x => x.sym === sym); WH.sym = sym; }
-  const ws = new WebSocket(`${WS}/${sym.toLowerCase()}@aggTrade`);
-  WH.ws = ws;
-  ws.onmessage = e => {
-    const x = JSON.parse(e.data);
-    if (!x || x.s !== sym) return;
-    const p = +x.p, usd = p * +x.q;
-    if (usd < WH_STEPS[0]) return;
-    WH.list.unshift({ sym, t: +x.T, p, usd, buy: !x.m });
-    if (WH.list.length > 400) WH.list.length = 400;
-    if (usd >= WH.min){ whRender(); markersSoon(); }
-  };
-  ws.onclose = () => { if (WH.ws === ws) setTimeout(() => { if (WH.ws === ws) whOpen(); }, 2000); };
-}
-window.__whLoad = () => { WH.html = ''; whRender(); if (WH.on) whOpen(); markersSoon(); };
+window.__whLoad = () => { WH.html = ''; $('whHead').dataset.h = ''; whRender(); if (WH.on) whOpen(); else whClose(); markersSoon(); D.ver++; };
 window.__whOn = () => WH.on;
-window.__whToggle = () => { WH.on = !WH.on; store.set('vg_wh_on', WH.on); renderTf(); mnState(); window.__whLoad(); if (!WH.on) whClose(); };
-$('whHead').addEventListener('click', e => {
-  const m = e.target.closest('[data-whm]'), x = e.target.closest('[data-whx]');
+window.__whToggle = () => { WH.on = !WH.on; store.set('vg_wh_on', WH.on); renderTf(); mnState(); window.__whLoad(); };
+$('whBox').addEventListener('click', e => {
+  const m = e.target.closest('[data-whm]'), x = e.target.closest('[data-whx]'), a = e.target.closest('[data-wha]'),
+        mi = e.target.closest('[data-whmini]'), w = e.target.closest('[data-whw]');
   if (x){ window.__whToggle(); return; }
-  if (m){ WH.min = +m.dataset.whm; store.set('vg_wh_min', WH.min); WH.html = ''; whRender(); markersSoon(); }
+  if (m){ WH.mode = m.dataset.whm === 'auto' ? 'auto' : +m.dataset.whm; store.set('vg_wh_mode', WH.mode); }
+  else if (a){ WH.alert = !WH.alert; store.set('vg_wh_alert', WH.alert); flash(WH.alert ? 'Dev balina uyarısı açık (eşiğin 5 katı)' : 'Dev balina uyarısı kapalı'); }
+  else if (mi){ WH.mini = !WH.mini; store.set('vg_wh_mini', WH.mini); }
+  else if (w){ const i = WH_WINS.findIndex(z => z[0] === WH.win); WH.win = WH_WINS[(i + 1) % WH_WINS.length][0]; store.set('vg_wh_win', WH.win); }
+  else return;
+  WH.html = ''; $('whHead').dataset.h = ''; whRender(); D.ver++;
 });
+setInterval(() => { if (WH.on && !document.hidden) whRender(); }, 5000);   // baskı göstergesi zaman penceresi kaysın
+
+/* =====================================================================
+   BALİNA RADARI: favoriler + listeler + en hacimli coinler tek birleşik akışta izlenir (en fazla 20 coin)
+   ===================================================================== */
+const WR = { ws: null, syms: [], pend: {}, feed: [], view: store.get('vg_wr_view', 'feed'), html: '' };
+function wrSyms(){
+  const set = new Set();
+  for (const s of S.favs) if (S.symbols[s]) set.add(s);
+  for (const l of S.lists) for (const s of l.syms) if (S.symbols[s]) set.add(s);
+  const top = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && S.tickers[s]).sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0));
+  for (const s of top){ if (set.size >= 20) break; set.add(s); }
+  return [...set].slice(0, 20);
+}
+function wrOpen(){
+  const syms = wrSyms();
+  if (WR.ws && syms.join() === WR.syms.join()) return;
+  wrClose();
+  WR.syms = syms;
+  const url = WS.replace(/\/ws$/, '') + '/stream?streams=' + syms.map(s => s.toLowerCase() + '@aggTrade').join('/');
+  const ws = new WebSocket(url);
+  WR.ws = ws;
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data), x = m && (m.data || m);
+    if (!x || !x.s || !S.symbols[x.s]) return;
+    const sym = x.s, buy = !x.m, T = +x.T, p = +x.p, q = +x.q, c = WR.pend[sym];
+    if (c && c.t === T && c.buy === buy){ c.usd += p * q; c.qty += q; c.n++; c.last = p; }
+    else { if (c) wrEmit(c); WR.pend[sym] = { sym, t: T, buy, usd: p * q, qty: q, n: 1, last: p, id: T + (buy ? 'b' : 's') + x.f }; }
+    clearTimeout(WR['t' + sym]); WR['t' + sym] = setTimeout(() => { const o = WR.pend[sym]; WR.pend[sym] = null; if (o) wrEmit(o); }, 250);
+  };
+  ws.onclose = () => { if (WR.ws === ws){ WR.ws = null; setTimeout(() => { if (tarOpen() && TAR.tab === 'whr') wrOpen(); }, 2000); } };
+}
+function wrEmit(o){
+  o.p = o.usd / o.qty;
+  if (o.usd < whThr(o.sym)) return;
+  WR.feed.unshift(o);
+  if (WR.feed.length > 400) WR.feed.length = 400;
+  whAdd(Object.assign({}, o));                       // seçili coin grafiğine de yansısın
+  if (o.sym === S.symbol && WH.on){ whRender(); D.ver++; }
+}
+function wrClose(){ const w = WR.ws; WR.ws = null; if (w){ w.onclose = null; w.onmessage = null; try{ w.close(); }catch(e){} } }
+function wrTab(){
+  const bar = `<button class="chip${WR.view === 'feed' ? ' on' : ''}" data-wrv="feed">Akış</button><button class="chip${WR.view === 'flow' ? ' on' : ''}" data-wrv="flow">15 dk net akış</button>`;
+  let info = `<b>${WR.syms.length}</b> coin izleniyor (favoriler, listelerin ve en hacimli coinler). Eşik her coin için otomatik (24 saatlik hacmine göre). Panel açıkken çalışır.`;
+  info += WR.ws ? ' · canlı' : ' · bağlanıyor…';
+  let html;
+  if (WR.view === 'feed'){
+    html = WR.feed.length ? WR.feed.slice(0, 120).map(o => { const m = S.symbols[o.sym], k = o.usd / whThr(o.sym);
+      return `<div class="t-row" data-sym="${o.sym}"><div><b>${esc(m ? m.base : o.sym)}</b> <span class="${o.buy ? 'up-t' : 'down-t'}">${o.buy ? '▲ ALIŞ' : '▼ SATIŞ'}</span><small>${new Date(o.t).toLocaleTimeString('tr-TR')} · ${fp(o.p, o.sym)}${o.n > 1 ? ` · ${o.n} seviye süpürdü` : ''}</small></div>
+        <div class="t-px">${k >= 5 ? '🔥 ' : ''}${k.toFixed(1)}× normal</div><div class="t-pct ${o.buy ? 'up-t' : 'down-t'}">$${fvol(o.usd)}</div></div>`; }).join('')
+      : '<div class="empty">Balina emri bekleniyor… (eşikler coin başına otomatik)</div>';
+  } else {
+    const cut = Date.now() - 15 * 60000, by = {};
+    for (const o of WR.feed){ if (o.t < cut) break; const r = by[o.sym] || (by[o.sym] = { sym: o.sym, b: 0, s: 0, n: 0 }); if (o.buy) r.b += o.usd; else r.s += o.usd; r.n++; }
+    const rows = Object.values(by).sort((a, b) => Math.abs(b.b - b.s) - Math.abs(a.b - a.s));
+    html = rows.length ? rows.map(r => { const m = S.symbols[r.sym], net = r.b - r.s, tot = r.b + r.s;
+      return `<div class="t-row" data-sym="${r.sym}"><div><b>${esc(m ? m.base : r.sym)}</b><small>${r.n} balina · alış %${(r.b / tot * 100).toFixed(0)}</small></div>
+        <div class="t-px">${net >= 0 ? '<span class="up-t">alıcı baskın</span>' : '<span class="down-t">satıcı baskın</span>'}</div><div class="t-pct ${net >= 0 ? 'up-t' : 'down-t'}">${net >= 0 ? '+' : '−'}$${fvol(Math.abs(net))}</div></div>`; }).join('')
+      : "<div class=\"empty\">Son 15 dk'da balina emri yok.</div>";
+  }
+  return { bar, info, html };
+}
 
 /* =====================================================================
    LİKİDASYONLAR: Binance'in tüm piyasa likidasyon yayını (!forceOrder@arr)
