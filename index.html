@@ -237,6 +237,7 @@ input{-webkit-user-select:text;user-select:text}
 .sg-st b{font-size:16px}
 .sg-bar{height:5px;border-radius:3px;background:var(--panel2);margin-top:5px;overflow:hidden}
 .sg-bar i{display:block;height:100%}
+.sg-bt{margin-top:6px;padding:4px 8px;border-radius:7px;background:var(--panel2);font-size:11px;font-weight:600}
 .xsheet{position:fixed;inset:0;z-index:26;background:var(--bg);display:flex;flex-direction:column;
   transform:translateY(100%);transition:transform .25s ease;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);touch-action:pan-x pan-y}
@@ -4244,7 +4245,7 @@ function sgRender(){
   const tfh = SG_TFS.map(([v, l]) => `<button class="chip${v === SG.tf ? ' on' : ''}" data-sgt="${v}">${l}</button>`).join('')
     + '<span class="sepv"></span>' + SG_LEVELS.map(([v, l]) => `<button class="chip${v === SG.lvl ? ' on' : ''}" data-sgl="${v}">${l}</button>`).join('')
     + `<button class="chip${SG.onlyNew ? ' on' : ''}" data-sgn="1">Sadece yeni</button><button class="chip" data-sgr="1">↻</button>`
-    + '<span class="sepv"></span><button class="chip bt-chip" data-btopen="1">🧪 Geçmiş testi</button>';
+    + `<span class="sepv"></span><button class="chip bt-chip" data-btopen="1">🧪 ${esc((S.symbols[S.symbol] || {}).base || '')} geçmiş testi</button>`;
   if ($('sgTf').dataset.h !== tfh){ $('sgTf').dataset.h = tfh; $('sgTf').innerHTML = tfh; }
   const tfl = (SG_TFS.find(x => x[0] === SG.tf) || [0, SG.tf])[1], long = SG.dir === 'long';
   let info = `<b>${long ? 'LONG' : 'SHORT'}</b> şartı: son <b>${SG_N} mum</b> (${tfl}) içinde hem <b>spot</b> hem <b>vadeli</b> piyasada net ${long ? 'ALIM' : 'SATIM'} (CVD) en az hacmin <b>%${(SG.lvl * 100).toFixed(0)}</b>'i kadar <b>ve</b> fiyat haftalık açılışın <b>${long ? 'ÜSTÜNDE' : 'ALTINDA'}</b>.`;
@@ -4261,7 +4262,7 @@ function sgRender(){
     return `<div class="sg-row" data-sym="${x.sym}"><div><b>${esc(m ? m.base : x.sym)}</b>${x.fresh ? '<span class="nw">YENİ</span>' : ''}
       <small>Spot ${sgPct(x.s0.r)} (${x.s0.cvd >= 0 ? '+' : '−'}$${fvol(Math.abs(x.s0.cvd))}) · Vadeli ${sgPct(x.f0.r)} (${x.f0.cvd >= 0 ? '+' : '−'}$${fvol(Math.abs(x.f0.cvd))})<br>
       Fiyat ${fpct(x.dp)} · haftalık açılışın ${fpct(x.dw)} ${x.dw >= 0 ? 'üstünde' : 'altında'} · ${x.mom ? 'son mum da aynı yönde ✓' : 'son mumda zayıfladı'}</small></div>
-      <div class="sg-st"><b style="color:${col}">${long ? 'LONG' : 'SHORT'}</b><small>güç %${(x.str * 100).toFixed(1)}</small><div class="sg-bar"><i style="width:${w.toFixed(0)}%;background:${col}"></i></div></div></div>`;
+      <div class="sg-st"><b style="color:${col}">${long ? 'LONG' : 'SHORT'}</b><small>güç %${(x.str * 100).toFixed(1)}</small><div class="sg-bar"><i style="width:${w.toFixed(0)}%;background:${col}"></i></div><button class="sg-bt" data-btsym="${x.sym}">🧪 Test</button></div></div>`;
   }).join('');
   const el = $('sgList'), st = el.scrollTop;
   if (SG.html !== html){ SG.html = html; el.innerHTML = html; el.scrollTop = st; }
@@ -4278,13 +4279,14 @@ $('sgClose').addEventListener('click', () => closeSig());
 window.addEventListener('popstate', () => closeSig(true));
 $('sgSheet').addEventListener('click', e => {
   const d = e.target.closest('[data-sgd]'), t = e.target.closest('[data-sgt]'), l = e.target.closest('[data-sgl]'),
-        n = e.target.closest('[data-sgn]'), r = e.target.closest('[data-sgr]'), row = e.target.closest('.sg-row[data-sym]');
+        n = e.target.closest('[data-sgn]'), r = e.target.closest('[data-sgr]'), row = e.target.closest('[data-btsym]') ? null : e.target.closest('.sg-row[data-sym]');
   if (d){ SG.dir = d.dataset.sgd; store.set('vg_sg_dir', SG.dir); }
   else if (t){ SG.tf = t.dataset.sgt; store.set('vg_sg_tf', SG.tf); sgKick(); }
   else if (l){ SG.lvl = +l.dataset.sgl; store.set('vg_sg_lvl', SG.lvl); }
   else if (n){ SG.onlyNew = !SG.onlyNew; }
   else if (r){ sgScan(); }
-  else if (e.target.closest('[data-btopen]')){ btShow(true); return; }
+  else if (e.target.closest('[data-btsym]')){ btOpen(e.target.closest('[data-btsym]').dataset.btsym); return; }
+  else if (e.target.closest('[data-btopen]')){ btOpen(S.symbol); return; }
   else if (row){
     closeSig();
     const tf = SG.tf;
@@ -4306,7 +4308,8 @@ setInterval(() => { if (sgOpenQ() && !document.hidden && $('btBody').hidden){ sg
    ===================================================================== */
 const BT_H = [1, 3, 6, 12, 24];
 const TF_MIN = { '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 };
-const BT = { running: false, done: 0, total: 0, res: store.get('vg_bt', null), view: 'long', week: true, coins: store.get('vg_bt_n', 20), err: '' };
+const BT = { running: false, done: 0, total: 0, sym: '', cache: {}, view: 'long', week: true, err: '' };   // test TEK coinde yapılır (BT.sym)
+const BT_MIN = 15;                                     // en iyi sonuç için en az sinyal (tek coin)
 const fmtDur = m => m < 60 ? m + ' dk' : m < 1440 ? (m / 60 % 1 ? (m / 60).toFixed(1) : m / 60) + ' sa' : (m / 1440 % 1 ? (m / 1440).toFixed(1) : m / 1440) + ' gün';
 function btEmpty(){ const o = {}; for (const h of BT_H) o[h] = { n: 0, win: 0, ret: 0 }; return o; }
 // fk, sk: vadeli ve spot mumları (Binance kline dizileri). L: eşik. Dönüş: long/short (kurallı ve kuralsız) + taban
@@ -4345,7 +4348,7 @@ function btCompute(fk, sk, L, wmap){                 // wmap: hafta başlangıc�
   return out;
 }
 function btMerge(A, B){ for (const k in B) for (const h of BT_H){ A[k][h].n += B[k][h].n; A[k][h].win += B[k][h].win; A[k][h].ret += B[k][h].ret; } return A; }
-const BT_PAGES = { '5m': 3, '15m': 2 };              // kısa zaman dilimlerinde daha fazla geçmiş (5 dk ≈ 10 gün, 15 dk ≈ 3 hafta)
+const BT_PAGES = { '5m': 6, '15m': 4, '1h': 2 };     // tek coin: daha uzun geçmiş (5 dk ≈ 3 hafta, 15 dk ≈ 6 hafta, 1 sa ≈ 83 gün)
 async function btKl(base, tf, pages){                 // geriye doğru sayfa sayfa en fazla pages×1000 mum
   let all = [], end = null;
   for (let p = 0; p < pages; p++){
@@ -4368,49 +4371,45 @@ async function btWeeks(sym){                          // haftalık açılışlar
   }catch(e){}
   return null;
 }
-async function btRun(){
-  if (BT.running) return;
-  BT.running = true; BT.err = '';
-  const coins = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && S.symbols[s].quote === 'USDT' && S.tickers[s] && !SG.noSpot.has(s))
-    .sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0)).slice(0, BT.coins);
+async function btRun(sym){
+  sym = sym || BT.sym;
+  if (BT.running || !sym) return;
+  const sp = spotOf(sym);
+  BT.sym = sym; BT.err = '';
+  if (!sp || (S.symbols[sym] && S.symbols[sym].tradfi)){ BT.err = 'Bu coinin Binance spot piyasası yok; kural spot verisi gerektirdiği için test yapılamıyor.'; btRender(); return; }
+  BT.running = true;
   const tfs = SG_TFS.map(x => x[0]);
-  const jobs = []; for (const tf of tfs) for (const sym of coins) jobs.push([tf, sym]);
-  BT.done = 0; BT.total = jobs.length; btRender();
-  const res = {}; for (const tf of tfs) res[tf] = { out: { L: btEmpty(), S: btEmpty(), Lw: btEmpty(), Sw: btEmpty(), up: btEmpty(), dn: btEmpty() }, coins: 0, from: 0 };
-  let i = 0, stop = false;
-  const worker = async () => {
-    for (;;){
-      const k = i++; if (stop || k >= jobs.length) return;
-      const [tf, sym] = jobs[k], sp = spotOf(sym);
-      try{
-        const pages = BT_PAGES[tf] || 1;
-        const [fk, sk, wm] = await Promise.all([btKl(`${API}/fapi/v1/klines?symbol=${sym}`, tf, pages), btKl(`${SPOT_API}/api/v3/klines?symbol=${sp.sym}`, tf, pages), btWeeks(sym)]);
-        if (fk === 'limit' || sk === 'limit'){ stop = true; BT.err = 'Binance istek sınırı; birkaç dakika sonra tekrar dene (ya da daha az coin seç).'; return; }
-        if (Array.isArray(fk) && Array.isArray(sk) && fk.length && sk.length){
-          // son (bitmemiş) mum hariç
-          btMerge(res[tf].out, btCompute(fk.slice(0, -1), sk.slice(0, -1), SG.lvl, wm));
-          res[tf].coins++; if (fk.length && (!res[tf].from || +fk[0][0] < res[tf].from)) res[tf].from = +fk[0][0];
-        } else if (sk === null) SG.noSpot.add(sym);
-      }catch(e){}
-      BT.done++; if (BT.done % 5 === 0) btRender();
-    }
-  };
-  await Promise.all(Array.from({ length: 4 }, worker));
-  BT.res = { t: Date.now(), lvl: SG.lvl, coins: coins.length, tfs: res };
-  store.set('vg_bt', BT.res);
+  BT.done = 0; BT.total = tfs.length; btRender();
+  const res = {};
+  const wm = await btWeeks(sym);
+  for (const tf of tfs){
+    res[tf] = { out: { L: btEmpty(), S: btEmpty(), Lw: btEmpty(), Sw: btEmpty(), up: btEmpty(), dn: btEmpty() }, coins: 0, from: 0 };
+    try{
+      const pages = BT_PAGES[tf] || 1;
+      const [fk, sk] = await Promise.all([btKl(`${API}/fapi/v1/klines?symbol=${sym}`, tf, pages), btKl(`${SPOT_API}/api/v3/klines?symbol=${sp.sym}`, tf, pages)]);
+      if (fk === 'limit' || sk === 'limit'){ BT.err = 'Binance istek sınırı; birkaç dakika sonra tekrar dene.'; break; }
+      if (sk === null){ SG.noSpot.add(sym); BT.err = 'Bu coinin Binance spot piyasası yok; test yapılamıyor.'; break; }
+      if (Array.isArray(fk) && Array.isArray(sk) && fk.length && sk.length){
+        res[tf].out = btCompute(fk.slice(0, -1), sk.slice(0, -1), SG.lvl, wm);    // son (bitmemiş) mum hariç
+        res[tf].coins = 1; res[tf].from = +fk[0][0]; res[tf].bars = fk.length;
+      }
+    }catch(e){}
+    BT.done++; btRender();
+  }
+  if (!BT.err || Object.values(res).some(r => r.coins)){ BT.cache[sym] = { t: Date.now(), lvl: SG.lvl, sym, tfs: res }; }
   BT.running = false; btRender();
 }
 function btCell(c, base){
   if (!c.n) return '<td>–</td>';
   const w = c.win / c.n * 100, b = base.n ? base.win / base.n * 100 : 50, d = w - b;
-  const cls = c.n >= 20 && d >= 3 ? 'g' : c.n >= 20 && d <= -3 ? 'r' : '';
+  const cls = c.n >= 10 && d >= 3 ? 'g' : c.n >= 10 && d <= -3 ? 'r' : '';
   return `<td class="${cls}">%${w.toFixed(0)}<small>${c.n} sin. · ort ${(c.ret / c.n * 100 >= 0 ? '+' : '')}${(c.ret / c.n * 100).toFixed(2)}%</small></td>`;
 }
 function btBest(R, key, baseKey){
   let best = null;
   for (const tf in R.tfs) for (const h of BT_H){
     const c = R.tfs[tf].out[key][h], b = R.tfs[tf].out[baseKey][h];
-    if (c.n < 30) continue;
+    if (c.n < BT_MIN) continue;
     const w = c.win / c.n * 100, bw = b.n ? b.win / b.n * 100 : 50;
     if (!best || w - bw > best.d) best = { tf, h, w, bw, d: w - bw, n: c.n, ret: c.ret / c.n * 100 };
   }
@@ -4419,21 +4418,22 @@ function btBest(R, key, baseKey){
 function btRender(){
   const el = $('btBody'); if (el.hidden) return;
   const long = BT.view === 'long', key = (long ? 'L' : 'S') + (BT.week ? 'w' : ''), baseKey = long ? 'up' : 'dn';
-  let h = `<div class="xbar"><button class="chip" data-btback="1">← Sinyaller</button><button class="chip${long ? ' on' : ''}" data-btv="long">LONG</button><button class="chip${!long ? ' on' : ''}" data-btv="short">SHORT</button>
+  const nm = (S.symbols[BT.sym] || {}).base || BT.sym;
+  let h = `<div class="bt-sec" style="padding-top:2px">🧪 ${esc(nm)} · geçmiş testi</div>
+    <div class="xbar"><button class="chip" data-btback="1">← Sinyaller</button><button class="chip${long ? ' on' : ''}" data-btv="long">LONG</button><button class="chip${!long ? ' on' : ''}" data-btv="short">SHORT</button>
     <button class="chip${BT.week ? ' on' : ''}" data-btw="1">Haftalık kural ${BT.week ? 'açık' : 'kapalı'}</button>
-    ${[10, 20, 40].map(v => `<button class="chip${BT.coins === v ? ' on' : ''}" data-btn="${v}">${v} coin</button>`).join('')}
-    <button class="chip bt-chip" data-btrun="1">${BT.running ? 'Çalışıyor…' : '▶ Testi çalıştır'}</button></div>`;
-  if (BT.running) h += `<div class="bt-note">Gerçek Binance verisi indiriliyor ve hesaplanıyor… <b>${BT.done}/${BT.total}</b> (1-3 dakika sürebilir)</div>`;
+    <button class="chip bt-chip" data-btrun="1">${BT.running ? 'Çalışıyor…' : '↻ Tekrar test et'}</button></div>`;
+  if (BT.running) h += `<div class="bt-note">${esc(nm)} için gerçek Binance verisi (spot + vadeli) indiriliyor… <b>${BT.done}/${BT.total}</b> zaman dilimi</div>`;
   if (BT.err) h += `<div class="bt-note down-t">${esc(BT.err)}</div>`;
-  const R = BT.res;
-  if (!R){ h += `<div class="bt-note">Bu test, sinyal kuralını son ~1000 mumda dener ve "sinyalden sonra fiyat gerçekten o yöne gitti mi?" sorusunu zaman dilimi ve bekleme süresine göre cevaplar. Başlamak için <b>▶ Testi çalıştır</b>'a bas.</div>`; el.innerHTML = h; return; }
+  const R = BT.cache[BT.sym];
+  if (!R){ el.innerHTML = h + (BT.running ? '' : '<div class="bt-note">Test başlatılıyor…</div>'); return; }
   const best = btBest(R, key, baseKey);
-  h += `<div class="bt-best">${best ? `En iyi sonuç: <b>${(SG_TFS.find(x => x[0] === best.tf) || [])[1]}</b> sinyalinden sonra <b>${fmtDur(best.h * TF_MIN[best.tf])}</b> beklemek → <b>%${best.w.toFixed(0)}</b> başarı (rastgele %${best.bw.toFixed(0)}, ${best.n} sinyal, ortalama ${best.ret >= 0 ? '+' : ''}${best.ret.toFixed(2)}%)${best.d < 3 ? '<br>⚠️ Rastgeleden belirgin fark yok: bu kural bu dönemde avantaj sağlamamış.' : ''}` : 'Yeterli sinyal yok (her hücre için en az 30 sinyal gerekiyor).'}</div>`;
+  h += `<div class="bt-best">${best ? `${esc(nm)} için en iyi sonuç: <b>${(SG_TFS.find(x => x[0] === best.tf) || [])[1]}</b> sinyalinden sonra <b>${fmtDur(best.h * TF_MIN[best.tf])}</b> beklemek → <b>%${best.w.toFixed(0)}</b> başarı (rastgele %${best.bw.toFixed(0)}, ${best.n} sinyal, ortalama ${best.ret >= 0 ? '+' : ''}${best.ret.toFixed(2)}%)${best.d < 3 ? '<br>⚠️ Rastgeleden belirgin fark yok: bu kural bu dönemde avantaj sağlamamış.' : ''}` : `Yeterli sinyal yok (en iyi sonucu söylemek için bir hücrede en az ${BT_MIN} sinyal gerekiyor).`}</div>`;
   h += `<div class="bt-sec">${long ? '📈 LONG' : '📉 SHORT'} sinyali sonrası başarı ${BT.week ? '(haftalık kural dahil)' : '(haftalık kural yok)'}</div>`;
   h += '<table class="bt-t"><tr><th>Zaman<br>dilimi</th>' + BT_H.map(x => `<th>${x} mum<br>sonra</th>`).join('') + '</tr>';
   for (const [tf, tl] of SG_TFS){
     const r = R.tfs[tf]; if (!r) continue;
-    h += `<tr><td>${tl}<small>${r.coins} coin</small></td>` + BT_H.map(x => btCell(r.out[key][x], r.out[baseKey][x])).join('') + '</tr>';
+    h += `<tr><td>${tl}<small>${r.bars ? r.bars + ' mum' : '–'}</small></td>` + BT_H.map(x => btCell(r.out[key][x], r.out[baseKey][x])).join('') + '</tr>';
     h += `<tr class="base"><td>rastgele</td>` + BT_H.map(x => { const b = r.out[baseKey][x]; return `<td>${b.n ? '%' + (b.win / b.n * 100).toFixed(0) : '–'}</td>`; }).join('') + '</tr>';
   }
   h += '</table>';
@@ -4441,10 +4441,17 @@ function btRender(){
     + SG_TFS.map(([tf, tl]) => `<tr><td>${tl}</td>` + BT_H.map(x => `<td>${fmtDur(x * TF_MIN[tf])}</td>`).join('') + '</tr>').join('') + '</table>';
   const per = SG_TFS.map(([tf, tl]) => R.tfs[tf] && R.tfs[tf].from ? `${tl}: ${new Date(R.tfs[tf].from).toLocaleDateString('tr-TR')}'den beri` : '').filter(Boolean).join(' · ');
   h += `<div class="bt-note"><b>Nasıl okunur:</b> "%58" = sinyalden sonra o kadar mum beklendiğinde fiyat 100 sinyalin 58'inde sinyal yönüne gitmiş. Altındaki küçük yazı sinyal sayısı ve ortalama getiri. "rastgele" satırı, aynı coinlerde herhangi bir mumdan sonra fiyatın o yöne gitme oranı: sinyal ancak bundan <b>belirgin şekilde yüksekse</b> işe yarıyor demektir.
-    <br><span class="up-t">Yeşil hücre</span>: rastgeleden en az 3 puan iyi · <span class="down-t">kırmızı</span>: 3 puan kötü (en az 20 sinyal varsa).
-    <br>Dönem: ${per}. Test: ${new Date(R.t).toLocaleString('tr-TR')}, ${R.coins} coin, eşik %${(R.lvl * 100).toFixed(0)}.
+    <br><span class="up-t">Yeşil hücre</span>: rastgeleden en az 3 puan iyi · <span class="down-t">kırmızı</span>: 3 puan kötü (en az 10 sinyal varsa).
+    <br>Dönem: ${per}. Test: ${new Date(R.t).toLocaleString('tr-TR')}, sadece ${esc(nm)}, eşik %${(R.lvl * 100).toFixed(0)}.
+    <br>Tek coinde sinyal sayısı azdır: 20'nin altındaki sayılarda sonuç büyük ölçüde şansa bağlı olabilir.
     <br>Komisyon ve kayma dahil değil. Geçmiş başarı geleceği garanti etmez; kısa zaman dilimlerinde (5 dk) veri sadece birkaç günü kapsar.</div>`;
   el.innerHTML = h;
+}
+function btOpen(sym){
+  BT.sym = sym || S.symbol;
+  btShow(true);
+  const c = BT.cache[BT.sym];
+  if (!c || Date.now() - c.t > 30 * 60000 || c.lvl !== SG.lvl) btRun(BT.sym);
 }
 function btShow(on){ $('btBody').hidden = !on; $('sgList').hidden = on; $('sgInfo').hidden = on; $('sgTf').hidden = on; document.querySelector('.sg-ls').hidden = on; if (on) btRender(); }
 $('btBody').addEventListener('click', e => {
@@ -4452,8 +4459,7 @@ $('btBody').addEventListener('click', e => {
   if (t.closest('[data-btback]')){ btShow(false); return; }
   if (t.closest('[data-btv]')) BT.view = t.closest('[data-btv]').dataset.btv;
   else if (t.closest('[data-btw]')) BT.week = !BT.week;
-  else if (t.closest('[data-btn]')){ BT.coins = +t.closest('[data-btn]').dataset.btn; store.set('vg_bt_n', BT.coins); }
-  else if (t.closest('[data-btrun]')){ btRun(); }
+  else if (t.closest('[data-btrun]')){ btRun(BT.sym); }
   else return;
   btRender();
 });
