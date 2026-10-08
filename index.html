@@ -27,6 +27,7 @@
   color-scheme:light;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
@@ -212,6 +213,30 @@ input{-webkit-user-select:text;user-select:text}
   transform:translateY(100%);transition:transform .25s ease;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 #wSheet.open{transform:none}
+.bt-chip{background:var(--accent) !important;color:#000 !important;font-weight:700}
+.bt-sec{padding:12px 12px 4px;font-weight:700;font-size:15px}
+.bt-t{width:calc(100% - 16px);margin:0 8px;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums}
+.bt-t th{color:var(--muted);font-weight:500;font-size:11px;padding:4px 2px;text-align:center}
+.bt-t td{padding:6px 2px;text-align:center;border-top:1px solid var(--rowline)}
+.bt-t td:first-child,.bt-t th:first-child{text-align:left;padding-left:4px;font-weight:600}
+.bt-t td small{display:block;color:var(--muted);font-size:10px;font-weight:400}
+.bt-t td.g{background:rgba(14,203,129,.16)} .bt-t td.r{background:rgba(246,70,93,.14)}
+.bt-t tr.base td{color:var(--muted);font-size:11px}
+.bt-note{margin:8px 12px;font-size:12px;color:var(--muted);line-height:1.5}
+.bt-best{margin:8px 12px;padding:10px 12px;border-radius:10px;background:var(--panel);font-size:13px;line-height:1.55}
+.sg-ls{display:flex;gap:8px;padding:0 12px 10px}
+.sg-ls button{flex:1;padding:12px 0;border-radius:10px;font-size:16px;font-weight:800;background:var(--panel2);color:var(--muted)}
+.sg-ls button.on[data-sgd="long"]{background:var(--up);color:#fff}
+.sg-ls button.on[data-sgd="short"]{background:var(--down);color:#fff}
+.sg-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 12px;border-bottom:1px solid var(--rowline)}
+.sg-row:active{background:var(--panel)}
+.sg-row b{font-size:15px}
+.sg-row .nw{font-size:10px;font-weight:800;padding:2px 6px;border-radius:8px;background:var(--accent);color:#000;margin-left:6px;vertical-align:middle}
+.sg-row small{display:block;color:var(--muted);font-size:11px;margin-top:3px;font-variant-numeric:tabular-nums;line-height:1.5}
+.sg-st{text-align:right;min-width:86px}
+.sg-st b{font-size:16px}
+.sg-bar{height:5px;border-radius:3px;background:var(--panel2);margin-top:5px;overflow:hidden}
+.sg-bar i{display:block;height:100%}
 .xsheet{position:fixed;inset:0;z-index:26;background:var(--bg);display:flex;flex-direction:column;
   transform:translateY(100%);transition:transform .25s ease;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);touch-action:pan-x pan-y}
@@ -416,6 +441,7 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="main" id="drawToggle"><span class="i">✎</span>Çizim</button>
     <button class="main" id="alarmBtn"><span class="i">⏰<em class="badge" id="alBadge"></em></span>Alarm</button>
     <button class="main" id="mktBtn"><span class="i">📈</span>Piyasa</button>
+    <button class="main" id="sigBtn"><span class="i">🎯</span>Sinyal</button>
     <button class="main" id="toolsBtn"><span class="i">🛠<em class="badge dot" id="toolsDot"></em></span>Araçlar</button>
     <button class="main" id="goLive"><span class="i">⇥</span>Canlı</button>
   </footer>
@@ -557,6 +583,14 @@ a.chip{text-decoration:none;display:inline-block}
 <div id="hmSheet" class="xsheet">
   <div class="al-head"><span id="hmTitle">🕐 Saat haritası</span><span class="sp"></span><button class="xclose" data-close="hm">Kapat</button></div>
   <div class="xbody" id="hmBody"></div>
+</div>
+<div id="sgSheet" class="xsheet">
+  <div class="al-head"><span>🎯 Sinyaller</span><span class="sp"></span><button class="xclose" id="sgClose">Kapat</button></div>
+  <div class="sg-ls"><button id="sgL" data-sgd="long">📈 LONG</button><button id="sgS" data-sgd="short">📉 SHORT</button></div>
+  <div class="xbar" id="sgTf"></div>
+  <div class="w-info" id="sgInfo"></div>
+  <div class="xbody" id="sgList"></div>
+  <div class="xbody" id="btBody" hidden></div>
 </div>
 <div id="accSheet">
   <div class="acc-card">
@@ -4107,6 +4141,324 @@ function coTab(){
 }
 
 if (window.__vgT){ window.__vgT.LM = LM; window.__vgT.CO = CO; window.__vgT.NL = NL; }
+
+/* =====================================================================
+   SİNYALLER: aynı coinde SPOT ve VADELİ piyasada alım (ya da satım) baskısı AYNI ANDA varsa sinyal.
+   Ölçü CVD'dir: son N mumda (piyasa emriyle ALIŞ $) − (piyasa emriyle SATIŞ $).
+   Oran = CVD / toplam hacim  (−1 … +1; +0,05 = alıcılar satıcılardan hacmin %5'i kadar fazla).
+   LONG : spot oran ≥ eşik  VE  vadeli oran ≥ eşik  (ikisinde de net alım)
+   SHORT: spot oran ≤ −eşik VE  vadeli oran ≤ −eşik (ikisinde de net satım)
+   EK KURAL (haftalık açılış): LONG için fiyat bu haftanın açılışının (pazartesi 03:00 TR) ÜSTÜNDE,
+   SHORT için ALTINDA olmalı.
+   "YENİ": bir önceki pencerede (1 mum öncesi) bu şart yoktu, şimdi oluştu.
+   ===================================================================== */
+const SG_TFS = [['5m', '5 dk'], ['15m', '15 dk'], ['1h', '1 sa'], ['4h', '4 sa'], ['1d', '1 gün']];
+const SG_LEVELS = [[0.03, 'Normal'], [0.08, 'Güçlü']];
+const SG_N = 12;                                       // pencere: son 12 mum
+const SG_MAXC = 150;                                   // taranan coin sayısı (en hacimli + favoriler + listeler)
+const SG = { dir: store.get('vg_sg_dir', 'long'), tf: store.get('vg_sg_tf', '15m'), lvl: store.get('vg_sg_lvl', 0.03), onlyNew: false,
+  res: {}, t: {}, running: false, done: 0, total: 0, err: '', noSpot: new Set(), html: '' };
+const sgOpenQ = () => $('sgSheet').classList.contains('open');
+function sgUniverse(){
+  const set = new Set();
+  for (const s of S.favs) if (S.symbols[s] && !S.symbols[s].tradfi) set.add(s);
+  for (const l of S.lists) for (const s of l.syms) if (S.symbols[s] && !S.symbols[s].tradfi) set.add(s);
+  const top = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && S.symbols[s].quote === 'USDT' && S.tickers[s]).sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0));
+  for (const s of top){ if (set.size >= SG_MAXC) break; set.add(s); }
+  return [...set].filter(s => !SG.noSpot.has(s));
+}
+function sgWin(kl, endOff){                           // endOff=0: son pencere, 1: bir mum önceki pencere
+  const n = kl.length, a = n - SG_N - endOff, b = n - endOff;
+  if (a < 0) return null;
+  let vol = 0, cvd = 0;
+  for (let i = a; i < b; i++){ const q = +kl[i][7], tb = +kl[i][10]; vol += q; cvd += 2 * tb - q; }
+  return { vol, cvd, r: vol > 0 ? cvd / vol : 0, p0: +kl[a][1], p1: +kl[b - 1][4], lastR: (() => { const q = +kl[b - 1][7]; return q > 0 ? (2 * +kl[b - 1][10] - q) / q : 0; })() };
+}
+// Haftalık açılış: önce "Hafta" bölümünün önbelleğine bakılır, yoksa coin için tek istek (ağırlık 1)
+async function sgWeekOpen(sym){
+  const start = utcWeekStart();
+  if (WK.key !== start){
+    WK.open = {}; WK.key = start;
+    const c = store.get('vg_weekopen', null);
+    if (c && c.k === start && c.o) WK.open = c.o;
+  }
+  if (WK.open[sym] > 0) return WK.open[sym];
+  try{
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1w&limit=1`);
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (Array.isArray(j) && j.length && +j[0][0] === start && +j[0][1] > 0){ WK.open[sym] = +j[0][1]; return WK.open[sym]; }
+  }catch(e){}
+  return null;
+}
+async function sgScan(){
+  if (SG.running) return;
+  const tf = SG.tf, syms = sgUniverse();
+  SG.running = true; SG.err = ''; SG.done = 0; SG.total = syms.length; sgRender();
+  const out = {}; let i = 0, stop = false;
+  const worker = async () => {
+    for (;;){
+      const k = i++; if (stop || k >= syms.length) return;
+      const sym = syms[k], sp = spotOf(sym);
+      try{
+        const [fr, sr, wo] = await Promise.all([
+          fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${tf}&limit=${SG_N + 2}`),
+          sp ? fetch(`${SPOT_API}/api/v3/klines?symbol=${sp.sym}&interval=${tf}&limit=${SG_N + 2}`) : Promise.resolve(null),
+          sgWeekOpen(sym)
+        ]);
+        if ((fr && (fr.status === 429 || fr.status === 418)) || (sr && (sr.status === 429 || sr.status === 418))){ stop = true; SG.err = 'Binance istek sınırına gelindi; birkaç dakika sonra ↻ ile tekrar dene.'; return; }
+        if (!sr || !sr.ok){ SG.noSpot.add(sym); SG.done++; continue; }
+        const fk = await fr.json(), sk = await sr.json();
+        // bitmemiş son mum da dahil: sinyal canlı oluşur
+        const f0 = sgWin(fk, 0), s0 = sgWin(sk, 0), f1 = sgWin(fk, 1), s1 = sgWin(sk, 1);
+        if (f0 && s0) out[sym] = { sym, f0, s0, f1, s1, spot: sp.sym, wo };
+      }catch(e){}
+      SG.done++;
+      if (SG.done % 15 === 0) sgRender();
+    }
+  };
+  await Promise.all(Array.from({ length: 6 }, worker));
+  SG.res[tf] = out; SG.t[tf] = Date.now();
+  store.set('vg_weekopen', { k: WK.key, o: WK.open });
+  SG.running = false; sgRender();
+}
+function sgRows(){
+  const res = SG.res[SG.tf] || {}, L = SG.lvl, long = SG.dir === 'long', out = [];
+  const ok = (s, f) => long ? (s.r >= L && f.r >= L) : (s.r <= -L && f.r <= -L);
+  const wk = (x, price) => x.wo > 0 && (long ? price > x.wo : price < x.wo);       // haftalık açılış kuralı
+  for (const x of Object.values(res)){
+    if (!ok(x.s0, x.f0) || !wk(x, x.f0.p1)) continue;
+    const fresh = !(x.s1 && x.f1 && ok(x.s1, x.f1) && wk(x, x.f1.p1));
+    if (SG.onlyNew && !fresh) continue;
+    const str = Math.min(Math.abs(x.s0.r), Math.abs(x.f0.r));               // zayıf olan tarafın gücü belirler
+    const mom = long ? (x.s0.lastR > 0 && x.f0.lastR > 0) : (x.s0.lastR < 0 && x.f0.lastR < 0);
+    out.push(Object.assign({ fresh, str, mom, dp: pctCh(x.f0.p0, x.f0.p1), dw: pctCh(x.wo, x.f0.p1) }, x));
+  }
+  out.sort((a, b) => (b.fresh - a.fresh) || (b.str - a.str));
+  return out;
+}
+const sgPct = r => (r >= 0 ? '+' : '−') + '%' + Math.abs(r * 100).toFixed(1);
+function sgRender(){
+  if (!sgOpenQ()) return;
+  $('sgL').classList.toggle('on', SG.dir === 'long'); $('sgS').classList.toggle('on', SG.dir === 'short');
+  const tfh = SG_TFS.map(([v, l]) => `<button class="chip${v === SG.tf ? ' on' : ''}" data-sgt="${v}">${l}</button>`).join('')
+    + '<span class="sepv"></span>' + SG_LEVELS.map(([v, l]) => `<button class="chip${v === SG.lvl ? ' on' : ''}" data-sgl="${v}">${l}</button>`).join('')
+    + `<button class="chip${SG.onlyNew ? ' on' : ''}" data-sgn="1">Sadece yeni</button><button class="chip" data-sgr="1">↻</button>`
+    + '<span class="sepv"></span><button class="chip bt-chip" data-btopen="1">🧪 Geçmiş testi</button>';
+  if ($('sgTf').dataset.h !== tfh){ $('sgTf').dataset.h = tfh; $('sgTf').innerHTML = tfh; }
+  const tfl = (SG_TFS.find(x => x[0] === SG.tf) || [0, SG.tf])[1], long = SG.dir === 'long';
+  let info = `<b>${long ? 'LONG' : 'SHORT'}</b> şartı: son <b>${SG_N} mum</b> (${tfl}) içinde hem <b>spot</b> hem <b>vadeli</b> piyasada net ${long ? 'ALIM' : 'SATIM'} (CVD) en az hacmin <b>%${(SG.lvl * 100).toFixed(0)}</b>'i kadar <b>ve</b> fiyat haftalık açılışın <b>${long ? 'ÜSTÜNDE' : 'ALTINDA'}</b>.`;
+  if (SG.running) info += `<br>Taranıyor… <b>${SG.done}/${SG.total}</b> coin`;
+  else if (SG.t[SG.tf]) info += `<br>Son tarama ${fmtClock(SG.t[SG.tf])} · ${Object.keys(SG.res[SG.tf] || {}).length} coin tarandı (spotu olanlar)`;
+  if (SG.err) info += `<br><span class="bad">${esc(SG.err)}</span>`;
+  info += '<br><span class="muted">Sinyal yatırım tavsiyesi değildir; sadece alım/satım baskısının iki piyasada aynı yönde olduğunu gösterir. Her işlemde zarar-durdur (stop) kullan.</span>';
+  $('sgInfo').innerHTML = info;
+  const rows = sgRows();
+  let html;
+  if (!rows.length) html = `<div class="empty">${SG.running || !SG.t[SG.tf] ? 'Taranıyor, sinyaller birazdan listelenecek…' : `Şu an bu şarta uyan ${long ? 'LONG' : 'SHORT'} sinyali yok.`}</div>`;
+  else html = rows.slice(0, 120).map(x => {
+    const m = S.symbols[x.sym], col = long ? 'var(--up)' : 'var(--down)', w = Math.min(100, x.str / 0.3 * 100);
+    return `<div class="sg-row" data-sym="${x.sym}"><div><b>${esc(m ? m.base : x.sym)}</b>${x.fresh ? '<span class="nw">YENİ</span>' : ''}
+      <small>Spot ${sgPct(x.s0.r)} (${x.s0.cvd >= 0 ? '+' : '−'}$${fvol(Math.abs(x.s0.cvd))}) · Vadeli ${sgPct(x.f0.r)} (${x.f0.cvd >= 0 ? '+' : '−'}$${fvol(Math.abs(x.f0.cvd))})<br>
+      Fiyat ${fpct(x.dp)} · haftalık açılışın ${fpct(x.dw)} ${x.dw >= 0 ? 'üstünde' : 'altında'} · ${x.mom ? 'son mum da aynı yönde ✓' : 'son mumda zayıfladı'}</small></div>
+      <div class="sg-st"><b style="color:${col}">${long ? 'LONG' : 'SHORT'}</b><small>güç %${(x.str * 100).toFixed(1)}</small><div class="sg-bar"><i style="width:${w.toFixed(0)}%;background:${col}"></i></div></div></div>`;
+  }).join('');
+  const el = $('sgList'), st = el.scrollTop;
+  if (SG.html !== html){ SG.html = html; el.innerHTML = html; el.scrollTop = st; }
+}
+function sgKick(){ if (!SG.running && (!SG.t[SG.tf] || Date.now() - SG.t[SG.tf] > 3 * 60000)) sgScan(); }
+function openSig(){ $('sgSheet').classList.add('open'); history.pushState({ sig: 1 }, ''); SG.html = ''; $('sgTf').dataset.h = ''; sgRender(); sgKick(); }
+function closeSig(fromPop){
+  if (!sgOpenQ()) return;
+  $('sgSheet').classList.remove('open');
+  if (!fromPop && history.state && history.state.sig) history.back();
+}
+$('sigBtn').addEventListener('click', openSig);
+$('sgClose').addEventListener('click', () => closeSig());
+window.addEventListener('popstate', () => closeSig(true));
+$('sgSheet').addEventListener('click', e => {
+  const d = e.target.closest('[data-sgd]'), t = e.target.closest('[data-sgt]'), l = e.target.closest('[data-sgl]'),
+        n = e.target.closest('[data-sgn]'), r = e.target.closest('[data-sgr]'), row = e.target.closest('.sg-row[data-sym]');
+  if (d){ SG.dir = d.dataset.sgd; store.set('vg_sg_dir', SG.dir); }
+  else if (t){ SG.tf = t.dataset.sgt; store.set('vg_sg_tf', SG.tf); sgKick(); }
+  else if (l){ SG.lvl = +l.dataset.sgl; store.set('vg_sg_lvl', SG.lvl); }
+  else if (n){ SG.onlyNew = !SG.onlyNew; }
+  else if (r){ sgScan(); }
+  else if (e.target.closest('[data-btopen]')){ btShow(true); return; }
+  else if (row){
+    closeSig();
+    const tf = SG.tf;
+    if (S.interval !== tf){ S.interval = tf; store.set('vg_interval', tf); renderTf(); }
+    if (row.dataset.sym !== S.symbol) selectSymbol(row.dataset.sym); else loadChart();
+    return;
+  }
+  else return;
+  SG.html = ''; sgRender();
+});
+setInterval(() => { if (sgOpenQ() && !document.hidden && $('btBody').hidden){ sgKick(); if (!SG.running) sgRender(); } }, 15000);
+
+/* =====================================================================
+   GEÇMİŞ TESTİ: Sinyal kuralını geçmiş mumlarda dener (telefonda, gerçek Binance verisiyle)
+   - Her zaman dilimi için en hacimli coinlerin son 1000 mumu (spot + vadeli) alınır.
+   - Kapanmış her mumda kural kontrol edilir; sadece YENİ oluşan sinyaller sayılır (aynı sinyal tekrar sayılmaz).
+   - Giriş = sinyal mumunun kapanışı. h mum sonra fiyat sinyal yönünde mi? → başarı.
+   - "Rastgele" satırı: aynı coinlerde HER mumdan sonra fiyatın o yöne gitme oranı (kıyas için taban).
+   ===================================================================== */
+const BT_H = [1, 3, 6, 12, 24];
+const TF_MIN = { '5m': 5, '15m': 15, '1h': 60, '4h': 240, '1d': 1440 };
+const BT = { running: false, done: 0, total: 0, res: store.get('vg_bt', null), view: 'long', week: true, coins: store.get('vg_bt_n', 20), err: '' };
+const fmtDur = m => m < 60 ? m + ' dk' : m < 1440 ? (m / 60 % 1 ? (m / 60).toFixed(1) : m / 60) + ' sa' : (m / 1440 % 1 ? (m / 1440).toFixed(1) : m / 1440) + ' gün';
+function btEmpty(){ const o = {}; for (const h of BT_H) o[h] = { n: 0, win: 0, ret: 0 }; return o; }
+// fk, sk: vadeli ve spot mumları (Binance kline dizileri). L: eşik. Dönüş: long/short (kurallı ve kuralsız) + taban
+function btCompute(fk, sk, L, wmap){                 // wmap: hafta başlangıcı → haftalık açılış (yoksa veriden bulunur)
+  const sm = new Map(sk.map(k => [+k[0], k]));
+  const a = fk.filter(k => sm.has(+k[0])).map(k => { const s = sm.get(+k[0]); return { t: +k[0], o: +k[1], c: +k[4], fq: +k[7], ftb: +k[10], sq: +s[7], stb: +s[10] }; });
+  const n = a.length, N = SG_N, maxH = BT_H[BT_H.length - 1];
+  const out = { L: btEmpty(), S: btEmpty(), Lw: btEmpty(), Sw: btEmpty(), up: btEmpty(), dn: btEmpty() };
+  if (n < N + maxH + 2) return out;
+  const pf = [0], pfv = [0], ps = [0], psv = [0];
+  for (const b of a){ pf.push(pf[pf.length - 1] + 2 * b.ftb - b.fq); pfv.push(pfv[pfv.length - 1] + b.fq); ps.push(ps[ps.length - 1] + 2 * b.stb - b.sq); psv.push(psv[psv.length - 1] + b.sq); }
+  const opens = new Map(a.map(b => [b.t, b.o]));
+  const wo = i => { const ws = weekStartMs(a[i].t); return wmap && wmap.has(ws) ? wmap.get(ws) : opens.get(ws); };
+  const st = i => {                                   // i. mum kapanışındaki durum
+    if (i < N - 1) return null;
+    const fv = pfv[i + 1] - pfv[i + 1 - N], sv = psv[i + 1] - psv[i + 1 - N];
+    if (!(fv > 0) || !(sv > 0)) return null;
+    const fr = (pf[i + 1] - pf[i + 1 - N]) / fv, sr = (ps[i + 1] - ps[i + 1 - N]) / sv, w = wo(i);
+    return { L: fr >= L && sr >= L, S: fr <= -L && sr <= -L, Lw: fr >= L && sr >= L && w > 0 && a[i].c > w, Sw: fr <= -L && sr <= -L && w > 0 && a[i].c < w };
+  };
+  let prev = st(N - 2) || {};
+  for (let i = N - 1; i < n - maxH; i++){
+    const cur = st(i) || {};
+    for (const h of BT_H){
+      const r = a[i + h].c / a[i].c - 1;
+      out.up[h].n++; if (r > 0) out.up[h].win++; out.up[h].ret += r;
+      out.dn[h].n++; if (r < 0) out.dn[h].win++; out.dn[h].ret -= r;
+      for (const k of ['L', 'S', 'Lw', 'Sw']){
+        if (!cur[k] || prev[k]) continue;             // sadece yeni oluşan sinyal
+        const g = k[0] === 'L' ? r : -r;
+        out[k][h].n++; if (g > 0) out[k][h].win++; out[k][h].ret += g;
+      }
+    }
+    prev = cur;
+  }
+  return out;
+}
+function btMerge(A, B){ for (const k in B) for (const h of BT_H){ A[k][h].n += B[k][h].n; A[k][h].win += B[k][h].win; A[k][h].ret += B[k][h].ret; } return A; }
+const BT_PAGES = { '5m': 3, '15m': 2 };              // kısa zaman dilimlerinde daha fazla geçmiş (5 dk ≈ 10 gün, 15 dk ≈ 3 hafta)
+async function btKl(base, tf, pages){                 // geriye doğru sayfa sayfa en fazla pages×1000 mum
+  let all = [], end = null;
+  for (let p = 0; p < pages; p++){
+    const r = await fetch(`${base}&interval=${tf}&limit=1000` + (end ? `&endTime=${end}` : ''));
+    if (r.status === 429 || r.status === 418) return 'limit';
+    if (!r.ok) return p === 0 ? null : all;
+    const j = await r.json(); if (!Array.isArray(j) || !j.length) break;
+    all = j.concat(all.filter(k => +k[0] > +j[j.length - 1][0]));
+    if (j.length < 1000) break;
+    end = +j[0][0] - 1;
+  }
+  return all;
+}
+const BTW = {};
+async function btWeeks(sym){                          // haftalık açılışlar (son ~200 hafta), coin başına bir kez
+  if (BTW[sym]) return BTW[sym];
+  try{
+    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1w&limit=200`);
+    if (r.ok){ const j = await r.json(); if (Array.isArray(j)) return (BTW[sym] = new Map(j.map(k => [+k[0], +k[1]]))); }
+  }catch(e){}
+  return null;
+}
+async function btRun(){
+  if (BT.running) return;
+  BT.running = true; BT.err = '';
+  const coins = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && S.symbols[s].quote === 'USDT' && S.tickers[s] && !SG.noSpot.has(s))
+    .sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0)).slice(0, BT.coins);
+  const tfs = SG_TFS.map(x => x[0]);
+  const jobs = []; for (const tf of tfs) for (const sym of coins) jobs.push([tf, sym]);
+  BT.done = 0; BT.total = jobs.length; btRender();
+  const res = {}; for (const tf of tfs) res[tf] = { out: { L: btEmpty(), S: btEmpty(), Lw: btEmpty(), Sw: btEmpty(), up: btEmpty(), dn: btEmpty() }, coins: 0, from: 0 };
+  let i = 0, stop = false;
+  const worker = async () => {
+    for (;;){
+      const k = i++; if (stop || k >= jobs.length) return;
+      const [tf, sym] = jobs[k], sp = spotOf(sym);
+      try{
+        const pages = BT_PAGES[tf] || 1;
+        const [fk, sk, wm] = await Promise.all([btKl(`${API}/fapi/v1/klines?symbol=${sym}`, tf, pages), btKl(`${SPOT_API}/api/v3/klines?symbol=${sp.sym}`, tf, pages), btWeeks(sym)]);
+        if (fk === 'limit' || sk === 'limit'){ stop = true; BT.err = 'Binance istek sınırı; birkaç dakika sonra tekrar dene (ya da daha az coin seç).'; return; }
+        if (Array.isArray(fk) && Array.isArray(sk) && fk.length && sk.length){
+          // son (bitmemiş) mum hariç
+          btMerge(res[tf].out, btCompute(fk.slice(0, -1), sk.slice(0, -1), SG.lvl, wm));
+          res[tf].coins++; if (fk.length && (!res[tf].from || +fk[0][0] < res[tf].from)) res[tf].from = +fk[0][0];
+        } else if (sk === null) SG.noSpot.add(sym);
+      }catch(e){}
+      BT.done++; if (BT.done % 5 === 0) btRender();
+    }
+  };
+  await Promise.all(Array.from({ length: 4 }, worker));
+  BT.res = { t: Date.now(), lvl: SG.lvl, coins: coins.length, tfs: res };
+  store.set('vg_bt', BT.res);
+  BT.running = false; btRender();
+}
+function btCell(c, base){
+  if (!c.n) return '<td>–</td>';
+  const w = c.win / c.n * 100, b = base.n ? base.win / base.n * 100 : 50, d = w - b;
+  const cls = c.n >= 20 && d >= 3 ? 'g' : c.n >= 20 && d <= -3 ? 'r' : '';
+  return `<td class="${cls}">%${w.toFixed(0)}<small>${c.n} sin. · ort ${(c.ret / c.n * 100 >= 0 ? '+' : '')}${(c.ret / c.n * 100).toFixed(2)}%</small></td>`;
+}
+function btBest(R, key, baseKey){
+  let best = null;
+  for (const tf in R.tfs) for (const h of BT_H){
+    const c = R.tfs[tf].out[key][h], b = R.tfs[tf].out[baseKey][h];
+    if (c.n < 30) continue;
+    const w = c.win / c.n * 100, bw = b.n ? b.win / b.n * 100 : 50;
+    if (!best || w - bw > best.d) best = { tf, h, w, bw, d: w - bw, n: c.n, ret: c.ret / c.n * 100 };
+  }
+  return best;
+}
+function btRender(){
+  const el = $('btBody'); if (el.hidden) return;
+  const long = BT.view === 'long', key = (long ? 'L' : 'S') + (BT.week ? 'w' : ''), baseKey = long ? 'up' : 'dn';
+  let h = `<div class="xbar"><button class="chip" data-btback="1">← Sinyaller</button><button class="chip${long ? ' on' : ''}" data-btv="long">LONG</button><button class="chip${!long ? ' on' : ''}" data-btv="short">SHORT</button>
+    <button class="chip${BT.week ? ' on' : ''}" data-btw="1">Haftalık kural ${BT.week ? 'açık' : 'kapalı'}</button>
+    ${[10, 20, 40].map(v => `<button class="chip${BT.coins === v ? ' on' : ''}" data-btn="${v}">${v} coin</button>`).join('')}
+    <button class="chip bt-chip" data-btrun="1">${BT.running ? 'Çalışıyor…' : '▶ Testi çalıştır'}</button></div>`;
+  if (BT.running) h += `<div class="bt-note">Gerçek Binance verisi indiriliyor ve hesaplanıyor… <b>${BT.done}/${BT.total}</b> (1-3 dakika sürebilir)</div>`;
+  if (BT.err) h += `<div class="bt-note down-t">${esc(BT.err)}</div>`;
+  const R = BT.res;
+  if (!R){ h += `<div class="bt-note">Bu test, sinyal kuralını son ~1000 mumda dener ve "sinyalden sonra fiyat gerçekten o yöne gitti mi?" sorusunu zaman dilimi ve bekleme süresine göre cevaplar. Başlamak için <b>▶ Testi çalıştır</b>'a bas.</div>`; el.innerHTML = h; return; }
+  const best = btBest(R, key, baseKey);
+  h += `<div class="bt-best">${best ? `En iyi sonuç: <b>${(SG_TFS.find(x => x[0] === best.tf) || [])[1]}</b> sinyalinden sonra <b>${fmtDur(best.h * TF_MIN[best.tf])}</b> beklemek → <b>%${best.w.toFixed(0)}</b> başarı (rastgele %${best.bw.toFixed(0)}, ${best.n} sinyal, ortalama ${best.ret >= 0 ? '+' : ''}${best.ret.toFixed(2)}%)${best.d < 3 ? '<br>⚠️ Rastgeleden belirgin fark yok: bu kural bu dönemde avantaj sağlamamış.' : ''}` : 'Yeterli sinyal yok (her hücre için en az 30 sinyal gerekiyor).'}</div>`;
+  h += `<div class="bt-sec">${long ? '📈 LONG' : '📉 SHORT'} sinyali sonrası başarı ${BT.week ? '(haftalık kural dahil)' : '(haftalık kural yok)'}</div>`;
+  h += '<table class="bt-t"><tr><th>Zaman<br>dilimi</th>' + BT_H.map(x => `<th>${x} mum<br>sonra</th>`).join('') + '</tr>';
+  for (const [tf, tl] of SG_TFS){
+    const r = R.tfs[tf]; if (!r) continue;
+    h += `<tr><td>${tl}<small>${r.coins} coin</small></td>` + BT_H.map(x => btCell(r.out[key][x], r.out[baseKey][x])).join('') + '</tr>';
+    h += `<tr class="base"><td>rastgele</td>` + BT_H.map(x => { const b = r.out[baseKey][x]; return `<td>${b.n ? '%' + (b.win / b.n * 100).toFixed(0) : '–'}</td>`; }).join('') + '</tr>';
+  }
+  h += '</table>';
+  h += '<div class="bt-sec" style="font-size:13px">Bekleme süreleri (gerçek zaman)</div><table class="bt-t"><tr><th></th>' + BT_H.map(x => `<th>${x} mum</th>`).join('') + '</tr>'
+    + SG_TFS.map(([tf, tl]) => `<tr><td>${tl}</td>` + BT_H.map(x => `<td>${fmtDur(x * TF_MIN[tf])}</td>`).join('') + '</tr>').join('') + '</table>';
+  const per = SG_TFS.map(([tf, tl]) => R.tfs[tf] && R.tfs[tf].from ? `${tl}: ${new Date(R.tfs[tf].from).toLocaleDateString('tr-TR')}'den beri` : '').filter(Boolean).join(' · ');
+  h += `<div class="bt-note"><b>Nasıl okunur:</b> "%58" = sinyalden sonra o kadar mum beklendiğinde fiyat 100 sinyalin 58'inde sinyal yönüne gitmiş. Altındaki küçük yazı sinyal sayısı ve ortalama getiri. "rastgele" satırı, aynı coinlerde herhangi bir mumdan sonra fiyatın o yöne gitme oranı: sinyal ancak bundan <b>belirgin şekilde yüksekse</b> işe yarıyor demektir.
+    <br><span class="up-t">Yeşil hücre</span>: rastgeleden en az 3 puan iyi · <span class="down-t">kırmızı</span>: 3 puan kötü (en az 20 sinyal varsa).
+    <br>Dönem: ${per}. Test: ${new Date(R.t).toLocaleString('tr-TR')}, ${R.coins} coin, eşik %${(R.lvl * 100).toFixed(0)}.
+    <br>Komisyon ve kayma dahil değil. Geçmiş başarı geleceği garanti etmez; kısa zaman dilimlerinde (5 dk) veri sadece birkaç günü kapsar.</div>`;
+  el.innerHTML = h;
+}
+function btShow(on){ $('btBody').hidden = !on; $('sgList').hidden = on; $('sgInfo').hidden = on; $('sgTf').hidden = on; document.querySelector('.sg-ls').hidden = on; if (on) btRender(); }
+$('btBody').addEventListener('click', e => {
+  const t = e.target;
+  if (t.closest('[data-btback]')){ btShow(false); return; }
+  if (t.closest('[data-btv]')) BT.view = t.closest('[data-btv]').dataset.btv;
+  else if (t.closest('[data-btw]')) BT.week = !BT.week;
+  else if (t.closest('[data-btn]')){ BT.coins = +t.closest('[data-btn]').dataset.btn; store.set('vg_bt_n', BT.coins); }
+  else if (t.closest('[data-btrun]')){ btRun(); }
+  else return;
+  btRender();
+});
+if (window.__vgT) window.__vgT.btCompute = btCompute;
+
 
 /* ---------- Uygulama olarak yükleme (PWA) ---------- */
 let instEvt = null;
