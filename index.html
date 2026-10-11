@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#0b0e11">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -48,6 +49,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 #favBtn{font-size:22px;color:var(--muted);width:34px;height:34px}
 #favBtn.on{color:var(--accent)}
 #themeBtn{font-size:18px;width:34px;height:34px;color:var(--muted)}
+#c2Btn{font-size:20px;width:32px;height:32px;color:var(--muted);border-radius:8px}
+#c2Btn.on{color:#000;background:var(--accent)}
 .stats span{white-space:nowrap}
 .stats{display:flex;gap:10px;overflow:hidden;padding:0 12px 6px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .stats b{color:var(--text);font-weight:500}
@@ -72,8 +75,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* Alt araç çubuğu */
 .tools{display:flex;border-top:1px solid var(--line);background:var(--panel)}
-.tools button{flex:1;min-width:0;padding:10px 0 8px;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);white-space:nowrap}
-.tools button .i{font-size:19px;line-height:1;position:relative}
+.tools button{flex:1 1 auto;min-width:0;padding:9px 1px 8px;overflow:hidden;letter-spacing:-.2px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:var(--muted);white-space:nowrap}
+.tools button .i{font-size:19px;line-height:1;position:relative;height:22px;display:flex;align-items:center}
+.tools button .i .ic{width:22px;height:22px;border-radius:6px;object-fit:cover;display:block}
+.tools button .i.star{color:#f0b90b;font-size:21px}
+.tools .ls{display:none}
+@media (max-width:384px){ .tools .lf{display:none} .tools .ls{display:inline} .tools button{font-size:9.5px} }
 .tools button:disabled{opacity:.4}
 .tools button.main{color:var(--text)}
 
@@ -256,7 +263,7 @@ input{-webkit-user-select:text;user-select:text}
 #mnSheet.open{display:flex}
 .mn-card{width:100%;max-width:480px;background:var(--panel);border-radius:16px 16px 0 0;padding:6px 0 calc(8px + env(safe-area-inset-bottom));
   max-height:85dvh;overflow-y:auto;border-top:1px solid var(--line)}
-.mn-group{display:none} #mnSheet[data-g="mkt"] .mn-group[data-group="mkt"], #mnSheet[data-g="tools"] .mn-group[data-group="tools"]{display:block}
+.mn-group{display:none} #mnSheet[data-g="ind"] .mn-group[data-group="ind"]{display:block}
 .mn-h{padding:12px 16px 6px;font-weight:700;font-size:16px}
 .mn-h small{font-weight:400;color:var(--muted);font-size:12px;margin-left:6px}
 .mn-i{display:flex;align-items:center;gap:12px;width:100%;padding:11px 16px;text-align:left}
@@ -319,19 +326,6 @@ input{-webkit-user-select:text;user-select:text}
 .ls-row .nm{flex:1} .ls-row .tick{width:24px;height:24px;border-radius:6px;border:2px solid var(--staroff);display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;color:#000}
 .ls-row.on .tick{background:var(--accent);border-color:var(--accent)}
 .ls-row .mini{color:var(--muted);font-size:15px;padding:4px 6px}
-#tarSheet{position:fixed;inset:0;z-index:26;background:var(--bg);display:flex;flex-direction:column;
-  transform:translateY(100%);transition:transform .25s ease;
-  padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom);touch-action:pan-x pan-y}
-#tarSheet.open{transform:none}
-#tarTabs,#tarBar{display:flex;gap:6px;padding:0 12px 8px;align-items:center;touch-action:pan-x;overflow-x:auto;scrollbar-width:none}
-#tarTabs::-webkit-scrollbar,#tarBar::-webkit-scrollbar{display:none}
-#tarBar .sepv{flex:0 0 1px;align-self:stretch;background:var(--line);margin:0 2px}
-#tarList{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.t-row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--rowline)}
-.t-row:active{background:var(--panel)}
-.t-row b{font-size:15px} .t-row small{display:block;color:var(--muted);font-size:11px;margin-top:1px;font-variant-numeric:tabular-nums}
-.t-px{font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
-.t-pct{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums;text-align:right;min-width:72px}
 #instBtn{font-size:18px;width:34px;height:34px;color:var(--accent)}
 #accBtn{font-size:17px;width:34px;height:34px;color:var(--muted);border-radius:50%}
 #accBtn.in{color:#000;background:var(--accent);font-size:14px;font-weight:700;width:28px;height:28px;margin:0 3px}
@@ -405,11 +399,12 @@ a.chip{text-decoration:none;display:inline-block}
     <button id="symBtn" aria-label="Coin seç"><span id="symBase">BTC</span><span class="q" id="symQuote">USDT</span><span class="caret">▾</span></button>
     <button id="favBtn" aria-label="Favori">☆</button>
     <button id="themeBtn" aria-label="Koyu / açık tema">🌙</button>
+    <button id="c2Btn" aria-label="İkinci grafik" title="İkinci grafik">◫</button>
     <button id="accBtn" aria-label="Hesap" hidden>👤</button>
     <button id="instBtn" aria-label="Uygulamayı yükle" hidden>📲</button>
     <div class="px"><div id="price">–</div><div id="chg">–</div></div>
   </header>
-  <div class="stats">
+  <div class="stats" hidden>
     <span>24s Y <b id="hi">–</b></span>
     <span>24s D <b id="lo">–</b></span>
     <span>Hacim <b id="qv">–</b></span>
@@ -431,19 +426,23 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="dt" data-tool="hray"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.5"/><path d="M7.5 12H22"/></svg>Yatay ışın</button>
     <button class="dt" data-tool="vline"><svg viewBox="0 0 24 24"><path d="M12 2v7.5M12 14.5V22"/><circle cx="12" cy="12" r="2.5"/></svg>Dikey çizgi</button>
     <button class="dt" data-tool="trend"><svg viewBox="0 0 24 24"><path d="M6.8 17.2L17.2 6.8"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="5" r="2.5"/></svg>Trend</button>
-    <button class="dt" data-tool="measure"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 16V8M9 11l3-3 3 3"/></svg>Ölçü (% / süre)</button>
+    <button class="dt" data-tool="measure"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/><path d="M5 3h4M5 21h4" opacity=".6"/></svg>Ölçü %</button>
+    <button class="dt" data-tool="tmeasure"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/><path d="M3 5v4M21 5v4" opacity=".6"/></svg>Zaman ↔️</button>
     <button class="dt sep" data-act="magnet"><svg viewBox="0 0 24 24"><path d="M6 3v9a6 6 0 0 0 12 0V3"/><path d="M6 7h3.5M14.5 7H18"/></svg>Mıknatıs</button>
+    <button class="dt" data-act="save" id="dSave" hidden><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>Kaydet</button>
     <button class="dt" data-act="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Paylaş</button>
     <button class="dt" data-act="clear"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>Temizle</button>
   </div>
   <footer class="tools">
-    <button class="main" id="openList"><span class="i">☰</span>Coinler</button>
-    <button class="main" id="tfBtn"><span class="i">📈</span>TradFi</button>
+    <button class="main" id="favListBtn"><span class="i star">★</span><span class="lf">Favoriler</span><span class="ls">Favori</span></button>
+    <button class="main" id="openList"><span class="i"><img class="ic" alt="" src="data:image/jpeg;base64,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"></span>Coin</button>
+    <button class="main" id="tfBtn"><span class="i"><img class="ic" alt="" src="data:image/jpeg;base64,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"></span>TradFi</button>
+    <button class="main" id="metBtn"><span class="i">🥇</span><span class="lf">Metaller</span><span class="ls">Metal</span></button>
+    <button class="main" id="fxBtn"><span class="i">💱</span>Döviz</button>
+    <button class="main" id="idxBtn"><span class="i">🏛️</span>Endeks</button>
     <button class="main" id="drawToggle"><span class="i">✎</span>Çizim</button>
     <button class="main" id="alarmBtn"><span class="i">⏰<em class="badge" id="alBadge"></em></span>Alarm</button>
-    <button class="main" id="mktBtn"><span class="i">📈</span>Piyasa</button>
-    <button class="main" id="sigBtn"><span class="i">🎯</span>Sinyal</button>
-    <button class="main" id="toolsBtn"><span class="i">🛠<em class="badge dot" id="toolsDot"></em></span>Araçlar</button>
+    <button class="main" id="indBtn"><span class="i">📐<em class="badge dot" id="toolsDot"></em></span><span class="lf">Göstergeler</span><span class="ls">Gösterge</span></button>
     <button class="main" id="goLive"><span class="i">⇥</span>Canlı</button>
   </footer>
 </div>
@@ -524,27 +523,19 @@ a.chip{text-decoration:none;display:inline-block}
 </div>
 <div id="mnSheet">
   <div class="mn-card">
-    <div class="mn-group" data-group="mkt">
+    <div class="mn-group" data-group="ind">
       <div class="mn-h">📈 Piyasa <small>tüm coinleri tarayan bölümler</small></div>
       <button class="mn-i" id="wallBtn"><span class="ic">🧱</span><span class="tx"><b>Wall · emir duvarları</b><small>Büyük alış/satış emirleri; fiyat yaklaşınca çekilen “sahte” duvarlar</small></span></button>
       <button class="mn-i" id="wkBtn"><span class="ic">📊</span><span class="tx"><b>Haftalık değişim</b><small>Pazartesi 03:00 açılışına göre en çok yükselen / düşen</small></span></button>
-      <button class="mn-i" data-tar="scr"><span class="ic">⚡</span><span class="tx"><b>Screener</b><small>5 dk %3, 15 dk %5, 1 sa %10 hareket edenler</small></span></button>
-      <button class="mn-i" data-tar="fund"><span class="ic">💸</span><span class="tx"><b>Fonlama oranları</b><small>Long mu short mu ödüyor; sonraki fonlamaya kalan süre</small></span></button>
-      <button class="mn-i" data-tar="liq"><span class="ic">💥</span><span class="tx"><b>Likidasyonlar</b><small>Zorla kapatılan pozisyonlar, kaskad uyarısı</small></span></button>
-      <button class="mn-i" data-tar="whr"><span class="ic">🐋</span><span class="tx"><b>Balina radarı</b><small>20 coinde aynı anda büyük emirler ve net balina akışı</small></span></button>
-      <button class="mn-i" data-tar="corr"><span class="ic">🧭</span><span class="tx"><b>BTC'den bağımsız</b><small>BTC'ye rağmen yükselen / düşen, kendi yolunda gidenler</small></span></button>
-      <button class="mn-i" data-tar="new"><span class="ic">🆕</span><span class="tx"><b>Yeni listelemeler</b><small>Binance'e yeni eklenen ve yakında açılacak kontratlar</small></span></button>
-    </div>
-    <div class="mn-group" data-group="tools">
+      <div class="mn-h">🎯 Sinyal</div>
+      <button class="mn-i" data-sig="1"><span class="ic">🎯</span><span class="tx"><b>Sinyaller</b><small>Spot + vadeli CVD aynı yönde ve haftalık açılış kuralı · LONG / SHORT · geçmiş testi</small></span></button>
       <div class="mn-h">🛠 Grafik araçları <small>seçili coin için</small></div>
-      <button class="mn-i" data-c2="1"><span class="ic">▤</span><span class="tx"><b>İkinci grafik</b><small>Aynı coin, farklı zaman dilimi, altta</small></span><span class="st" id="stC2"></span></button>
       <button class="mn-i" data-wh="1"><span class="ic">🐋</span><span class="tx"><b>Balina işlemleri</b><small>Büyük emirler grafikte baloncuk olarak, alıcı/satıcı baskısı, dev balina uyarısı</small></span><span class="st" id="stWh"></span></button>
       <button class="mn-i" data-cr="1"><span class="ic">👥</span><span class="tx"><b>Kalabalık</b><small>Açık pozisyon, long/short oranı, kim baskın</small></span></button>
       <button class="mn-i" data-cvd="1"><span class="ic">〽️</span><span class="tx"><b>CVD</b><small>Piyasa emriyle alan − satan; yükselişi kim itiyor</small></span><span class="st" id="stCvd"></span></button>
       <button class="mn-i" data-lm="1"><span class="ic">💧</span><span class="tx"><b>Likidite haritası (tahmini)</b><small>Likidasyonların yığıldığı tahmini fiyat bantları</small></span><span class="st" id="stLm"></span></button>
       <button class="mn-i" data-sv="1"><span class="ic">⚖️</span><span class="tx"><b>Spot ve vadeli</b><small>Hareketi gerçek alıcılar mı, kaldıraç mı yapıyor</small></span></button>
       <button class="mn-i" data-hm="1"><span class="ic">🕐</span><span class="tx"><b>Saat haritası</b><small>Bu coin hangi saatlerde hareketli, hangi saatlerde yükseliyor</small></span></button>
-      <button class="mn-i" data-share="1"><span class="ic">📤</span><span class="tx"><b>Grafiği paylaş</b><small>Grafik + çizimler tek resim olarak</small></span></button>
     </div>
     <button class="mn-x" id="mnClose">Kapat</button>
   </div>
@@ -554,13 +545,6 @@ a.chip{text-decoration:none;display:inline-block}
     <div class="acc-top"><b id="lsTitle">📋 Listeler</b><span class="sp"></span><button id="lsClose">Kapat</button></div>
     <div id="lsBody"></div>
   </div>
-</div>
-<div id="tarSheet">
-  <div class="al-head"><span>📡 Tara</span><span class="sp"></span><button id="tarClose">Kapat</button></div>
-  <div id="tarTabs"><button class="chip" data-tt="scr">⚡ Screener</button><button class="chip" data-tt="fund">💸 Fonlama</button><button class="chip" data-tt="liq">💥 Likidasyon</button><button class="chip" data-tt="whr">🐋 Radar</button><button class="chip" data-tt="corr">🧭 BTC'den bağımsız</button><button class="chip" data-tt="new">🆕 Yeni</button></div>
-  <div class="w-info" id="tarInfo"></div>
-  <div id="tarBar"></div>
-  <div id="tarList"></div>
 </div>
 <div id="crSheet">
   <div class="al-head"><span id="crTitle">👥 Kalabalık</span><span class="sp"></span><button id="crClose">Kapat</button></div>
@@ -621,6 +605,8 @@ const NS = (() => { try{ const u = localStorage.getItem('vg_uid'); return u ? 'u
 const PRIV_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_.+|vg_seen|vg_cdirty|vg_guestasked)$/;
 const nsKey = k => NS && PRIV_RE.test(k) ? NS + k : k;
 let cloudHook = null;
+// İptal edilen bölümlerin (Screener, Fonlama, Likidasyon, Balina radarı, BTC'den bağımsız, Yeni listelemeler) eski kayıtları silinir
+try{ ['vg_scr_rule','vg_scr_dir','vg_tar_tab','vg_fnd_sort','vg_lq_min','vg_lq_alert','vg_lq_aUsd','vg_wr_view','vg_co_mode','vg_known','vg_newlist','vg_upseen','vg_tfkind'].forEach(k => localStorage.removeItem(k)); }catch(e){}
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(nsKey(k)); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(nsKey(k), JSON.stringify(v)); }catch(e){} if (cloudHook) cloudHook(k); }
@@ -845,16 +831,27 @@ function pushRaw(row){
 // Mumları hızlı getir: ilk yüklemede 300 mum (eskiler kaydırınca gelir); listede coine dokunur dokunmaz ön yükleme başlar
 const FIRST_N = 300;
 const PRE = {};
+/* Ortak mum çekici: Binance ya da Hyperliquid. Dönüş her zaman Binance biçiminde dizi:
+   [açılışZamanı, açılış, yüksek, düşük, kapanış, hacim, kapanışZamanı, dolarHacmi, işlemSayısı, alışHacmi, alışDolarHacmi]
+   (Hyperliquid alış/satış ayrımı vermez; bu alanlar null olur.) */
+const isHL = sym => !!(S.symbols[sym] && S.symbols[sym].src === 'hl');
+async function getKl(sym, iv, o){
+  o = o || {};
+  if (isHL(sym)) return hlKlines(sym, iv, o);
+  let u = `${API}/fapi/v1/klines?symbol=${sym}&interval=${iv}&limit=${o.limit || FIRST_N}`;
+  if (o.endTime) u += `&endTime=${o.endTime}`;
+  if (o.startTime) u += `&startTime=${o.startTime}`;
+  const r = await fetch(u);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
 function fetchKlines(sym, iv){
   iv = srcInterval(sym, iv);
   const key = sym + '|' + iv, now = Date.now();
   const c = PRE[key];
   if (c && now - c.t < 30000) return c.p;
   for (const k of Object.keys(PRE)) if (now - PRE[k].t > 60000) delete PRE[k];
-  const p = fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${iv}&limit=${FIRST_N}`).then(r => {
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return r.json();
-  });
+  const p = getKl(sym, iv, { limit: FIRST_N });
   PRE[key] = { t: now, p };
   p.catch(() => { if (PRE[key] && PRE[key].p === p) delete PRE[key]; });
   return p;
@@ -864,7 +861,6 @@ async function loadChart(){
   const token = ++loadToken;
   const { symbol, interval } = S;
   if (window.__c2Load) window.__c2Load();
-  if (window.__frLoad) window.__frLoad();
   if (window.__whLoad) window.__whLoad();
   if (window.__lmLoad) window.__lmLoad();
   closeKlineWs();
@@ -911,8 +907,7 @@ async function fetchOlderBars(token){
   for (let i = 0; i < 8; i++){
     const weekly = S.interval === '1w' && isTradfi(S.symbol);
     const end = weekly ? (S.candles[0].time - TZ) * 1000 - 1 : S.rawFirst - 1;
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${S.symbol}&interval=${srcInterval(S.symbol, S.interval)}&limit=1000&endTime=${end}`);
-    const data = await r.json();
+    const data = await getKl(S.symbol, srcInterval(S.symbol, S.interval), { limit: 1000, endTime: end });
     if (token !== loadToken) return false;
     if (!Array.isArray(data) || !data.length){ S.noMoreOld = true; return false; }
     if (!weekly) S.rawFirst = data[0][0];
@@ -950,6 +945,7 @@ function applyBar(b){
   if (!S.hovering) setLegend(b);
 }
 function openKlineWs(token){
+  if (isHL(S.symbol)){ hlWatchCandles(S.symbol, S.interval, token); S.ws = { hl: true, close(){} }; S.lastKline = Date.now(); return; }
   const ws = new WebSocket(`${WS}/${S.symbol.toLowerCase()}@kline_${srcInterval(S.symbol, S.interval)}`);
   S.ws = ws;
   S.lastKline = Date.now();
@@ -966,6 +962,7 @@ function openKlineWs(token){
   };
 }
 function closeKlineWs(){
+  if (typeof HLW !== 'undefined') hlUnwatchCandles();
   const ws = S.ws; S.ws = null;
   if (ws){ ws.onclose = null; ws.onmessage = null; try{ ws.close(); }catch(e){} }
 }
@@ -974,18 +971,17 @@ function closeKlineWs(){
 let livePolling = false, lastReopen = 0;
 setInterval(async () => {
   if (document.hidden || livePolling || !S.candles.length || !S.ws) return;
-  const quiet = Date.now() - (S.lastKline || 0);
-  if (quiet < 2000) return;
+  const quiet = Date.now() - (S.lastKline || 0), hl = isHL(S.symbol);
+  if (quiet < (hl ? 6000 : 2000)) return;
+  if (hl && Date.now() - (S.lastPoll || 0) < 4000) return;      // Hyperliquid istek sınırına takılmamak için en fazla 4 sn'de bir
   if (quiet > 10000 && Date.now() - lastReopen > 10000){
     lastReopen = Date.now();
-    closeKlineWs(); openKlineWs(loadToken);
+    if (hl){ if (typeof HLW !== 'undefined') hlReconnect(); } else { closeKlineWs(); openKlineWs(loadToken); }
   }
-  livePolling = true;
+  livePolling = true; S.lastPoll = Date.now();
   const token = loadToken, sym = S.symbol, iv = S.interval;
   try{
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${srcInterval(sym, iv)}&limit=2`);
-    if (!r.ok) return;
-    const data = await r.json();
+    const data = await getKl(sym, srcInterval(sym, iv), { limit: 2 });
     if (token !== loadToken || sym !== S.symbol || iv !== S.interval || !Array.isArray(data)) return;
     setLiveMode('poll');
     data.forEach(pushRaw);
@@ -1031,8 +1027,8 @@ requestAnimationFrame(cdFrame);
 /* ---------- Üst bilgi ---------- */
 function updateHeader(){
   const m = S.symbols[S.symbol];
-  $('symBase').textContent = m ? m.base : S.symbol;
-  $('symQuote').textContent = m ? m.quote + ' Sürekli' : '';
+  $('symBase').textContent = m ? (m.src === 'hl' && m.label && m.label.length <= 8 ? m.label : m.base) : S.symbol;
+  $('symQuote').textContent = m ? (m.src === 'hl' ? 'HL' : m.quote + ' Sürekli') : '';
   const t = S.tickers[S.symbol] || {};
   const last = S.candles.length ? S.candles[S.candles.length - 1].close : t.last;
   const pe = $('price');
@@ -1076,14 +1072,39 @@ $('tfBar').addEventListener('click', e => {
 const TF_NONSTOCK = new Set(['XAU','XAG','XPT','XPD','XCU','CL','BZ','NG','NATGAS','OIL','BRENT','WTI','COPPER','PLATINUM','PALLADIUM',
   'SILVER','GOLD','EUR','GBP','JPY','AUD','CHF','CAD','TRY','SPX','NDX','DJI','NAS100','US500','US30']);
 const tfIsStock = m => !TF_NONSTOCK.has(String(m.base).toUpperCase());
+/* Alt çubuk grupları. TradFi kontratları adlarına göre ayrılır; altın tokenları (PAXG, XAUT) ve
+   EUR gibi döviz stabil coin kontratları da ilgili gruba eklenir. Binance'te o an olmayan semboller görünmez. */
+const G_METAL = new Set(['XAU','XAG','XPT','XPD','XCU','COPPER','GOLD','SILVER','PLATINUM','PALLADIUM','CL','BZ','NG','NATGAS','OIL','WTI','BRENT','UKOIL','USOIL','CRUDE']);
+const G_GOLDTOK = new Set(['PAXG','XAUT']);
+const G_FX = new Set(['EUR','GBP','JPY','AUD','CHF','CAD','NZD','TRY','CNH','MXN','ZAR','SGD','HKD','SEK','NOK','EURUSD','GBPUSD','USDJPY','AUDUSD','USDCHF','USDCAD','NZDUSD','USDTRY','EURGBP','EURJPY','GBPJPY']);
+const G_INDEX = new Set(['SPX','SPX500','US500','SP500','ES','NDX','NAS100','US100','NQ','DJI','US30','DOW','YM','DAX','GER40','DE40','GER30','UK100','FTSE','FRA40','CAC40','CAC','EU50','STOXX50','SX5E','ESTX50','JP225','JPN225','NIKKEI','N225','NKY','HK50','HSI','HANGSENG','AUS200','ASX200','CN50','CHINA50','A50','IND50','NIFTY','RUT','US2000','VIX','KOSPI','KS200']);
+function symGroup(sym){
+  const m = S.symbols[sym]; if (!m) return 'coin';
+  if (m.src === 'hl') return m.hlGroup;
+  const b = String(m.base).toUpperCase();
+  if (G_GOLDTOK.has(b)) return 'metal';
+  if (m.tradfi){ if (G_METAL.has(b)) return 'metal'; if (G_FX.has(b)) return 'fx'; if (G_INDEX.has(b)) return 'index'; return 'stock'; }
+  if (G_FX.has(b)) return 'fx';
+  return 'coin';
+}
+const inGroup = (sym, mode) => {
+  const m = S.symbols[sym], g = symGroup(sym);
+  if (mode === 'coin') return !m.tradfi && m.src !== 'hl';  // coin listesi (PAXG, EUR vb. de burada)
+  if (mode === 'tradfi') return g === 'stock';               // TradFi = Binance hisseleri
+  if (g !== mode) return false;                              // metal / fx / index
+  // Hyperliquid'de aynı varlık varsa Binance'teki kopyası gösterilmez; Hyperliquid'e ulaşılamazsa Binance'teki görünür (yedek)
+  if (m.src !== 'hl' && typeof HL !== 'undefined' && HL.ok && HL.covers(mode, m.base)) return false;
+  return true;
+};
+const GROUP_INFO = {
+  coin: ['Coin ara (ör. SOL)', '03:00 %'], tradfi: ['Hisse ara (ör. TSLA)', 'Seans %'], metal: ['Metal / emtia ara (ör. GOLD)', '24s %'],
+  fx: ['Parite ara (ör. EUR)', '24s %'], index: ['Endeks ara (ör. SP500)', '24s %']
+};
 function renderSort(){
   let h = SORTS.map(([v, l]) =>
     `<button class="chip${v === S.sort ? ' on' : ''}" data-sort="${v}">${l}</button>`).join('');
   h += S.lists.map(l => `<button class="chip${S.sort === 'L:' + l.id ? ' on' : ''}" data-sort="L:${l.id}">📋 ${esc(l.name)}</button>`).join('');
   h += '<button class="chip" data-newlist="1">＋ Liste</button>';
-  if (S.listMode === 'tradfi')
-    h += '<span class="sepv"></span>' + [['all', 'Hepsi'], ['stock', 'Hisse'], ['cmd', 'Emtia/Diğer']].map(([v, l]) =>
-      `<button class="chip${v === S.tfKind ? ' on' : ''}" data-tfk="${v}">${l}</button>`).join('');
   $('sortBar').innerHTML = h;
 }
 $('sortBar').addEventListener('click', e => {
@@ -1101,8 +1122,8 @@ $('sortBar').addEventListener('click', e => {
 function listItems(){
   const tf = S.listMode === 'tradfi';
   const cl = S.sort.startsWith('L:') ? S.lists.find(x => 'L:' + x.id === S.sort) : null;
-  let arr = Object.keys(S.symbols).filter(s => cl ? cl.syms.includes(s) : !!S.symbols[s].tradfi === tf);   // özel liste: coin ve TradFi birlikte
-  if (!cl && tf && S.tfKind !== 'all') arr = arr.filter(s => tfIsStock(S.symbols[s]) === (S.tfKind === 'stock'));
+  const favv = S.sort === 'fav';
+  let arr = Object.keys(S.symbols).filter(s => cl ? cl.syms.includes(s) : favv ? S.favs.has(s) : inGroup(s, S.listMode));   // özel liste ve favoriler: tüm gruplar birlikte
   const q = S.query.trim().toUpperCase();
   if (q) arr = arr.filter(s => s.includes(q));
   if (S.sort === 'fav') arr = arr.filter(s => S.favs.has(s));
@@ -1121,7 +1142,7 @@ function listItems(){
 function renderList(resetScroll){
   const items = listItems();
   if (!items.length){
-    $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : S.sort.startsWith('L:') && !S.query ? 'Bu liste boş. Bir coinin yıldızına dokunup bu listeyi işaretle.' : (S.listMode === 'tradfi' && !Object.values(S.symbols).some(m => m.tradfi) ? 'Binance Futures’ta TradFi kontratı bulunamadı.' : 'Sonuç bulunamadı.')}</div>`;
+    $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : S.sort.startsWith('L:') && !S.query ? 'Bu liste boş. Bir coinin yıldızına dokunup bu listeyi işaretle.' : (S.listMode !== 'coin' && !S.query && !Object.keys(S.symbols).some(x => inGroup(x, S.listMode)) ? 'Binance Futures’ta şu an bu grupta kontrat bulunamadı.' : 'Sonuç bulunamadı.')}</div>`;
     return;
   }
   $('list').innerHTML = items.map(s => {
@@ -1129,7 +1150,7 @@ function renderList(resetScroll){
     const fav = S.favs.has(s) || S.lists.some(l => l.syms.includes(s));
     return `<div class="row${s === S.symbol ? ' cur' : ''}" data-s="${s}">
       <button class="star${fav ? ' on' : ''}" data-fav="${s}">${fav ? '★' : '☆'}</button>
-      <div class="nm"><b>${m.base}</b><small>${m.quote}</small><span class="v">Hac ${fvol(t.qv)}</span></div>
+      <div class="nm"><b>${m.label || m.base}</b><small>${m.src === 'hl' ? m.base + ' · HL' : m.quote}</small><span class="v">Hac ${fvol(t.qv)}</span></div>
       <div class="pr">${fp(t.last, s)}</div>
       <div class="pill ${cls(t.chg)}">${fpct(t.chg)}</div>
     </div>`;
@@ -1151,9 +1172,9 @@ $('search').addEventListener('input', e => {
 });
 
 function openSheet(mode){
-  S.listMode = mode === 'tradfi' ? 'tradfi' : 'coin';
-  $('search').placeholder = S.listMode === 'tradfi' ? 'Hisse ara (ör. TSLA)' : 'Coin ara (ör. SOL)';
-  $('lhChg').textContent = S.listMode === 'tradfi' ? 'Seans %' : '03:00 %';
+  S.listMode = GROUP_INFO[mode] ? mode : 'coin';
+  $('search').placeholder = GROUP_INFO[S.listMode][0];
+  $('lhChg').textContent = GROUP_INFO[S.listMode][1];
   $('search').value = ''; S.query = '';
   renderSort(); renderList(true);
   $('sheet').classList.add('open');
@@ -1165,14 +1186,18 @@ function closeSheet(fromPop){
   $('search').blur();
   if (!fromPop && history.state && history.state.sheet) history.back();
 }
-window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); closeTar(true); closeCrowd(true); closeMenu(true); }); // Android geri tuşu listeyi kapatır
+window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); closeCrowd(true); closeMenu(true); }); // Android geri tuşu listeyi kapatır
 $('list').addEventListener('pointerdown', e => {
   const r = e.target.closest('.row[data-s]');
   if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
 }, { passive: true });
 $('openList').addEventListener('click', () => openSheet('coin'));
+$('favListBtn').addEventListener('click', () => { S.sort = 'fav'; store.set('vg_sort', S.sort); openSheet('coin'); });
 $('tfBtn').addEventListener('click', () => openSheet('tradfi'));
-$('symBtn').addEventListener('click', () => openSheet(S.symbols[S.symbol] && S.symbols[S.symbol].tradfi ? 'tradfi' : 'coin'));
+$('metBtn').addEventListener('click', () => openSheet('metal'));
+$('fxBtn').addEventListener('click', () => openSheet('fx'));
+$('idxBtn').addEventListener('click', () => openSheet('index'));
+$('symBtn').addEventListener('click', () => { const g = symGroup(S.symbol); openSheet(g === 'stock' ? 'tradfi' : g); });
 $('closeSheet').addEventListener('click', () => closeSheet());
 $('goLive').addEventListener('click', () => { candle.priceScale().applyOptions({ autoScale: true }); chart.timeScale().scrollToRealTime(); });
 
@@ -1245,7 +1270,7 @@ async function loadDayOpens(){
   if (DAYO.running) return;
   DAYO.running = true;
   const start = utcDayStart(), key = new Date(start).toISOString().slice(0, 10);
-  const syms = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
+  const syms = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && !isHL(s)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
   let i = 0, ok = 0, stop = false;
   const worker = async () => {
     for (;;){
@@ -1332,7 +1357,6 @@ function openTickerWs(){
       const d0 = S.dayOpen[x.s] || o;                        // 03:00 açılışı yüklendiyse ona göre, yoksa geçici olarak 24s açılışına göre
       S.tickers[x.s] = { last: c, chg: d0 ? (c - d0) / d0 * 100 : 0, hi: +x.h, lo: +x.l, qv: +x.q };
       if (A.list.length) checkAlarms(x.s, c);
-      if (SCR.h[x.s]) SCR.h[x.s][Math.floor(Date.now() / 60000)] = c;
       if (W.rng[x.s]) wTrack(x.s, c);
     }
     listDirty = true;
@@ -1386,7 +1410,8 @@ const TOOL_HINT = {
   hray: 'Başlangıç noktasına dokun',
   vline: 'İstediğin muma dokun',
   trend: '1. noktaya dokun (ya da sürükle)',
-  measure: 'Başlangıca dokun (ya da sürükle)',
+  measure: 'Başlangıç fiyatına dokun (ya da sürükle)',
+  tmeasure: 'Başlangıç zamanına dokun (ya da sürükle)',
   alarm: 'Alarm fiyatına dokun, sürükleyip bırak'
 };
 const AY = ['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
@@ -1527,6 +1552,17 @@ function drawOne(d, sel, W, H){
     line(a.x, 0, a.x, H, c, sel ? 2.2 : 1.5);
     tag(ftime(d.p1.t), a.x, H - 12, c, onColor(c));
     if (sel) handle(a.x, H / 2, c);
+  } else if (d.type === 'tmeasure'){                  // sadece zaman: kaç mum, ne kadar süre
+    const b = toXY({ t: d.p2.t, p: d.p1.p });
+    if (b.x == null || a.y == null) return;
+    const col = '#4c9aff', x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x);
+    octx.fillStyle = 'rgba(76,154,255,.10)'; octx.fillRect(x1, 0, x2 - x1, H);
+    line(a.x, 0, a.x, H, col, 1, [4, 3]); line(b.x, 0, b.x, H, col, 1, [4, 3]);
+    line(a.x, a.y, b.x, a.y, col, 1.8);
+    arrow(b.x, a.y, Math.sign(b.x - a.x) || 1, 0, col); arrow(a.x, a.y, -(Math.sign(b.x - a.x) || 1), 0, col);
+    const bars = Math.round(Math.abs(timeToLogical(d.p2.t + TZ) - timeToLogical(d.p1.t + TZ)));
+    tag(`${bars} mum · ${fdur(Math.abs(d.p2.t - d.p1.t))}`, (a.x + b.x) / 2, Math.max(14, a.y - 16), col, '#fff');
+    if (sel){ handle(a.x, a.y, col); handle(b.x, a.y, col); }
   } else {
     const b = toXY(d.p2);
     if (b.x == null || a.y == null || b.y == null) return;
@@ -1535,21 +1571,19 @@ function drawOne(d, sel, W, H){
       line(e.p.x, e.p.y, e.q.x, e.q.y, c, sel ? 2.2 : 1.5);
       if (alarmActive(d.alarmId)) tag('⏰', e.R.x, e.R.y - 16, c, onColor(c));
       if (sel){ handle(a.x, a.y, c); handle(b.x, b.y, c); }
-    } else if (d.type === 'measure'){
+    } else if (d.type === 'measure'){                 // sadece fiyat: yukarı / aşağı yüzde
       const up = d.p2.p >= d.p1.p, col = up ? '#0ecb81' : '#f6465d';
-      const x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x), y1 = Math.min(a.y, b.y), y2 = Math.max(a.y, b.y);
-      octx.fillStyle = up ? 'rgba(14,203,129,.16)' : 'rgba(246,70,93,.16)';
+      const x1 = Math.min(a.x, b.x), x2 = Math.max(a.x, b.x, a.x + 24), y1 = Math.min(a.y, b.y), y2 = Math.max(a.y, b.y);
+      octx.fillStyle = up ? 'rgba(14,203,129,.14)' : 'rgba(246,70,93,.14)';
       octx.fillRect(x1, y1, x2 - x1, y2 - y1);
-      const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      line(mx, a.y, mx, b.y, col, 1.5);
+      line(x1, a.y, x2, a.y, col, 1, [4, 3]); line(x1, b.y, x2, b.y, col, 1.5);
+      const mx = (x1 + x2) / 2;
+      line(mx, a.y, mx, b.y, col, 1.8);
       arrow(mx, b.y, 0, Math.sign(b.y - a.y), col);
-      line(a.x, my, b.x, my, col, 1.5);
-      arrow(b.x, my, Math.sign(b.x - a.x), 0, col);
       const diff = d.p2.p - d.p1.p, pct = d.p1.p ? diff / d.p1.p * 100 : 0;
-      const bars = Math.round(Math.abs(timeToLogical(d.p2.t + TZ) - timeToLogical(d.p1.t + TZ)));
-      const txt = `${fpct(pct)}  (${diff >= 0 ? '+' : '−'}${fp(Math.abs(diff))})\n${bars} mum · ${fdur(Math.abs(d.p2.t - d.p1.t))}`;
-      const ty = up ? y1 - 22 : y2 + 22;
-      tag(txt, mx, Math.max(20, Math.min(H - 20, ty)), col);
+      const txt = `${fpct(pct)}  (${diff >= 0 ? '+' : '−'}${fp(Math.abs(diff))})`;
+      const ty = up ? y1 - 14 : y2 + 14;
+      tag(txt, mx, Math.max(14, Math.min(H - 14, ty)), col, '#fff');
       if (sel){ handle(a.x, a.y, col); handle(b.x, b.y, col); }
     }
   }
@@ -1581,6 +1615,7 @@ function render(){ // yedek yol
 const primRenderer = {
   draw(target){
     try{
+      if (P.noDraw) return;                               // paylaşım resmi alınırken çizimler ayrıca basılır
       target.useMediaCoordinateSpace(scope => {
         octx = scope.context;
         paintAll(scope.mediaSize.width, scope.mediaSize.height);
@@ -1636,6 +1671,12 @@ function hitOne(d, x, y){
     if (x >= a.x - T && Math.abs(y - a.y) < T) return 'body';
   } else if (d.type === 'vline'){
     if (Math.abs(x - a.x) < T) return 'body';
+  } else if (d.type === 'tmeasure'){
+    const b = toXY({ t: d.p2.t, p: d.p1.p });
+    if (b.x == null || a.y == null) return null;
+    if (near(a.x, a.y)) return 'p1';
+    if (near(b.x, a.y)) return 'p2';
+    if (x >= Math.min(a.x, b.x) - 4 && x <= Math.max(a.x, b.x) + 4 && Math.abs(y - a.y) < T + 6) return 'body';
   } else {
     const b = toXY(d.p2);
     if (b.x == null || a.y == null || b.y == null) return null;
@@ -1665,7 +1706,7 @@ function select(d){
   const bar = $('selBar');
   if (D.sel){
     const cur = D.sel.color || DEF_COLOR[D.sel.type];
-    $('selColors').innerHTML = D.sel.type === 'measure' ? '' :
+    $('selColors').innerHTML = (D.sel.type === 'measure' || D.sel.type === 'tmeasure') ? '' :
       COLORS.map(c => `<button class="sw${cur === c ? ' on' : ''}" data-color="${c}" style="background:${c}${c === '#ffffff' ? ';box-shadow:inset 0 0 0 1px #8885' : ''}"></button>`).join('') +
       `<label class="sw custom${COLORS.includes(cur) ? '' : ' on'}" title="Özel renk"><input type="color" id="selColorPick" value="${/^#[0-9a-f]{6}$/i.test(cur || '') ? cur : '#4c9aff'}"></label>`;
   }
@@ -1683,20 +1724,21 @@ function select(d){
 function setHint(){
   const h = $('hint');
   if (!D.tool){ h.classList.remove('show'); return; }
-  const two = D.tool === 'trend' || D.tool === 'measure';
+  const two = D.tool === 'trend' || D.tool === 'measure' || D.tool === 'tmeasure';
   $('hintText').textContent = (two && D.pending && !D.press) ? '2. noktaya dokun' : TOOL_HINT[D.tool];
   h.classList.add('show');
 }
 function renderDrawBar(){
   $('drawBar').querySelectorAll('[data-tool]').forEach(b => b.classList.toggle('on', b.dataset.tool === D.tool));
   $('drawBar').querySelector('[data-act="magnet"]').classList.toggle('on', D.magnet);
+  $('dSave').hidden = !D.list.length;
 }
 function setTool(t){
   D.tool = t; D.pending = null; D.press = null; D.cursor = null;
   if (t) select(null);
   renderDrawBar(); setHint(); updateOverlay(); D.ver++;
 }
-function saveDraw(){ store.set('vg_draw_' + S.symbol, D.list); }
+function saveDraw(){ store.set('vg_draw_' + S.symbol, D.list); const b = $('dSave'); if (b) b.hidden = !D.list.length; }
 function drawLoad(){
   D.list = store.get('vg_draw_' + S.symbol, []);
   if (!Array.isArray(D.list)) D.list = [];
@@ -1825,6 +1867,14 @@ $('drawBar').addEventListener('click', e => {
   if (b.dataset.tool) setTool(D.tool === b.dataset.tool ? null : b.dataset.tool);
   else if (b.dataset.act === 'magnet'){ D.magnet = !D.magnet; store.set('vg_magnet', D.magnet); renderDrawBar(); }
   else if (b.dataset.act === 'share'){ shareChart(); }
+  else if (b.dataset.act === 'save'){
+    saveDraw();
+    const ok = (() => { try{ return localStorage.getItem(nsKey('vg_draw_' + S.symbol)) === JSON.stringify(D.list); }catch(e){ return false; } })();
+    if (typeof CL !== 'undefined' && CL.col) cloudPut('vg_draw_' + S.symbol);
+    const nm = (S.symbols[S.symbol] || {}).base || S.symbol;
+    toast(ok ? `💾 ${nm}: ${D.list.length} çizim kaydedildi` : '⚠️ Kaydedilemedi (telefon hafızası dolu olabilir)',
+      ok ? ((typeof CL !== 'undefined' && CL.user) ? 'Hesabına da yedeklendi. Çizimler her değişiklikte ayrıca otomatik kaydedilir.' : 'Bu telefonda saklanıyor. Çizimler her değişiklikte ayrıca otomatik kaydedilir.') : '', { ms: 3500 });
+  }
   else if (b.dataset.act === 'clear'){
     if (!D.list.length) return;
     if (confirm(`${S.symbol} üzerindeki tüm çizimler silinsin mi?`)){
@@ -2128,9 +2178,7 @@ async function catchUp(){
     const from = Math.max(Math.min(...alarms.map(startOf)), now - 1499 * 60000);
     if (from > now) return;
     try{
-      const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1m&limit=1500&startTime=${from}`);
-      if (!r.ok) return;
-      const ks = await r.json();
+      const ks = await getKl(sym, '1m', { limit: 1500, startTime: from });
       if (!Array.isArray(ks)) return;
       for (const a of alarms){
         if (!a.active) continue;
@@ -2885,7 +2933,7 @@ async function loadWeekOpens(){
     const c = store.get('vg_weekopen', null);
     if (c && c.k === start && c.o) WK.open = c.o;
   }
-  const syms = Object.keys(S.symbols).filter(x => !(WK.open[x] > 0)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
+  const syms = Object.keys(S.symbols).filter(x => !isHL(x) && !(WK.open[x] > 0)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
   if (!syms.length) return;
   WK.running = true; WK.done = 0; WK.total = syms.length; WK.err = ''; WK.failed = 0;
   let i = 0, stop = false;
@@ -2975,219 +3023,6 @@ setInterval(() => {
 }, 1000);
 
 /* =====================================================================
-   TARA: Screener (hızlı yükselenler) + Fonlama oranları
-   Screener: her coinin son ~1 saatlik 1 dakikalık kapanışları bir kez çekilir (coin başına 1 istek),
-   sonrası canlı fiyat akışıyla güncellenir. "5 dk önceki fiyat" = 5 dk önce biten dakika mumunun
-   kapanışıdır (en fazla ~1 dk'lık yaklaşıklık payı vardır).
-   ===================================================================== */
-const SCR = { h: {}, seeded: 0, running: false, done: 0, total: 0, err: '',
-  rule: store.get('vg_scr_rule', '5'), dir: store.get('vg_scr_dir', 'up') };
-const SCR_RULES = { '5': { min: 5, pct: 3 }, '15': { min: 15, pct: 5 }, '60': { min: 60, pct: 10 } };
-const SCR_NAME = { '5': '5 dk · %3', '15': '15 dk · %5', '60': '1 sa · %10' };
-const TAR = { tab: store.get('vg_tar_tab', 'scr'), html: '' };
-const tarOpen = () => $('tarSheet').classList.contains('open');
-
-async function seedScreener(){
-  if (SCR.running) return;
-  SCR.running = true; SCR.err = '';
-  const syms = Object.keys(S.symbols).filter(x => S.tickers[x]).sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0));
-  SCR.done = 0; SCR.total = syms.length;
-  const fresh = {};
-  let i = 0, stop = false;
-  const worker = async () => {
-    for (;;){
-      const k = i++; if (stop || k >= syms.length) return;
-      const sym = syms[k];
-      try{
-        const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1m&limit=65`);
-        if (r.status === 429 || r.status === 418){ stop = true; SCR.err = 'Binance istek sınırı: biraz sonra tekrar denenecek.'; return; }
-        if (r.ok){
-          const j = await r.json();
-          if (Array.isArray(j)){ const h = {}; for (const c of j) h[Math.floor(c[0] / 60000)] = +c[4]; fresh[sym] = h; }
-        }
-      }catch(e){}
-      SCR.done++;
-    }
-  };
-  await Promise.all(Array.from({ length: 6 }, worker));
-  if (Object.keys(fresh).length){ SCR.h = fresh; SCR.seeded = Date.now(); }
-  SCR.running = false;
-  scrRender();
-}
-function scrChange(sym, min){
-  const h = SCR.h[sym], t = S.tickers[sym];
-  if (!h || !t || !(t.last > 0)) return null;
-  const cm = Math.floor(Date.now() / 60000);
-  for (let m = cm - min - 1; m >= cm - min - 4; m--) if (h[m] > 0) return (t.last - h[m]) / h[m] * 100;
-  return null;
-}
-function scrRows(){
-  const r = SCR_RULES[SCR.rule], out = [];
-  for (const sym in SCR.h){
-    const m = S.symbols[sym]; if (!m) continue;
-    const c = scrChange(sym, r.min);
-    if (c == null) continue;
-    if (SCR.dir === 'up' ? c < r.pct : c > -r.pct) continue;
-    out.push({ sym, base: m.base, last: S.tickers[sym].last, c, c5: scrChange(sym, 5), c15: scrChange(sym, 15), c60: scrChange(sym, 60) });
-  }
-  out.sort((a, b) => SCR.dir === 'up' ? b.c - a.c : a.c - b.c);
-  return out;
-}
-const FND = { rows: [], t: 0, loading: false, err: '', sort: store.get('vg_fnd_sort', 'hi'), iv: {}, ivT: 0 };
-async function loadFundingAll(){
-  if (FND.loading) return;
-  FND.loading = true;
-  try{
-    const r = await fetch(`${API}/fapi/v1/premiumIndex`);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const j = await r.json();
-    FND.rows = j.filter(x => S.symbols[x.symbol] && x.lastFundingRate !== '' && x.lastFundingRate != null)
-      .map(x => ({ sym: x.symbol, mark: +x.markPrice, rate: +x.lastFundingRate * 100, next: +x.nextFundingTime }));
-    FND.t = Date.now(); FND.err = '';
-  }catch(e){ FND.err = 'Fonlama verisi alınamadı (' + (e.message || e) + ')'; }
-  FND.loading = false;
-  if (Date.now() - FND.ivT > 6 * 3600 * 1000){
-    FND.ivT = Date.now();
-    try{ const r = await fetch(`${API}/fapi/v1/fundingInfo`); if (r.ok){ const j = await r.json(); for (const x of j) FND.iv[x.symbol] = +x.fundingIntervalHours || 8; } }catch(e){}
-  }
-  tarRender();
-}
-function fCountdown(ms){
-  const d = Math.max(0, Math.floor((ms - Date.now()) / 1000));
-  const h = Math.floor(d / 3600), m = Math.floor(d % 3600 / 60), sc = d % 60;
-  return h ? `${h}s ${m}d ${sc}sn` : `${m}d ${sc}sn`;
-}
-const fRate = v => (v > 0 ? '+' : '') + v.toFixed(4) + '%';
-function fundRows(){
-  const a = FND.rows.slice();
-  if (FND.sort === 'hi') a.sort((x, y) => y.rate - x.rate);
-  else if (FND.sort === 'lo') a.sort((x, y) => x.rate - y.rate);
-  else a.sort((x, y) => Math.abs(y.rate) - Math.abs(x.rate));
-  return a;
-}
-function tarRender(){
-  if (!tarOpen()) return;
-  $('tarTabs').querySelectorAll('[data-tt]').forEach(b => b.classList.toggle('on', b.dataset.tt === TAR.tab));
-  let info = '', bar = '', html = '';
-  if (TAR.tab === 'scr'){
-    bar = Object.keys(SCR_RULES).map(k => `<button class="chip${SCR.rule === k ? ' on' : ''}" data-sr="${k}">${SCR_NAME[k]}</button>`).join('')
-      + '<span class="sepv"></span>'
-      + `<button class="chip${SCR.dir === 'up' ? ' on' : ''}" data-sd="up">📈 Yükselen</button><button class="chip${SCR.dir === 'down' ? ' on' : ''}" data-sd="down">📉 Düşen</button>`;
-    const rows = scrRows(), r = SCR_RULES[SCR.rule];
-    info = `Son <b>${r.min} dk</b>'da ${SCR.dir === 'up' ? '≥ +' : '≤ −'}<b>%${r.pct}</b> hareket edenler · canlı`;
-    if (SCR.running) info += `<br>Geçmiş yükleniyor… <b>${SCR.done}/${SCR.total}</b>`;
-    else if (SCR.seeded) info += ` · <b>${rows.length}</b> coin`;
-    if (SCR.err) info += `<br><span class="bad">${esc(SCR.err)}</span>`;
-    if (!rows.length) html = `<div class="empty">${SCR.running || !SCR.seeded ? 'Yükleniyor, liste birazdan dolacak…' : 'Şu an bu ölçüte uyan coin yok. Liste canlı güncelleniyor.'}</div>`;
-    else html = rows.slice(0, 200).map(x => {
-      const f = v => v == null ? '–' : fpct(v);
-      return `<div class="t-row" data-sym="${x.sym}"><div><b>${esc(x.base)}</b><small>5dk ${f(x.c5)} · 15dk ${f(x.c15)} · 1sa ${f(x.c60)}</small></div>
-        <div class="t-px">${fp(x.last, x.sym)}</div><div class="t-pct ${x.c >= 0 ? 'up-t' : 'down-t'}">${fpct(x.c)}</div></div>`;
-    }).join('');
-  } else if (TAR.tab === 'liq'){
-    const L = lqTab(); bar = L.bar; info = L.info; html = L.html;
-  } else if (TAR.tab === 'whr'){
-    const L = wrTab(); bar = L.bar; info = L.info; html = L.html;
-  } else if (TAR.tab === 'corr'){
-    const L = coTab(); bar = L.bar; info = L.info; html = L.html;
-  } else if (TAR.tab === 'new'){
-    const L = nlTab(); bar = L.bar; info = L.info; html = L.html;
-  } else {
-    bar = [['hi', '↑ En yüksek (+)'], ['lo', '↓ En düşük (−)'], ['abs', '± Mutlak']].map(([k, l]) => `<button class="chip${FND.sort === k ? ' on' : ''}" data-fs="${k}">${l}</button>`).join('');
-    const rows = fundRows();
-    info = 'Son fonlama oranı · <b>+</b> ise long\'lar short\'lara öder, <b>−</b> ise tersi';
-    if (FND.t) info += ` · güncellendi ${fmtClock(FND.t)}`;
-    if (FND.err) info += `<br><span class="bad">${esc(FND.err)}</span>`;
-    if (!rows.length) html = `<div class="empty">${FND.loading || !FND.t ? 'Yükleniyor…' : 'Veri yok.'}</div>`;
-    else html = rows.slice(0, 300).map(x => {
-      const m = S.symbols[x.sym], iv = FND.iv[x.sym] || 8;
-      return `<div class="t-row" data-sym="${x.sym}"><div><b>${esc(m.base)}</b><small>her ${iv} sa · sonraki ${fCountdown(x.next)}</small></div>
-        <div class="t-px">${fp(x.mark, x.sym)}</div><div class="t-pct ${x.rate > 0 ? 'up-t' : x.rate < 0 ? 'down-t' : ''}">${fRate(x.rate)}</div></div>`;
-    }).join('');
-  }
-  $('tarInfo').innerHTML = info;
-  if ($('tarBar').dataset.h !== bar){ $('tarBar').dataset.h = bar; $('tarBar').innerHTML = bar; }
-  const el = $('tarList'), st = el.scrollTop;
-  if (TAR.html !== html){ TAR.html = html; el.innerHTML = html; el.scrollTop = st; }
-}
-function scrRender(){ tarRender(); }
-function openTar(){
-  $('tarSheet').classList.add('open');
-  history.pushState({ tar: 1 }, '');
-  TAR.html = ''; $('tarBar').dataset.h = '';
-  tarRender();
-  tarKick();
-}
-function tarKick(){
-  if (TAR.tab === 'scr'){ if (!SCR.running && Date.now() - SCR.seeded > 10 * 60000) seedScreener(); }
-  else if (TAR.tab === 'corr'){ if (!CO.running && Date.now() - CO.t > 15 * 60000) coLoad(); }
-  else if (TAR.tab === 'fund'){ if (Date.now() - FND.t > 20000) loadFundingAll(); }
-  if (TAR.tab === 'whr') wrOpen(); else wrClose();
-}
-function closeTar(fromPop){
-  if (!tarOpen()) return;
-  $('tarSheet').classList.remove('open');
-  wrClose();
-  if (!fromPop && history.state && history.state.tar) history.back();
-}
-function openTarTab(tab){ TAR.tab = tab; store.set('vg_tar_tab', TAR.tab); openTar(); }
-$('tarClose').addEventListener('click', () => closeTar());
-$('tarTabs').addEventListener('click', e => {
-  const b = e.target.closest('[data-tt]'); if (!b) return;
-  TAR.tab = b.dataset.tt; store.set('vg_tar_tab', TAR.tab); TAR.html = ''; $('tarBar').dataset.h = '';
-  tarRender(); tarKick();
-});
-$('tarBar').addEventListener('click', e => {
-  const r = e.target.closest('[data-sr]'), d = e.target.closest('[data-sd]'), f = e.target.closest('[data-fs]');
-  const lv = e.target.closest('[data-lv]'), lm = e.target.closest('[data-lm]'), la = e.target.closest('[data-la]'), lau = e.target.closest('[data-lau]');
-  const com = e.target.closest('[data-com]'), cor = e.target.closest('[data-cor]'), wrv = e.target.closest('[data-wrv]');
-  if (wrv){ WR.view = wrv.dataset.wrv; store.set('vg_wr_view', WR.view); }
-  else if (com){ CO.mode = com.dataset.com; store.set('vg_co_mode', CO.mode); }
-  else if (cor){ coLoad(); }
-  else if (lv){ LQ.view = lv.dataset.lv; }
-  else if (lm){ LQ.min = +lm.dataset.lm; store.set('vg_lq_min', LQ.min); markersSoon(); }
-  else if (la){ LQ.alert = !LQ.alert; store.set('vg_lq_alert', LQ.alert); }
-  else if (lau){ LQ.alertUsd = +lau.dataset.lau; store.set('vg_lq_aUsd', LQ.alertUsd); }
-  else if (r){ SCR.rule = r.dataset.sr; store.set('vg_scr_rule', SCR.rule); }
-  else if (d){ SCR.dir = d.dataset.sd; store.set('vg_scr_dir', SCR.dir); }
-  else if (f){ FND.sort = f.dataset.fs; store.set('vg_fnd_sort', FND.sort); }
-  else return;
-  TAR.html = ''; tarRender();
-});
-$('tarList').addEventListener('click', e => {
-  const r = e.target.closest('.t-row[data-sym]');
-  if (r){ closeTar(); selectSymbol(r.dataset.sym); }
-});
-setInterval(() => {
-  if (!tarOpen() || document.hidden) return;
-  if (TAR.tab === 'fund' && !FND.loading && Date.now() - FND.t > 20000) loadFundingAll();
-  tarRender();
-}, 1000);
-
-/* Başlıkta seçili coinin fonlama oranı */
-const FR = { rate: null, next: 0 };
-async function frLoad(){
-  const sym = S.symbol;
-  try{
-    const r = await fetch(`${API}/fapi/v1/premiumIndex?symbol=${sym}`);
-    if (!r.ok) return;
-    const j = await r.json();
-    if (sym !== S.symbol) return;
-    FR.rate = j.lastFundingRate === '' || j.lastFundingRate == null ? null : +j.lastFundingRate * 100; FR.next = +j.nextFundingTime;
-    frPaint();
-  }catch(e){}
-}
-function frPaint(){
-  const el = $('fr');
-  if (FR.rate == null){ el.textContent = '–'; return; }
-  const left = Math.max(0, Math.floor((FR.next - Date.now()) / 60000));
-  el.textContent = `${fRate(FR.rate)} · ${Math.floor(left / 60)}s${String(left % 60).padStart(2, '0')}d`;
-  el.className = FR.rate > 0 ? 'up-t' : FR.rate < 0 ? 'down-t' : '';
-}
-window.__frLoad = () => { FR.rate = null; frPaint(); frLoad(); };
-setInterval(() => { if (!document.hidden){ if (Date.now() % 60000 < 5000 || FR.rate == null) frLoad(); else frPaint(); } }, 5000);
-
-/* =====================================================================
    İKİNCİ GRAFİK: aynı coin, farklı zaman dilimi (çizim yok, canlı mumlar var)
    ===================================================================== */
 const C2 = { on: store.get('vg_c2', false), iv: store.get('vg_c2iv', '15m'), chart: null, candle: null, vol: null, token: 0, ws: null };
@@ -3221,9 +3056,7 @@ async function c2Load(){
   const token = ++C2.token, sym = S.symbol, iv = C2.iv;
   c2CloseWs();
   try{
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=${srcInterval(sym, iv)}&limit=${FIRST_N}`);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
+    const data = await getKl(sym, srcInterval(sym, iv), { limit: FIRST_N });
     if (token !== C2.token) return;
     const bars = buildBars(data, sym, iv, data.length >= FIRST_N);
     C2.candle.setData(bars);
@@ -3233,7 +3066,13 @@ async function c2Load(){
     C2.candle.priceScale().applyOptions({ autoScale: true });
     const pf = S.symbols[sym] ? S.symbols[sym].prec : 2;
     if (S.symbols[sym]) C2.candle.applyOptions({ priceFormat: { type: 'price', precision: S.symbols[sym].prec, minMove: S.symbols[sym].tick } });
-    if (!(weekdayMode(sym, iv) && iv === '1w')) c2OpenWs(token, sym, iv);
+    if (isHL(sym)){                                    // Hyperliquid: 5 sn'de bir son mumları tazele
+      C2.ws = { close(){ clearInterval(this.t); }, onclose: null, onmessage: null };
+      C2.ws.t = setInterval(async () => {
+        if (token !== C2.token || document.hidden) return;
+        try{ const d = await getKl(sym, iv, { limit: 2 }); if (token !== C2.token) return; for (const k of d){ const b = toBar(k); C2.candle.update(b); C2.vol.update(volBar(b)); } }catch(e){}
+      }, 5000);
+    } else if (!(weekdayMode(sym, iv) && iv === '1w')) c2OpenWs(token, sym, iv);
   }catch(e){}
 }
 function c2OpenWs(token, sym, iv){
@@ -3254,7 +3093,8 @@ function c2Apply(){
   if (C2.on) c2Load(); else { C2.token++; c2CloseWs(); }
 }
 window.__c2Load = () => { if (C2.on) c2Load(); };
-window.__c2Toggle = () => { C2.on = !C2.on; store.set('vg_c2', C2.on); c2Apply(); };
+window.__c2Toggle = () => { C2.on = !C2.on; store.set('vg_c2', C2.on); c2Apply(); flash(C2.on ? 'İkinci grafik açıldı (altta)' : 'İkinci grafik kapandı'); };
+$('c2Btn').addEventListener('click', () => window.__c2Toggle());
 $('c2Bar').addEventListener('click', e => {
   if (e.target.closest('[data-c2x]')){ window.__c2Toggle(); return; }
   const b = e.target.closest('[data-c2tf]'); if (!b) return;
@@ -3268,11 +3108,21 @@ if (C2.on) $('c2Wrap').classList.add('on');
 async function shareChart(){
   try{
     let src = null;
-    if (typeof chart.takeScreenshot === 'function') src = chart.takeScreenshot();
+    if (typeof chart.takeScreenshot !== 'function'){ flash('Bu tarayıcıda resim alınamadı'); return; }
+    // Grafik kütüphanesinin ekran görüntüsü kendi çizim katmanımızı (çizimler, ölçümler, ⏰ simgeleri,
+    // balina baloncukları, likidite bantları) her zaman içermiyor. Bu yüzden: o katmanı bir an kapat,
+    // grafiğin temiz resmini al, sonra bütün çizimleri resmin üstüne birebir aynı koordinatlarla bas.
+    P.noDraw = true; if (P.req) P.req();
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    try{ src = chart.takeScreenshot(); } finally { P.noDraw = false; if (P.req) P.req(); }
     if (!src){ flash('Bu tarayıcıda resim alınamadı'); return; }
-    if (!P.active || !P.drawn){                                  // çizimler yedek kanvastaysa üstüne bindir
-      try{ const g = src.getContext('2d'); g.drawImage(ov, 0, 0, src.width, src.height); }catch(e){}
-    }
+    try{
+      const sg = src.getContext('2d'), kk = src.width / Math.max(1, $('chart').clientWidth || cw);
+      sg.save(); sg.setTransform(kk, 0, 0, kk, 0, 0);
+      octx = sg;
+      paintAll(paneW(), paneH());
+      sg.restore();
+    }catch(e){} finally { D.ver++; }
     const band = Math.round(46 * (src.width / Math.max(1, cw)));
     const out = document.createElement('canvas'); out.width = src.width; out.height = src.height + band;
     const g = out.getContext('2d'), k = src.width / Math.max(1, cw);
@@ -3308,8 +3158,6 @@ const WH_WINS = [[5, '5 dk'], [15, '15 dk'], [60, '1 sa']];
 const WH = { on: store.get('vg_wh_on', false), mode: store.get('vg_wh_mode', 'auto'), win: store.get('vg_wh_win', 5),
   alert: store.get('vg_wh_alert', true), mini: store.get('vg_wh_mini', false),
   by: {}, ws: null, sym: '', pend: null, pendT: null, html: '', hist: {}, histBusy: false, lastAlert: 0 };
-const LQ = { list: [], ws: null, min: store.get('vg_lq_min', 50000), view: 'feed', alert: store.get('vg_lq_alert', false),
-  alertUsd: store.get('vg_lq_aUsd', 1000000), warned: {}, html: '' };
 
 /* =====================================================================
    BALİNA İŞLEMLERİ
@@ -3374,6 +3222,7 @@ function whOnTrade(x, sym){
 }
 // Son birkaç bin işlemi REST'ten çekip geçmiş balinaları doldurur (en fazla ~6 saat geriye)
 async function whHistory(sym){
+  if (isHL(sym)) return;
   if (WH.histBusy || (WH.hist[sym] && Date.now() - WH.hist[sym] < 120000)) return;
   WH.histBusy = true;
   try{
@@ -3405,6 +3254,7 @@ function whRender(){
   $('whBox').classList.toggle('on', WH.on);
   $('whBox').classList.toggle('mini', WH.mini);
   if (!WH.on) return;
+  if (isHL(S.symbol)){ $('whHead').innerHTML = '<div class="wh-top"><b>🐋</b><span class="wh-thr">Hyperliquid</span><button data-whx="1">✕</button></div>'; $('whHead').dataset.h = ''; $('whList').innerHTML = '<div class="wh-r"><span class="tm" style="grid-column:1/4">Balina verisi sadece Binance coinlerinde var.</span></div>'; WH.html = ''; return; }
   const sym = S.symbol, thr = whThr(sym), nm = (S.symbols[sym] || {}).base || sym;
   const head = `<div class="wh-top"><b>🐋 ${esc(nm)}</b><span class="wh-thr">≥$${fvol(thr)}</span><button data-wha="1" class="${WH.alert ? 'on' : ''}" title="Dev balina uyarısı">🔔</button><button data-whmini="1">${WH.mini ? '▢' : '—'}</button><button data-whx="1">✕</button></div>`
     + (WH.mini ? '' : `<div class="wh-steps">${WH_STEPS.map(v => `<button data-whm="${v}" class="${String(v) === String(WH.mode) ? 'on' : ''}">${v === 'auto' ? 'Oto' : fvol(v)}</button>`).join('')}</div>`);
@@ -3459,6 +3309,7 @@ function whOpen(){
   whClose();
   if (!WH.on) return;
   const sym = S.symbol; WH.sym = sym;
+  if (isHL(sym)){ $('whList').innerHTML = '<div class="wh-r"><span class="tm" style="grid-column:1/4">Balina verisi sadece Binance coinlerinde var.</span></div>'; WH.html = ''; return; }
   const ws = new WebSocket(`${WS}/${sym.toLowerCase()}@aggTrade`);
   WH.ws = ws;
   ws.onmessage = e => { const x = JSON.parse(e.data); if (x && x.s === sym) whOnTrade(x, sym); };
@@ -3476,7 +3327,6 @@ function paintMarkers(){                              // grafikte sadece likidas
   if (typeof candle.setMarkers !== 'function') return;
   const by = new Map();
   const add = (ms, k, v) => { const bt = barTimeOf(ms); if (bt == null) return; const o = by.get(bt) || { ll: 0, sl: 0 }; o[k] += v; by.set(bt, o); };
-  for (const x of LQ.list) if (x.sym === S.symbol && x.usd >= LQ.min) add(x.t, x.long ? 'll' : 'sl', x.usd);
   const mk = [];
   for (const [time, o] of [...by.entries()].sort((a, b) => a[0] - b[0])){
     if (o.ll) mk.push({ time, position: 'belowBar', color: '#f0b90b', shape: 'circle', text: '💥L $' + fvol(o.ll) });
@@ -3502,134 +3352,6 @@ $('whBox').addEventListener('click', e => {
   WH.html = ''; $('whHead').dataset.h = ''; whRender(); D.ver++;
 });
 setInterval(() => { if (WH.on && !document.hidden) whRender(); }, 5000);   // baskı göstergesi zaman penceresi kaysın
-
-/* =====================================================================
-   BALİNA RADARI: favoriler + listeler + en hacimli coinler tek birleşik akışta izlenir (en fazla 20 coin)
-   ===================================================================== */
-const WR = { ws: null, syms: [], pend: {}, feed: [], view: store.get('vg_wr_view', 'feed'), html: '' };
-function wrSyms(){
-  const set = new Set();
-  for (const s of S.favs) if (S.symbols[s]) set.add(s);
-  for (const l of S.lists) for (const s of l.syms) if (S.symbols[s]) set.add(s);
-  const top = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && S.tickers[s]).sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0));
-  for (const s of top){ if (set.size >= 20) break; set.add(s); }
-  return [...set].slice(0, 20);
-}
-function wrOpen(){
-  const syms = wrSyms();
-  if (WR.ws && syms.join() === WR.syms.join()) return;
-  wrClose();
-  WR.syms = syms;
-  const url = WS.replace(/\/ws$/, '') + '/stream?streams=' + syms.map(s => s.toLowerCase() + '@aggTrade').join('/');
-  const ws = new WebSocket(url);
-  WR.ws = ws;
-  ws.onmessage = e => {
-    const m = JSON.parse(e.data), x = m && (m.data || m);
-    if (!x || !x.s || !S.symbols[x.s]) return;
-    const sym = x.s, buy = !x.m, T = +x.T, p = +x.p, q = +x.q, c = WR.pend[sym];
-    if (c && c.t === T && c.buy === buy){ c.usd += p * q; c.qty += q; c.n++; c.last = p; }
-    else { if (c) wrEmit(c); WR.pend[sym] = { sym, t: T, buy, usd: p * q, qty: q, n: 1, last: p, id: T + (buy ? 'b' : 's') + x.f }; }
-    clearTimeout(WR['t' + sym]); WR['t' + sym] = setTimeout(() => { const o = WR.pend[sym]; WR.pend[sym] = null; if (o) wrEmit(o); }, 250);
-  };
-  ws.onclose = () => { if (WR.ws === ws){ WR.ws = null; setTimeout(() => { if (tarOpen() && TAR.tab === 'whr') wrOpen(); }, 2000); } };
-}
-function wrEmit(o){
-  o.p = o.usd / o.qty;
-  if (o.usd < whThr(o.sym)) return;
-  WR.feed.unshift(o);
-  if (WR.feed.length > 400) WR.feed.length = 400;
-  whAdd(Object.assign({}, o));                       // seçili coin grafiğine de yansısın
-  if (o.sym === S.symbol && WH.on){ whRender(); D.ver++; }
-}
-function wrClose(){ const w = WR.ws; WR.ws = null; if (w){ w.onclose = null; w.onmessage = null; try{ w.close(); }catch(e){} } }
-function wrTab(){
-  const bar = `<button class="chip${WR.view === 'feed' ? ' on' : ''}" data-wrv="feed">Akış</button><button class="chip${WR.view === 'flow' ? ' on' : ''}" data-wrv="flow">15 dk net akış</button>`;
-  let info = `<b>${WR.syms.length}</b> coin izleniyor (favoriler, listelerin ve en hacimli coinler). Eşik her coin için otomatik (24 saatlik hacmine göre). Panel açıkken çalışır.`;
-  info += WR.ws ? ' · canlı' : ' · bağlanıyor…';
-  let html;
-  if (WR.view === 'feed'){
-    html = WR.feed.length ? WR.feed.slice(0, 120).map(o => { const m = S.symbols[o.sym], k = o.usd / whThr(o.sym);
-      return `<div class="t-row" data-sym="${o.sym}"><div><b>${esc(m ? m.base : o.sym)}</b> <span class="${o.buy ? 'up-t' : 'down-t'}">${o.buy ? '▲ ALIŞ' : '▼ SATIŞ'}</span><small>${new Date(o.t).toLocaleTimeString('tr-TR')} · ${fp(o.p, o.sym)}${o.n > 1 ? ` · ${o.n} seviye süpürdü` : ''}</small></div>
-        <div class="t-px">${k >= 5 ? '🔥 ' : ''}${k.toFixed(1)}× normal</div><div class="t-pct ${o.buy ? 'up-t' : 'down-t'}">$${fvol(o.usd)}</div></div>`; }).join('')
-      : '<div class="empty">Balina emri bekleniyor… (eşikler coin başına otomatik)</div>';
-  } else {
-    const cut = Date.now() - 15 * 60000, by = {};
-    for (const o of WR.feed){ if (o.t < cut) break; const r = by[o.sym] || (by[o.sym] = { sym: o.sym, b: 0, s: 0, n: 0 }); if (o.buy) r.b += o.usd; else r.s += o.usd; r.n++; }
-    const rows = Object.values(by).sort((a, b) => Math.abs(b.b - b.s) - Math.abs(a.b - a.s));
-    html = rows.length ? rows.map(r => { const m = S.symbols[r.sym], net = r.b - r.s, tot = r.b + r.s;
-      return `<div class="t-row" data-sym="${r.sym}"><div><b>${esc(m ? m.base : r.sym)}</b><small>${r.n} balina · alış %${(r.b / tot * 100).toFixed(0)}</small></div>
-        <div class="t-px">${net >= 0 ? '<span class="up-t">alıcı baskın</span>' : '<span class="down-t">satıcı baskın</span>'}</div><div class="t-pct ${net >= 0 ? 'up-t' : 'down-t'}">${net >= 0 ? '+' : '−'}$${fvol(Math.abs(net))}</div></div>`; }).join('')
-      : "<div class=\"empty\">Son 15 dk'da balina emri yok.</div>";
-  }
-  return { bar, info, html };
-}
-
-/* =====================================================================
-   LİKİDASYONLAR: Binance'in tüm piyasa likidasyon yayını (!forceOrder@arr)
-   Not: Binance her coin için saniyede en fazla 1 likidasyonu yayınlar; gerçek toplam daha yüksek olabilir.
-   "Long likide" = long pozisyon zorla kapatıldı (zorunlu SATIŞ) → fiyatı aşağı iter.
-   ===================================================================== */
-const LQ_MINS = [10000, 50000, 100000, 500000];
-const LQ_ALERTS = [250000, 1000000, 5000000];
-function lqOpen(){
-  if (LQ.ws) return;
-  const ws = new WebSocket(`${WS}/!forceOrder@arr`);
-  LQ.ws = ws;
-  ws.onmessage = e => {
-    let d = JSON.parse(e.data);
-    const arr = Array.isArray(d) ? d : [d];
-    for (const ev of arr){
-      const o = ev && ev.o; if (!o || !S.symbols[o.s]) continue;
-      const usd = (+o.ap || +o.p) * (+o.z || +o.q);
-      if (!(usd > 0)) continue;
-      const x = { sym: o.s, t: +o.T || Date.now(), usd, p: +o.ap || +o.p, long: o.S === 'SELL' };
-      LQ.list.unshift(x);
-      if (LQ.alert) lqCheckCascade(o.s);
-      if (o.s === S.symbol) markersSoon();
-    }
-    const cut = Date.now() - 6 * 3600000;
-    while (LQ.list.length > 3000 || (LQ.list.length && LQ.list[LQ.list.length - 1].t < cut)) LQ.list.pop();
-  };
-  ws.onclose = () => { if (LQ.ws === ws){ LQ.ws = null; setTimeout(lqOpen, 3000); } };
-}
-function lqSum(sym, ms){ const cut = Date.now() - ms; let l = 0, sh = 0; for (const x of LQ.list){ if (x.t < cut) break; if (x.sym === sym){ if (x.long) l += x.usd; else sh += x.usd; } } return { l, s: sh, tot: l + sh }; }
-function lqCheckCascade(sym){
-  const s5 = lqSum(sym, 5 * 60000);
-  if (s5.tot < LQ.alertUsd) return;
-  if (LQ.warned[sym] && Date.now() - LQ.warned[sym] < 10 * 60000) return;
-  LQ.warned[sym] = Date.now();
-  const nm = S.symbols[sym] ? S.symbols[sym].base : sym;
-  const dom = s5.l >= s5.s ? `long'lar patlıyor ($${fvol(s5.l)}) → düşüş baskısı` : `short'lar patlıyor ($${fvol(s5.s)}) → yükseliş baskısı`;
-  toast(`💥 ${nm}: 5 dk'da $${fvol(s5.tot)} likidasyon`, dom + ' · grafiğe gitmek için dokun', { sticky: true, onTap: () => selectSymbol(sym) });
-  try{ beep(); }catch(e){}
-}
-function lqRows(){
-  if (LQ.view === 'feed') return LQ.list.filter(x => x.usd >= LQ.min).slice(0, 150);
-  const cut = Date.now() - 5 * 60000, by = {};
-  for (const x of LQ.list){ if (x.t < cut) break; const o = by[x.sym] || (by[x.sym] = { sym: x.sym, l: 0, s: 0, n: 0 }); if (x.long) o.l += x.usd; else o.s += x.usd; o.n++; }
-  return Object.values(by).filter(o => o.l + o.s >= LQ.min).sort((a, b) => (b.l + b.s) - (a.l + a.s));
-}
-function lqTab(){
-  const bar = `<button class="chip${LQ.view === 'feed' ? ' on' : ''}" data-lv="feed">Akış</button><button class="chip${LQ.view === 'sum' ? ' on' : ''}" data-lv="sum">5 dk toplam</button><span class="sepv"></span>`
-    + LQ_MINS.map(v => `<button class="chip${LQ.min === v ? ' on' : ''}" data-lm="${v}">≥${fvol(v)}$</button>`).join('')
-    + '<span class="sepv"></span>' + `<button class="chip${LQ.alert ? ' on' : ''}" data-la="1">🔔 Kaskad uyarısı ${LQ.alert ? 'açık' : 'kapalı'}</button>`
-    + (LQ.alert ? LQ_ALERTS.map(v => `<button class="chip${LQ.alertUsd === v ? ' on' : ''}" data-lau="${v}">${fvol(v)}$/5dk</button>`).join('') : '');
-  let info = `<b>Long likide</b> = long pozisyon zorla kapatıldı (zorunlu satış, fiyatı aşağı iter). <b>Short likide</b> = tersi.`;
-  info += LQ.ws ? ` · canlı · ${LQ.list.length} kayıt` : ' · bağlanıyor…';
-  if (LQ.alert) info += `<br>🔔 Bir coinde 5 dk'da ≥ $${fvol(LQ.alertUsd)} likidasyon olursa uyarır (uygulama açıkken).`;
-  info += '<br><span class="muted">Binance her coin için saniyede en fazla 1 likidasyon yayınlar; gerçek toplam daha yüksek olabilir.</span>';
-  const rows = lqRows();
-  let html;
-  if (!rows.length) html = `<div class="empty">${LQ.view === 'feed' ? 'Bu tutarın üstünde likidasyon bekleniyor… (sakin piyasada seyrek olur)' : "Son 5 dk'da bu tutarı aşan coin yok."}</div>`;
-  else if (LQ.view === 'feed') html = rows.map(x => { const m = S.symbols[x.sym];
-    return `<div class="t-row" data-sym="${x.sym}"><div><b>${esc(m ? m.base : x.sym)}</b><small>${new Date(x.t).toLocaleTimeString('tr-TR')} · ${fp(x.p, x.sym)}</small></div>
-      <div class="t-px ${x.long ? 'down-t' : 'up-t'}">${x.long ? 'Long likide' : 'Short likide'}</div><div class="t-pct">$${fvol(x.usd)}</div></div>`; }).join('');
-  else html = rows.map(o => { const m = S.symbols[o.sym];
-    return `<div class="t-row" data-sym="${o.sym}"><div><b>${esc(m ? m.base : o.sym)}</b><small>${o.n} likidasyon · <span class="down-t">L $${fvol(o.l)}</span> · <span class="up-t">S $${fvol(o.s)}</span></small></div>
-      <div class="t-px">${o.l >= o.s ? '<span class="down-t">long ağırlıklı</span>' : '<span class="up-t">short ağırlıklı</span>'}</div><div class="t-pct">$${fvol(o.l + o.s)}</div></div>`; }).join('');
-  return { bar, info, html };
-}
-lqOpen();
 
 /* =====================================================================
    KALABALIK: seçili coinde açık pozisyon, long/short oranları, alıcı/satıcı ağırlığı
@@ -3740,8 +3462,9 @@ function mnState(){
   const c2 = !!(window.__c2On && window.__c2On()), wh = !!(window.__whOn && window.__whOn());
   const st = (id, on) => { const el = $(id); if (el){ el.textContent = on ? 'AÇIK' : 'KAPALI'; el.classList.toggle('on', on); } };
   const cv = !!(window.__cvdOn && window.__cvdOn()), lm = !!(window.__lmOn && window.__lmOn());
-  st('stC2', c2); st('stWh', wh); st('stCvd', cv); st('stLm', lm);
-  $('toolsDot').classList.toggle('on', c2 || wh || cv || lm);
+  st('stWh', wh); st('stCvd', cv); st('stLm', lm);
+  $('toolsDot').classList.toggle('on', wh || cv || lm);
+  $('c2Btn').classList.toggle('on', c2);
 }
 window.__mnState = mnState;
 function openMenu(g){
@@ -3763,14 +3486,13 @@ function fromMenu(fn){
     history.back();
   } else fn();
 }
-$('mktBtn').addEventListener('click', () => openMenu('mkt'));
-$('toolsBtn').addEventListener('click', () => openMenu('tools'));
+$('indBtn').addEventListener('click', () => openMenu('ind'));
 $('mnClose').addEventListener('click', () => closeMenu());
 $('mnSheet').addEventListener('click', e => {
   if (e.target === $('mnSheet')){ closeMenu(); return; }
   const i = e.target.closest('.mn-i'); if (!i) return;
   if (i.id === 'wallBtn' || i.id === 'wkBtn') return;           // kendi dinleyicileri var (aşağıda yeniden bağlanır)
-  if (i.dataset.tar) fromMenu(() => openTarTab(i.dataset.tar));
+  if (i.dataset.sig) fromMenu(() => openSig());
   else if (i.dataset.c2) fromMenu(() => { window.__c2Toggle(); flash(window.__c2On() ? 'İkinci grafik açıldı' : 'İkinci grafik kapandı'); });
   else if (i.dataset.wh) fromMenu(() => { window.__whToggle(); flash(window.__whOn() ? 'Balina bandı açıldı' : 'Balina bandı kapandı'); });
   else if (i.dataset.cr) fromMenu(() => window.__crOpen());
@@ -3790,6 +3512,7 @@ const CVD = { on: store.get('vg_cvd', false), s: null, lastTime: null, base: 0, 
 const cvdD = b => (b.tbq == null || b.qv == null) ? 0 : 2 * b.tbq - b.qv;
 function cvdAll(){
   if (!CVD.on || !CVD.s) return;
+  if (isHL(S.symbol) && cvdWarned !== S.symbol){ cvdWarned = S.symbol; flash('CVD bu sembolde yok: Hyperliquid alış/satış ayrımı vermiyor'); }
   let cum = 0; const data = [];
   for (const b of S.candles){ cum += cvdD(b); data.push({ time: b.time, value: cum }); }
   CVD.s.setData(data);
@@ -3815,6 +3538,7 @@ function cvdApply(){
   }
 }
 window.__cvdAll = cvdAll; window.__cvdBar = cvdBar;
+let cvdWarned = '';
 window.__cvdOn = () => CVD.on;
 window.__cvdToggle = () => { CVD.on = !CVD.on; store.set('vg_cvd', CVD.on); cvdApply(); mnState(); };
 cvdApply();
@@ -3898,9 +3622,7 @@ const GUN = ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'];
 async function hmLoad(){
   const sym = S.symbol; HM.loading = true; HM.err = ''; HM.data = null; HM.sym = sym; hmRender();
   try{
-    const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1h&limit=1000`);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const k = await r.json();
+    const k = await getKl(sym, '1h', { limit: 1000 });
     if (sym !== HM.sym) return;
     const H = Array.from({ length: 24 }, () => ({ n: 0, rng: 0, ret: 0, up: 0 }));
     const G = Array.from({ length: 7 }, () => Array.from({ length: 24 }, () => ({ n: 0, rng: 0 })));
@@ -4026,122 +3748,13 @@ window.__lmPaint = (W, H) => {
 };
 window.__lmLoad = () => { if (LM.on) lmLoad(); };
 window.__lmOn = () => LM.on;
+if (window.__vgT) window.__vgT.LM = LM;
 window.__lmToggle = () => {
   LM.on = !LM.on; store.set('vg_lm', LM.on); mnState();
   if (LM.on){ lmLoad(); toast('💧 Likidite haritası açık', 'Sarı bant: long likidasyonları (fiyat altı) · mavi: short likidasyonları (fiyat üstü). Gerçek pozisyonlar bilinmediği için TAHMİNDİR.', { ms: 6000 }); }
   else { LM.bins = null; D.ver++; }
 };
 setInterval(() => { if (LM.on && !document.hidden && !LM.loading && Date.now() - LM.t > 5 * 60000) lmLoad(); }, 30000);
-
-/* =====================================================================
-   YENİ LİSTELEMELER: Binance'in kontrat listesi önceki açılışla karşılaştırılır (5 dk'da bir)
-   ===================================================================== */
-const NL = { known: store.get('vg_known', null), recent: store.get('vg_newlist', []), upcoming: [], seenUp: store.get('vg_upseen', []) };
-function symEntry(s){
-  const pf = (s.filters || []).find(f => f.filterType === 'PRICE_FILTER');
-  return { base: s.baseAsset, quote: s.quoteAsset, tradfi: s.contractType === 'TRADIFI_PERPETUAL',
-    tick: pf ? +pf.tickSize : Math.pow(10, -s.pricePrecision), prec: pf ? decimals(pf.tickSize) : s.pricePrecision };
-}
-function nlCheck(info){
-  if (!info || !Array.isArray(info.symbols)) return;
-  const perps = info.symbols.filter(s => s.contractType === 'PERPETUAL' || s.contractType === 'TRADIFI_PERPETUAL');
-  const trading = perps.filter(s => s.status === 'TRADING');
-  NL.upcoming = perps.filter(s => s.status === 'PENDING_TRADING' || (s.status !== 'TRADING' && +s.onboardDate > Date.now()))
-    .map(s => ({ sym: s.symbol, t: +s.onboardDate || 0 })).sort((a, b) => a.t - b.t);
-  const names = trading.map(s => s.symbol);
-  if (!Array.isArray(NL.known)){ NL.known = names; store.set('vg_known', names); return; }   // ilk kez: hepsi "bilinen"
-  const k = new Set(NL.known);
-  const fresh = trading.filter(s => !k.has(s.symbol));
-  for (const s of fresh){
-    if (!S.symbols[s.symbol]) S.symbols[s.symbol] = symEntry(s);
-    NL.recent.unshift({ sym: s.symbol, t: Date.now() });
-    const nm = s.baseAsset;
-    toast(`🆕 Binance Futures'a yeni eklendi: ${nm}`, 'Yeni listelemeler ilk saatlerde çok sert hareket edebilir · grafiğe gitmek için dokun', { sticky: true, onTap: () => selectSymbol(s.symbol) });
-  }
-  if (fresh.length){ NL.recent = NL.recent.slice(0, 50); store.set('vg_newlist', NL.recent); NL.known = names; store.set('vg_known', names); try{ beep(); }catch(e){} }
-  const seen = new Set(NL.seenUp);
-  for (const u of NL.upcoming) if (!seen.has(u.sym)){
-    seen.add(u.sym);
-    toast(`⏳ Yakında Binance Futures'ta: ${u.sym}`, u.t ? 'Açılış: ' + new Date(u.t).toLocaleString('tr-TR') : 'Açılış saati henüz belli değil', { sticky: true });
-  }
-  NL.seenUp = [...seen].slice(-200); store.set('vg_upseen', NL.seenUp);
-}
-window.__nlCheck = nlCheck;
-setInterval(async () => {
-  if (document.hidden) return;
-  try{ const r = await fetch(`${API}/fapi/v1/exchangeInfo`); if (r.ok) nlCheck(await r.json()); }catch(e){}
-}, 5 * 60000);
-function nlTab(){
-  const info = 'Uygulama açıkken 5 dakikada bir Binance\'in kontrat listesine bakılır; yeni eklenen olursa uyarı çıkar.<br><span class="muted">Telefona bildirim için alarm sunucusunu güncellemen gerekir.</span>';
-  let html = '';
-  if (NL.upcoming.length) html += '<div class="hm-sec">⏳ Yakında açılacak</div>' + NL.upcoming.map(u => `<div class="t-row"><div><b>${esc(u.sym)}</b><small>${u.t ? 'Açılış ' + new Date(u.t).toLocaleString('tr-TR') : 'Açılış saati belli değil'}</small></div><div></div><div></div></div>`).join('');
-  html += '<div class="hm-sec">🆕 Son eklenenler</div>';
-  html += NL.recent.length ? NL.recent.map(x => { const m = S.symbols[x.sym], t = S.tickers[x.sym] || {};
-    return `<div class="t-row" data-sym="${x.sym}"><div><b>${esc(m ? m.base : x.sym)}</b><small>fark edildi ${new Date(x.t).toLocaleString('tr-TR')}</small></div><div class="t-px">${fp(t.last, x.sym)}</div><div class="t-pct ${t.chg >= 0 ? 'up-t' : 'down-t'}">${fpct(t.chg)}</div></div>`; }).join('')
-    : '<div class="empty">Henüz yeni listeleme görülmedi. Uygulama açık kaldıkça takip edilir.</div>';
-  return { bar: '', info, html };
-}
-
-/* =====================================================================
-   BTC'DEN BAĞIMSIZ: son 48 saatlik saatlik getirilerle BTC'ye benzerlik (korelasyon) ve beta;
-   "ayrışma" = coinin 24 saatlik değişimi − beta × BTC'nin 24 saatlik değişimi
-   ===================================================================== */
-const CO = { rows: [], t: 0, running: false, done: 0, total: 0, err: '', mode: store.get('vg_co_mode', 'up') };
-const rets = kl => { const m = new Map(); for (let i = 1; i < kl.length; i++){ const a = +kl[i - 1][4]; if (a > 0) m.set(+kl[i][0], +kl[i][4] / a - 1); } return m; };
-async function coLoad(){
-  if (CO.running) return;
-  CO.running = true; CO.err = ''; tarRender();
-  try{
-    const g = async sym => { const r = await fetch(`${API}/fapi/v1/klines?symbol=${sym}&interval=1h&limit=50`); if (r.status === 429 || r.status === 418) throw new Error('limit'); return r.ok ? r.json() : null; };
-    const btc = await g('BTCUSDT'); if (!btc) throw new Error('BTC verisi yok');
-    const bR = rets(btc), bKeys = [...bR.keys()];
-    const syms = Object.keys(S.symbols).filter(x => x !== 'BTCUSDT' && !S.symbols[x].tradfi && S.tickers[x]);
-    CO.total = syms.length; CO.done = 0;
-    const out = []; let i = 0, stop = false;
-    const worker = async () => { for (;;){ const k = i++; if (stop || k >= syms.length) return; const sym = syms[k];
-      try{
-        const kl = await g(sym);
-        if (kl && kl.length >= 30){
-          const r = rets(kl), xs = [], ys = [];
-          for (const t of bKeys) if (r.has(t)){ xs.push(bR.get(t)); ys.push(r.get(t)); }
-          if (xs.length >= 24){
-            const mx = xs.reduce((a, b) => a + b) / xs.length, my = ys.reduce((a, b) => a + b) / ys.length;
-            let cv = 0, vx = 0, vy = 0; for (let j = 0; j < xs.length; j++){ cv += (xs[j] - mx) * (ys[j] - my); vx += (xs[j] - mx) ** 2; vy += (ys[j] - my) ** 2; }
-            const corr = vx && vy ? cv / Math.sqrt(vx * vy) : 0, beta = vx ? cv / vx : 0;
-            out.push({ sym, corr, beta, ref: +kl[Math.max(0, kl.length - 25)][4] });
-          }
-        }
-      }catch(e){ if (e.message === 'limit'){ stop = true; CO.err = 'Binance istek sınırı; biraz sonra tekrar dene.'; } }
-      CO.done++; } };
-    await Promise.all(Array.from({ length: 6 }, worker));
-    CO.btcRef = +btc[Math.max(0, btc.length - 25)][4];
-    CO.rows = out; CO.t = Date.now();
-  }catch(e){ CO.err = 'Veri alınamadı (' + (e.message || e) + ')'; }
-  CO.running = false; tarRender();
-}
-function coTab(){
-  const modes = [['up', '📈 BTC\'ye rağmen yükselen'], ['down', '📉 BTC\'ye rağmen düşen'], ['ind', '🧭 En bağımsız']];
-  const bar = modes.map(([k, l]) => `<button class="chip${CO.mode === k ? ' on' : ''}" data-com="${k}">${l}</button>`).join('') + '<button class="chip" data-cor="1">↻</button>';
-  const bt = (S.tickers.BTCUSDT || {}).last, b24 = CO.btcRef && bt ? (bt / CO.btcRef - 1) * 100 : null;
-  let info = `Son 48 saatin saatlik hareketlerine göre. <b>r</b>: BTC'ye benzerlik (1 = aynı, 0 = ilgisiz) · <b>ayrışma</b>: BTC'nin etkisi çıkarıldıktan sonra kalan 24 saatlik hareket.`;
-  if (b24 != null) info += `<br>BTC 24 sa: <b class="${b24 >= 0 ? 'up-t' : 'down-t'}">${fpct(b24)}</b>`;
-  if (CO.running) info += `<br>Hesaplanıyor… <b>${CO.done}/${CO.total || '…'}</b>`;
-  else if (CO.t) info += ` · güncellendi ${fmtClock(CO.t)}`;
-  if (CO.err) info += `<br><span class="bad">${esc(CO.err)}</span>`;
-  const rows = CO.rows.map(x => { const t = S.tickers[x.sym] || {}; const c24 = t.last && x.ref ? (t.last / x.ref - 1) * 100 : 0;
-    return Object.assign({}, x, { c24, alpha: c24 - x.beta * (b24 || 0) }); });
-  let list;
-  if (CO.mode === 'up') list = rows.filter(x => x.alpha > 0).sort((a, b) => b.alpha - a.alpha);
-  else if (CO.mode === 'down') list = rows.filter(x => x.alpha < 0).sort((a, b) => a.alpha - b.alpha);
-  else list = rows.slice().sort((a, b) => Math.abs(a.corr) - Math.abs(b.corr));
-  const html = !list.length ? `<div class="empty">${CO.running || !CO.t ? 'Hesaplanıyor…' : 'Sonuç yok.'}</div>` : list.slice(0, 150).map(x => {
-    const m = S.symbols[x.sym];
-    return `<div class="t-row" data-sym="${x.sym}"><div><b>${esc(m ? m.base : x.sym)}</b><small>r ${x.corr.toFixed(2)} · beta ${x.beta.toFixed(2)} · 24 sa ${fpct(x.c24)}</small></div>
-      <div class="t-px">ayrışma</div><div class="t-pct ${x.alpha >= 0 ? 'up-t' : 'down-t'}">${fpct(x.alpha)}</div></div>`; }).join('');
-  return { bar, info, html };
-}
-
-if (window.__vgT){ window.__vgT.LM = LM; window.__vgT.CO = CO; window.__vgT.NL = NL; }
 
 /* =====================================================================
    SİNYALLER: aynı coinde SPOT ve VADELİ piyasada alım (ya da satım) baskısı AYNI ANDA varsa sinyal.
@@ -4274,7 +3887,6 @@ function closeSig(fromPop){
   $('sgSheet').classList.remove('open');
   if (!fromPop && history.state && history.state.sig) history.back();
 }
-$('sigBtn').addEventListener('click', openSig);
 $('sgClose').addEventListener('click', () => closeSig());
 window.addEventListener('popstate', () => closeSig(true));
 $('sgSheet').addEventListener('click', e => {
@@ -4466,6 +4078,197 @@ $('btBody').addEventListener('click', e => {
 if (window.__vgT) window.__vgT.btCompute = btCompute;
 
 
+/* =====================================================================
+   HYPERLIQUID: Metaller, Döviz ve Endeksler için anlık veri kaynağı
+   - Ücretsiz, anahtarsız, herkese açık (api.hyperliquid.xyz). Bu piyasalar 7/24 işlem görür.
+   - Liste: tüm "perp dex"lerin piyasaları taranır, adına göre metal / döviz / endeks olarak ayrılır.
+   - Canlı: tek WebSocket (wss://api.hyperliquid.xyz/ws) → orta fiyatlar (allMids) + seçili sembolün mumu.
+   - Kesintiye karşı: WebSocket koparsa kademeli yeniden bağlanma; bu sırada REST ile fiyat çekilir.
+     Hyperliquid'e hiç ulaşılamazsa Binance'teki karşılıkları (varsa) listede kendiliğinden görünür.
+   ===================================================================== */
+const HL_API = 'https://api.hyperliquid.xyz/info', HL_WS = 'wss://api.hyperliquid.xyz/ws';
+const HL_SETS = {
+  metal: new Set(['GOLD','SILVER','PLATINUM','PALLADIUM','COPPER','CL','WTI','BRENTOIL','BRENT','NATGAS','HO','XAU','XAG','XPT','XPD','OIL','USOIL','UKOIL','GAS','ALUMINIUM','ALUMINUM','URANIUM']),
+  fx: new Set(['EUR','GBP','JPY','CHF','AUD','CAD','NZD','MXN','TRY','CNH','KRW','INR','BRL','ZAR','SGD','HKD','EURUSD','GBPUSD','USDJPY','AUDUSD','USDCAD','USDCHF','DXY']),
+  index: new Set(['SP500','SPX','SPX500','US500','XYZ100','NDX','NAS100','US100','US30','DJI','DOW','JP225','NIKKEI','N225','KR200','KOSPI','USAR','DAX','GER40','DE40','HK50','HSI','HANGSENG','UK100','FTSE','FRA40','CAC40','EU50','STOXX50','CN50','AUS200','IND50','NIFTY','RUT','US2000','VIX'])
+};
+const HL_NAMES = { SP500: 'S&P 500', XYZ100: 'Nasdaq 100', JP225: 'Nikkei 225', KR200: 'KOSPI 200', USAR: 'ABD Hisse Endeksi', CL: 'WTI Petrol', BRENTOIL: 'Brent Petrol',
+  NATGAS: 'Doğalgaz', HO: 'Isıtma yakıtı', GOLD: 'Altın', SILVER: 'Gümüş', PLATINUM: 'Platin', PALLADIUM: 'Paladyum', COPPER: 'Bakır',
+  EUR: 'EUR/USD', GBP: 'GBP/USD', JPY: 'USD/JPY', HK50: 'Hang Seng', DAX: 'DAX', GER40: 'DAX', UK100: 'FTSE 100', US30: 'Dow Jones' };
+// Binance TradFi sembolü ↔ Hyperliquid karşılığı (aynı varlık iki listede tekrar etmesin)
+const HL_EQUIV = { XAU: 'GOLD', XAG: 'SILVER', XPT: 'PLATINUM', XPD: 'PALLADIUM', XCU: 'COPPER', BZ: 'BRENTOIL', NG: 'NATGAS', US500: 'SP500', SPX500: 'SP500', SPX: 'SP500', NAS100: 'XYZ100', NDX: 'XYZ100', JPN225: 'JP225' };
+const HL = { ok: false, dexes: [], bases: { metal: new Set(), fx: new Set(), index: new Set() }, err: '', t: 0,
+  covers(g, base){ const b = String(base).toUpperCase(); return this.bases[g] && (this.bases[g].has(b) || this.bases[g].has(HL_EQUIV[b])); } };
+async function hlPost(body){
+  const r = await fetch(HL_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+const HL_IV = { '1m': 60e3, '3m': 180e3, '5m': 300e3, '15m': 900e3, '30m': 1800e3, '1h': 3600e3, '2h': 7200e3, '4h': 14400e3, '8h': 28800e3, '12h': 43200e3, '1d': 86400e3, '3d': 259200e3, '1w': 604800e3, '1M': 2592000e3 };
+function hlRow(c){ return [+c.t, c.o, c.h, c.l, c.c, c.v, +c.T, null, +c.n || 0, null, null]; }
+async function hlKlines(sym, iv, o){
+  const limit = Math.min(o.limit || FIRST_N, 5000);
+  let src = iv, k = 1;
+  if (!HL_IV[iv]){ if (iv === '6h'){ src = '1h'; k = 6; } else src = '1h'; }   // Hyperliquid'de 6s yok → 1s mumlardan birleştirilir
+  const ms = HL_IV[src] * k, end = o.endTime || Date.now(), start = o.startTime || (end - (limit + 1) * ms);
+  const raw = await hlPost({ type: 'candleSnapshot', req: { coin: sym, interval: src, startTime: start, endTime: end } });
+  if (!Array.isArray(raw)) throw new Error('veri yok');
+  let rows = raw.map(hlRow).sort((a, b) => a[0] - b[0]);
+  if (k > 1){                                           // 6 saatlik mumlar (UTC'ye hizalı)
+    const g = new Map();
+    for (const r of rows){
+      const b = Math.floor(r[0] / ms) * ms, x = g.get(b);
+      if (!x) g.set(b, [b, r[1], r[2], r[3], r[4], +r[5], b + ms - 1, null, r[8], null, null]);
+      else { x[2] = String(Math.max(+x[2], +r[2])); x[3] = String(Math.min(+x[3], +r[3])); x[4] = r[4]; x[5] += +r[5]; x[8] += r[8]; }
+    }
+    rows = [...g.values()].map(x => (x[5] = String(x[5]), x)).sort((a, b) => a[0] - b[0]);
+  }
+  if (o.startTime) return rows.slice(0, limit);
+  return rows.slice(-limit);
+}
+function hlPrec(px, szDec){
+  const maxDec = Math.max(0, 6 - (szDec || 0));
+  const sig = px > 0 ? Math.max(0, 5 - Math.floor(Math.log10(px)) - 1) : 2;
+  return Math.max(0, Math.min(maxDec, sig));
+}
+async function hlInit(){
+  try{
+    let dexes = [];
+    try{ const d = await hlPost({ type: 'perpDexs' }); if (Array.isArray(d)) dexes = d.filter(x => x && x.name).map(x => x.name); }catch(e){}
+    if (!dexes.includes('xyz')) dexes.unshift('xyz');
+    dexes = dexes.slice(0, 12);
+    const best = {};                                    // grup+ad → en hacimli piyasa
+    await Promise.all(dexes.map(async dex => {
+      try{
+        const j = await hlPost({ type: 'metaAndAssetCtxs', dex });
+        const uni = (j && j[0] && j[0].universe) || [], ctx = (j && j[1]) || [];
+        uni.forEach((u, i) => {
+          if (!u || u.isDelisted) return;
+          const name = String(u.name).includes(':') ? u.name : dex + ':' + u.name;
+          const base = name.split(':')[1].toUpperCase();
+          const grp = HL_SETS.metal.has(base) ? 'metal' : HL_SETS.fx.has(base) ? 'fx' : HL_SETS.index.has(base) ? 'index' : null;
+          if (!grp) return;
+          const c = ctx[i] || {}, px = +(c.midPx || c.markPx || c.oraclePx), vol = +c.dayNtlVlm || 0;
+          if (!(px > 0)) return;
+          const key = grp + '|' + base;
+          if (!best[key] || vol > best[key].vol) best[key] = { name, base, grp, dex, px, vol, prev: +c.prevDayPx, szDec: u.szDecimals };
+        });
+      }catch(e){}
+    }));
+    const list = Object.values(best);
+    if (!list.length) throw new Error('Hyperliquid piyasa listesi alınamadı');
+    HL.dexes = [...new Set(list.map(x => x.dex))];
+    for (const g in HL.bases) HL.bases[g].clear();
+    for (const x of list){
+      const prec = hlPrec(x.px, x.szDec);
+      S.symbols[x.name] = { base: x.base, quote: 'USD', src: 'hl', dex: x.dex, hlGroup: x.grp, tradfi: false, label: HL_NAMES[x.base] || x.base,
+        prec, tick: Math.pow(10, -prec) };
+      S.tickers[x.name] = { last: x.px, chg: x.prev > 0 ? (x.px / x.prev - 1) * 100 : 0, qv: x.vol, prev: x.prev };
+      HL.bases[x.grp].add(x.base);
+    }
+    HL.ok = true; HL.t = Date.now(); HL.err = '';
+    hlConnect();
+    listDirty = true;
+    catchUp();                                          // uygulama kapalıyken bu sembollerde geçilen alarmlar
+    if (isHL(S.symbol) && !S.candles.length) loadChart();
+  }catch(e){
+    HL.ok = false; HL.err = e.message || String(e);
+    if (String(S.symbol).includes(':') && !S.symbols[S.symbol] && S.symbols.BTCUSDT){ S.symbol = 'BTCUSDT'; loadChart(); }
+    setTimeout(hlInit, 30000);                          // sonra tekrar dene; bu arada Binance karşılıkları görünür
+  }
+  if ($('sheet').classList.contains('open')) renderList();
+}
+// 24 saatlik değişim ve hacim dakikada bir tazelenir (fiyatın kendisi WebSocket ile anlık gelir)
+setInterval(async () => {
+  if (!HL.ok || document.hidden) return;
+  for (const dex of HL.dexes){
+    try{
+      const j = await hlPost({ type: 'metaAndAssetCtxs', dex });
+      const uni = (j && j[0] && j[0].universe) || [], ctx = (j && j[1]) || [];
+      uni.forEach((u, i) => {
+        const name = String(u.name).includes(':') ? u.name : dex + ':' + u.name, t = S.tickers[name], c = ctx[i];
+        if (!t || !c) return;
+        if (+c.prevDayPx > 0) t.prev = +c.prevDayPx;
+        t.qv = +c.dayNtlVlm || t.qv;
+      });
+    }catch(e){}
+  }
+}, 60000);
+
+/* --- Tek WebSocket bağlantısı (abonelikler kopunca kendiliğinden yenilenir) --- */
+const HLW = { ws: null, subs: new Map(), retry: 0, last: 0, ping: null, candleKey: '', candleSub: null, token: 0, lastRest: 0 };
+function hlSend(o){ try{ if (HLW.ws && HLW.ws.readyState === 1) HLW.ws.send(JSON.stringify(o)); }catch(e){} }
+function hlSub(sub){ const k = JSON.stringify(sub); HLW.subs.set(k, sub); hlSend({ method: 'subscribe', subscription: sub }); }
+function hlUnsub(sub){ const k = JSON.stringify(sub); if (HLW.subs.delete(k)) hlSend({ method: 'unsubscribe', subscription: sub }); }
+function hlConnect(){
+  if (HLW.ws && (HLW.ws.readyState === 0 || HLW.ws.readyState === 1)) return;
+  let ws;
+  try{ ws = new WebSocket(HL_WS); }catch(e){ hlRetry(); return; }
+  HLW.ws = ws;
+  ws.onopen = () => {
+    HLW.retry = 0; HLW.last = Date.now();
+    for (const dex of HL.dexes) HLW.subs.set(JSON.stringify({ type: 'allMids', dex }), { type: 'allMids', dex });
+    for (const sub of HLW.subs.values()) hlSend({ method: 'subscribe', subscription: sub });
+    clearInterval(HLW.ping); HLW.ping = setInterval(() => hlSend({ method: 'ping' }), 30000);   // sunucu 60 sn sessiz bağlantıyı kapatır
+  };
+  ws.onmessage = e => {
+    HLW.last = Date.now();
+    let m; try{ m = JSON.parse(e.data); }catch(_){ return; }
+    if (!m) return;
+    if (m.channel === 'allMids' && m.data && m.data.mids) hlMids(m.data.mids, m.data.dex);
+    else if (m.channel === 'candle' && m.data) (Array.isArray(m.data) ? m.data : [m.data]).forEach(hlCandle);
+  };
+  ws.onclose = () => { if (HLW.ws === ws){ HLW.ws = null; clearInterval(HLW.ping); hlRetry(); } };
+  ws.onerror = () => { try{ ws.close(); }catch(e){} };
+}
+function hlRetry(){ const d = Math.min(15000, 1000 * Math.pow(2, HLW.retry++)); setTimeout(hlConnect, d); }
+function hlReconnect(){ const w = HLW.ws; HLW.ws = null; if (w){ w.onclose = null; try{ w.close(); }catch(e){} } clearInterval(HLW.ping); hlConnect(); }
+function hlMids(mids, dex){
+  const now = Date.now();
+  for (const k in mids){
+    const name = k.includes(':') ? k : (dex ? dex + ':' + k : k);
+    const t = S.tickers[name]; if (!t || !isHL(name)) continue;
+    const px = +mids[k]; if (!(px > 0)) continue;
+    t.last = px; if (t.prev > 0) t.chg = (px / t.prev - 1) * 100;
+    if (A.list.length) checkAlarms(name, px);
+    if (name === S.symbol && S.candles.length){           // işlem olmasa da grafik canlı: son mumun kapanışı orta fiyatla
+      const l = S.candles[S.candles.length - 1];
+      if (Date.now() <= S.closeMs){
+        const b = Object.assign({}, l, { close: px, high: Math.max(l.high, px), low: Math.min(l.low, px) });
+        applyBar(b); S.lastKline = now; setLiveMode('live');
+      }
+    }
+  }
+  A.lastTick = now; listDirty = true; updateHeader();
+}
+function hlCandle(c){
+  if (!c || c.s + '|' + c.i !== HLW.candleKey) return;
+  if (HLW.token !== loadToken) return;
+  S.lastKline = Date.now(); setLiveMode('live');
+  pushRaw(hlRow(c));
+}
+function hlWatchCandles(sym, iv, token){
+  hlUnwatchCandles();
+  const src = HL_IV[iv] ? iv : '1h';
+  HLW.candleKey = sym + '|' + src; HLW.token = token;
+  HLW.candleSub = { type: 'candle', coin: sym, interval: src };
+  if (iv === '6h') return;                              // 6s: canlı mum orta fiyatla ve yedek yoklamayla güncellenir
+  hlSub(HLW.candleSub);
+  hlConnect();
+}
+function hlUnwatchCandles(){ if (HLW.candleSub){ hlUnsub(HLW.candleSub); HLW.candleSub = null; HLW.candleKey = ''; } }
+// WebSocket uzun süre sessizse orta fiyatları REST ile çek (kesintisiz fiyat)
+setInterval(async () => {
+  if (!HL.ok || document.hidden) return;
+  if (Date.now() - HLW.last < 8000) return;
+  if (Date.now() - HLW.lastRest < 3000) return;
+  HLW.lastRest = Date.now();
+  for (const dex of HL.dexes){ try{ const m = await hlPost({ type: 'allMids', dex }); if (m && typeof m === 'object') hlMids(m, dex); }catch(e){} }
+  if (Date.now() - HLW.last > 20000) hlReconnect();
+}, 1000);
+window.__vgHL = { HL, HLW, hlKlines, hlMids };
+
+
 /* ---------- Uygulama olarak yükleme (PWA) ---------- */
 let instEvt = null;
 window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); instEvt = e; $('instBtn').hidden = false; });
@@ -4483,6 +4286,7 @@ if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
 /* ---------- Başlangıç ---------- */
 async function init(){
   renderTf();
+  hlInit();                                             // metal / döviz / endeks (Binance'ten bağımsız)
   setStatus('Kontrat listesi yükleniyor…');
   try{
     const [info, tick] = await Promise.all([
@@ -4503,8 +4307,7 @@ async function init(){
       if (!S.symbols[t.symbol]) continue;
       S.tickers[t.symbol] = { last: +t.lastPrice, chg: +t.priceChangePercent, hi: +t.highPrice, lo: +t.lowPrice, qv: +t.quoteVolume };   // chg: 03:00 açılışı gelene kadar geçici (24s)
     }
-    if (!S.symbols[S.symbol]) S.symbol = 'BTCUSDT';
-    if (window.__nlCheck) setTimeout(() => window.__nlCheck(info), 3000);
+    if (!S.symbols[S.symbol] && !String(S.symbol).includes(':')) S.symbol = 'BTCUSDT';
   }catch(e){
     setStatus('Binance Futures verisine ulaşılamadı. İnterneti kontrol et; bazı ülkelerde/ağlarda Binance erişimi engelli olabilir.');
     return;
@@ -4513,7 +4316,9 @@ async function init(){
   openTickerWs();
   loadDayOpens();
   loadTfOpens();
-  loadChart();
+  if (S.symbols[S.symbol]) loadChart();
+  else if (HL.err && S.symbols.BTCUSDT){ S.symbol = 'BTCUSDT'; loadChart(); }   // Hyperliquid'e ulaşılamadı → BTC
+  else setStatus('Yükleniyor…');                        // Hyperliquid sembolü: liste gelince hlInit yükler
 }
 init();
 })();

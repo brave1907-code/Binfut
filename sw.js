@@ -1,8 +1,8 @@
 // Vadeli Grafik - servis çalışanı: uygulama kabuğunu önbelleğe alır, internet yokken de açılır.
 // Sayfa (index.html) önce internetten alınır (güncellemeler hemen gelir), olmazsa önbellekten açılır.
 // Fiyat/Binance/Firebase istekleri hiç önbelleğe alınmaz.
-const CACHE = 'vg-v2';
-const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'firebase-config.js'];
+const CACHE = 'vg-v4';
+const SHELL = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png', 'icon-maskable-512.png', 'firebase-config.js'];
 const LIBS = ['https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js'];
 self.addEventListener('install', e => {
   e.waitUntil((async () => {
