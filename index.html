@@ -235,6 +235,41 @@ input{-webkit-user-select:text;user-select:text}
 .sg-ls button{flex:1;padding:12px 0;border-radius:10px;font-size:16px;font-weight:800;background:var(--panel2);color:var(--muted)}
 .sg-ls button.on[data-sgd="long"]{background:var(--up);color:#fff}
 .sg-ls button.on[data-sgd="short"]{background:var(--down);color:#fff}
+.dm-sum{margin:0 12px 10px;padding:14px;background:var(--panel);border-radius:12px}
+.dm-sum .big{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.dm-sum .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.dm-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;margin-top:12px;font-size:12px;color:var(--muted)}
+.dm-grid b{display:block;font-size:14px;color:var(--text);font-variant-numeric:tabular-nums;font-weight:600}
+.dm-up{color:var(--up)} .dm-dn{color:var(--down)}
+.dm-f{padding:0 12px 16px}
+.dm-f label{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin:12px 0 5px}
+.dm-f label b{color:var(--text)}
+.dm-f input[type=text],.dm-f input[type=search],.dm-f input[type=number]{width:100%;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);font-size:16px;padding:10px 12px;outline:none;font-variant-numeric:tabular-nums}
+.dm-f input:focus{border-color:var(--accent)}
+.dm-f input[type=range]{width:100%;accent-color:var(--accent)}
+.dm-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dm-chips{display:flex;gap:6px;margin-top:8px}
+.dm-chips button{flex:1;padding:7px 0;border-radius:8px;background:var(--panel2);color:var(--muted);font-size:12px}
+.dm-res button{display:flex;justify-content:space-between;width:100%;padding:10px 12px;border-bottom:1px solid var(--rowline);text-align:left;font-size:14px}
+.dm-res small{color:var(--muted)}
+.dm-px{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;padding:10px 12px;background:var(--panel);border-radius:10px}
+.dm-px b{font-size:16px} .dm-px span{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.dm-ls{display:flex;gap:8px;margin-top:14px}
+.dm-ls button{flex:1;padding:14px 0;border-radius:10px;font-size:16px;font-weight:800;color:#fff}
+.dm-ls #dmLong{background:var(--up)} .dm-ls #dmShort{background:var(--down)}
+.dm-card{margin:0 12px 10px;padding:12px;background:var(--panel);border-radius:12px;font-size:12px;color:var(--muted)}
+.dm-card .h{display:flex;justify-content:space-between;align-items:center;font-size:15px;color:var(--text);margin-bottom:6px}
+.dm-card .h .pn{font-weight:800;font-variant-numeric:tabular-nums}
+.dm-card .g{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;font-variant-numeric:tabular-nums}
+.dm-card .g b{color:var(--text);font-weight:600}
+.dm-tag{font-size:10px;font-weight:800;padding:2px 6px;border-radius:8px;color:#fff;margin-left:6px;vertical-align:middle}
+.dm-tag.l{background:var(--up)} .dm-tag.s{background:var(--down)}
+.dm-act{display:flex;gap:8px;margin-top:10px}
+.dm-act button{flex:1;padding:9px 0;border-radius:8px;background:var(--panel2);color:var(--text);font-size:13px;font-weight:600}
+.dm-act button.cl{background:var(--accent);color:#000}
+.dm-empty{padding:30px 16px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5}
+.dm-foot{padding:6px 12px 20px;text-align:center}
+.dm-foot button{color:var(--muted);font-size:13px;padding:10px;text-decoration:underline}
 .sg-row{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 12px;border-bottom:1px solid var(--rowline)}
 .sg-row:active{background:var(--panel)}
 .sg-row b{font-size:15px}
@@ -524,6 +559,8 @@ a.chip{text-decoration:none;display:inline-block}
 <div id="mnSheet">
   <div class="mn-card">
     <div class="mn-group" data-group="ind">
+      <div class="mn-h">💼 Demo hesap <small>sanal para, gerçek fiyat</small></div>
+      <button class="mn-i" data-demo="1"><span class="ic">💼</span><span class="tx"><b>Demo hesap</b><small>100.000 $ sanal bakiye · istediğin paritede LONG / SHORT · işlem geçmişi</small></span><span class="st" id="stDemo"></span></button>
       <div class="mn-h">📈 Piyasa <small>tüm coinleri tarayan bölümler</small></div>
       <button class="mn-i" id="wallBtn"><span class="ic">🧱</span><span class="tx"><b>Wall · emir duvarları</b><small>Büyük alış/satış emirleri; fiyat yaklaşınca çekilen “sahte” duvarlar</small></span></button>
       <button class="mn-i" id="wkBtn"><span class="ic">📊</span><span class="tx"><b>Haftalık değişim</b><small>Pazartesi 03:00 açılışına göre en çok yükselen / düşen</small></span></button>
@@ -577,6 +614,32 @@ a.chip{text-decoration:none;display:inline-block}
   <div class="xbody" id="sgList"></div>
   <div class="xbody" id="btBody" hidden></div>
 </div>
+<div id="dmSheet" class="xsheet">
+  <div class="al-head"><span>💼 Demo hesap</span><span class="sp"></span><button class="xclose" id="dmClose">Kapat</button></div>
+  <div class="xbody" id="dmBody">
+    <div id="dmSum" class="dm-sum"></div>
+    <div class="xbar" id="dmTabs"><button class="chip on" data-dmt="trade">İşlem</button><button class="chip" data-dmt="pos">Pozisyonlar <span id="dmPn"></span></button><button class="chip" data-dmt="hist">Geçmiş</button></div>
+    <div id="dmTrade" class="dm-f">
+      <label>Parite</label>
+      <input id="dmSym" type="search" autocomplete="off" placeholder="Parite ara (BTC, Altın, EUR…)">
+      <div id="dmRes" class="dm-res"></div>
+      <div class="dm-px"><b id="dmName">–</b><span id="dmPrice">–</span></div>
+      <label>Teminat (USD) <span>Kullanılabilir: <b id="dmAvail">–</b></span></label>
+      <input id="dmMargin" type="number" inputmode="decimal" value="1000" min="0">
+      <div class="dm-chips"><button data-dmp="10">%10</button><button data-dmp="25">%25</button><button data-dmp="50">%50</button><button data-dmp="100">%100</button></div>
+      <label>Kaldıraç <b id="dmLevV">10x</b></label>
+      <input id="dmLev" type="range" min="1" max="50" value="10">
+      <div class="dm-two">
+        <div><label>Kâr al (TP)</label><input id="dmTp" type="number" inputmode="decimal" placeholder="isteğe bağlı"></div>
+        <div><label>Zarar durdur (SL)</label><input id="dmSl" type="number" inputmode="decimal" placeholder="isteğe bağlı"></div>
+      </div>
+      <div id="dmPrev" class="w-info" style="padding:10px 0 0"></div>
+      <div class="dm-ls"><button id="dmLong">📈 LONG AÇ</button><button id="dmShort">📉 SHORT AÇ</button></div>
+    </div>
+    <div id="dmPos" hidden></div>
+    <div id="dmHist" hidden></div>
+  </div>
+</div>
 <div id="accSheet">
   <div class="acc-card">
     <div class="acc-top"><b>👤 Hesap</b><span class="sp"></span><button id="accClose">Kapat</button></div>
@@ -602,7 +665,7 @@ const SORTS = [['vol','Hacim'],['up','Yükselen'],['down','Düşen'],['fav','★
 /* Hesap: giriş yapılmışsa hesaba ait anahtarlar "u_<uid>:" önekiyle saklanır; böylece hesaplar (ve misafir)
    aynı telefonda bile birbirine karışmaz. Cihaza ait ayarlar (tema, çubuk konumu…) öneksizdir. */
 const NS = (() => { try{ const u = localStorage.getItem('vg_uid'); return u ? 'u_' + u + ':' : ''; }catch(e){ return ''; } })();
-const PRIV_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_.+|vg_seen|vg_cdirty|vg_guestasked)$/;
+const PRIV_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_.+|vg_seen|vg_cdirty|vg_guestasked|vg_demo)$/;
 const nsKey = k => NS && PRIV_RE.test(k) ? NS + k : k;
 let cloudHook = null;
 // İptal edilen bölümlerin (Screener, Fonlama, Likidasyon, Balina radarı, BTC'den bağımsız, Yeni listelemeler) eski kayıtları silinir
@@ -1357,6 +1420,7 @@ function openTickerWs(){
       const d0 = S.dayOpen[x.s] || o;                        // 03:00 açılışı yüklendiyse ona göre, yoksa geçici olarak 24s açılışına göre
       S.tickers[x.s] = { last: c, chg: d0 ? (c - d0) / d0 * 100 : 0, hi: +x.h, lo: +x.l, qv: +x.q };
       if (A.list.length) checkAlarms(x.s, c);
+      if (DM.pos.length) demoTick(x.s, c);
       if (W.rng[x.s]) wTrack(x.s, c);
     }
     listDirty = true;
@@ -2146,6 +2210,7 @@ function refreshAlarmLines(){
       lineStyle: LightweightCharts.LineStyle.Dashed, axisLabelVisible: true, title: '⏰'
     });
   }
+  if (typeof dmRefreshLines === 'function') dmRefreshLines();
 }
 
 /* --- Tetikleme --- */
@@ -2445,7 +2510,7 @@ if (Y.on){ syncFlush(); if (Date.now() - Y.lastFull > 6 * 3600 * 1000) syncAll()
 const FBC = window.VG_FIREBASE && window.VG_FIREBASE.apiKey ? window.VG_FIREBASE : null;
 const FBC_PLACEHOLDER = !!(FBC && /BURAYA/.test(JSON.stringify(FBC)));
 const CL = { user: null, db: null, auth: null, col: null, ready: false, timers: {}, flushing: false, state: FBC ? 'load' : 'off', err: '', lastOk: 0 };
-const CLOUD_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_topic|vg_sync_on)$/;
+const CLOUD_RE = /^(vg_draw_.+|vg_alarms|vg_favs|vg_lists|vg_mute|vg_magnet|vg_sync_topic|vg_sync_on|vg_demo)$/;
 const rawUid = () => { try{ return localStorage.getItem('vg_uid') || ''; }catch(e){ return ''; } };
 const loadScript = src => new Promise((res, rej) => { const el = document.createElement('script'); el.src = src; el.onload = res; el.onerror = () => rej(new Error('yüklenemedi')); document.head.appendChild(el); });
 
@@ -2509,6 +2574,7 @@ function applyRemote(k, vs){
   else if (k === 'vg_sync_on'){ Y.on = !!val; renderSync(); }
   else if (k === 'vg_mute'){ A.mute = !!val; renderMute(); }
   else if (k === 'vg_magnet'){ D.magnet = !!val; renderDrawBar(); }
+  else if (k === 'vg_demo'){ if (val && Array.isArray(val.pos) && Array.isArray(val.hist)){ DM = dmNorm(val); dmRefreshLines(); dmRender(true); } }
 }
 
 function guestKeys(){
@@ -3471,6 +3537,7 @@ function openMenu(g){
   $('mnSheet').dataset.g = g;
   mnState();
   if (!mnOpenQ()){ $('mnSheet').classList.add('open'); history.pushState({ menu: 1 }, ''); }
+  if (typeof dmMenuTag === 'function') dmMenuTag();
 }
 function closeMenu(fromPop){
   if (!mnOpenQ()) return;
@@ -3492,7 +3559,8 @@ $('mnSheet').addEventListener('click', e => {
   if (e.target === $('mnSheet')){ closeMenu(); return; }
   const i = e.target.closest('.mn-i'); if (!i) return;
   if (i.id === 'wallBtn' || i.id === 'wkBtn') return;           // kendi dinleyicileri var (aşağıda yeniden bağlanır)
-  if (i.dataset.sig) fromMenu(() => openSig());
+  if (i.dataset.demo) fromMenu(() => openDemo());
+  else if (i.dataset.sig) fromMenu(() => openSig());
   else if (i.dataset.c2) fromMenu(() => { window.__c2Toggle(); flash(window.__c2On() ? 'İkinci grafik açıldı' : 'İkinci grafik kapandı'); });
   else if (i.dataset.wh) fromMenu(() => { window.__whToggle(); flash(window.__whOn() ? 'Balina bandı açıldı' : 'Balina bandı kapandı'); });
   else if (i.dataset.cr) fromMenu(() => window.__crOpen());
@@ -4231,6 +4299,7 @@ function hlMids(mids, dex){
     const px = +mids[k]; if (!(px > 0)) continue;
     t.last = px; if (t.prev > 0) t.chg = (px / t.prev - 1) * 100;
     if (A.list.length) checkAlarms(name, px);
+    if (DM.pos.length) demoTick(name, px);
     if (name === S.symbol && S.candles.length){           // işlem olmasa da grafik canlı: son mumun kapanışı orta fiyatla
       const l = S.candles[S.candles.length - 1];
       if (Date.now() <= S.closeMs){
@@ -4268,6 +4337,236 @@ setInterval(async () => {
 }, 1000);
 window.__vgHL = { HL, HLW, hlKlines, hlMids };
 
+
+/* =====================================================================
+   DEMO HESAP — sanal 100.000 $ ile gerçek fiyatlarla vadeli (kaldıraçlı) işlem.
+   Hesaba özel saklanır (vg_demo). Teminat, kaldıraç, TP/SL, likidasyon ve %0,04 komisyon hesaplanır.
+   ===================================================================== */
+const DM_START = 100000, DM_FEE = 0.0004, DM_MMR = 0.005;
+function dmNew(){ return { v: 1, start: DM_START, bal: DM_START, pos: [], hist: [], n: 0, t0: Date.now() }; }
+function dmNorm(x){
+  const d = dmNew();
+  d.start = +x.start > 0 ? +x.start : DM_START; d.bal = isFinite(+x.bal) ? +x.bal : d.start; d.n = +x.n || 0; d.t0 = +x.t0 || d.t0;
+  d.pos = x.pos.filter(p => p && p.sym && p.qty > 0 && p.entry > 0);
+  d.hist = x.hist.filter(h => h && h.sym).slice(0, 500);
+  return d;
+}
+let DM = (() => { const x = store.get('vg_demo', null); return x && Array.isArray(x.pos) && Array.isArray(x.hist) ? dmNorm(x) : dmNew(); })();
+const DMU = { tab: 'trade', sym: null, side: 'long', lines: {}, lineKey: '' };
+const dmSave = () => store.set('vg_demo', DM);
+const dmOpenQ = () => $('dmSheet').classList.contains('open');
+const f$ = (v, sgn) => (sgn && v > 0 ? '+' : '') + Number(v).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' $';
+const fQty = q => Number(q.toPrecision(5)).toLocaleString('tr-TR', { maximumFractionDigits: 8 });
+const dmName = sym => { const m = S.symbols[sym]; return m ? (m.src === 'hl' ? (m.label || m.base) : m.base + '/' + m.quote.replace('USDT', 'USDT')) : sym; };
+const dmPrice = sym => { const v = curPrice(sym); return v != null && v > 0 ? v : null; };
+const dmDir = p => p.side === 'long' ? 1 : -1;
+const dmUnreal = p => { const px = dmPrice(p.sym); return px == null ? 0 : (px - p.entry) * p.qty * dmDir(p); };
+function dmLiq(side, entry, lev){ return side === 'long' ? entry * (1 - 1 / lev + DM_MMR) : entry * (1 + 1 / lev - DM_MMR); }
+function dmAcc(){
+  const margin = DM.pos.reduce((a, p) => a + p.margin, 0), unreal = DM.pos.reduce((a, p) => a + dmUnreal(p), 0);
+  return { margin, unreal, equity: DM.bal + unreal, avail: Math.max(0, DM.bal - margin) };
+}
+function dmMaxLev(sym){ const m = S.symbols[sym]; return m && m.src === 'hl' ? 20 : 50; }
+function dmPd(sym, v){ const m = S.symbols[sym]; return Number(v).toFixed(m ? Math.max(m.prec, 2) : 2); }
+
+function dmOpen(sym, side, margin, lev, tp, sl){
+  const px = dmPrice(sym);
+  if (!S.symbols[sym] || px == null) return flash('Bu paritenin fiyatı şu an yok');
+  margin = +margin; lev = Math.round(+lev) || 1;
+  if (!(margin >= 1)) return flash('Teminat en az 1 $ olmalı');
+  lev = Math.max(1, Math.min(dmMaxLev(sym), lev));
+  const notional = margin * lev, fee = notional * DM_FEE, acc = dmAcc();
+  if (margin + fee > acc.avail + 1e-9) return flash('Yetersiz bakiye · kullanılabilir ' + f$(acc.avail));
+  tp = +tp > 0 ? +tp : 0; sl = +sl > 0 ? +sl : 0;
+  if (side === 'long' ? ((tp && tp <= px) || (sl && sl >= px)) : ((tp && tp >= px) || (sl && sl <= px)))
+    return flash(side === 'long' ? 'LONG: TP fiyatın üstünde, SL altında olmalı' : 'SHORT: TP fiyatın altında, SL üstünde olmalı');
+  const liq = dmLiq(side, px, lev);
+  if (side === 'long' ? (sl && sl <= liq) : (sl && sl >= liq)) return flash('SL, likidasyon fiyatının ötesinde (' + dmPd(sym, liq) + ')');
+  DM.bal -= fee;
+  DM.pos.push({ id: 'p' + (++DM.n), sym, side, entry: px, qty: notional / px, lev, margin, liq, tp, sl, fee, t: Date.now() });
+  dmSave(); dmRefreshLines(); dmRender(true);
+  flash('💼 ' + (side === 'long' ? 'LONG' : 'SHORT') + ' açıldı · ' + dmName(sym) + ' · ' + lev + 'x · ' + dmPd(sym, px));
+}
+const DM_WHY = { manual: 'Elle kapatıldı', tp: 'Kâr al (TP)', sl: 'Zarar durdur (SL)', liq: 'Likidasyon' };
+function dmClose(id, exit, why){
+  const i = DM.pos.findIndex(p => p.id === id); if (i < 0) return;
+  const p = DM.pos[i];
+  if (!(exit > 0)) exit = dmPrice(p.sym);
+  if (!(exit > 0)) return flash('Fiyat alınamadı, biraz sonra tekrar dene');
+  const gross = why === 'liq' ? -p.margin : (exit - p.entry) * p.qty * dmDir(p);
+  const fee2 = why === 'liq' ? 0 : p.qty * exit * DM_FEE;
+  DM.bal += gross - fee2;
+  const pnl = gross - fee2 - p.fee;
+  DM.pos.splice(i, 1);
+  DM.hist.unshift({ id: p.id, sym: p.sym, side: p.side, lev: p.lev, entry: p.entry, exit, qty: p.qty, margin: p.margin, pnl, roe: pnl / p.margin * 100, fees: p.fee + fee2, why, t0: p.t, t1: Date.now() });
+  if (DM.hist.length > 500) DM.hist.length = 500;
+  dmSave(); dmRefreshLines(); dmRender(true);
+  flash((why === 'liq' ? '💥 ' : '💼 ') + dmName(p.sym) + ' ' + (p.side === 'long' ? 'LONG' : 'SHORT') + ' kapandı (' + DM_WHY[why] + ') · ' + f$(pnl, true));
+}
+function demoTick(sym, px){
+  for (const p of DM.pos.slice()){
+    if (p.sym !== sym) continue;
+    const L = p.side === 'long';
+    if (L ? px <= p.liq : px >= p.liq) dmClose(p.id, p.liq, 'liq');
+    else if (p.sl && (L ? px <= p.sl : px >= p.sl)) dmClose(p.id, p.sl, 'sl');
+    else if (p.tp && (L ? px >= p.tp : px <= p.tp)) dmClose(p.id, p.tp, 'tp');
+  }
+}
+
+/* --- Grafikte giriş / likidasyon çizgileri --- */
+function dmLineTitle(p){ return '💼 ' + (p.side === 'long' ? 'LONG ' : 'SHORT ') + p.lev + 'x  ' + f$(dmUnreal(p), true); }
+function dmRefreshLines(){
+  if (typeof candle === 'undefined' || !candle) return;
+  for (const k in DMU.lines){ try{ candle.removePriceLine(DMU.lines[k]); }catch(e){} }
+  DMU.lines = {};
+  for (const p of DM.pos){
+    if (p.sym !== S.symbol) continue;
+    const col = p.side === 'long' ? '#0ecb81' : '#f6465d', LS = LightweightCharts.LineStyle;
+    DMU.lines[p.id] = candle.createPriceLine({ price: p.entry, color: col, lineWidth: 1, lineStyle: LS.Solid || 0, axisLabelVisible: true, title: dmLineTitle(p) });
+    DMU.lines[p.id + 'l'] = candle.createPriceLine({ price: p.liq, color: '#a855f7', lineWidth: 1, lineStyle: LS.Dotted || 1, axisLabelVisible: false, title: 'LİKİT' });
+    if (p.tp) DMU.lines[p.id + 't'] = candle.createPriceLine({ price: p.tp, color: '#0ecb81', lineWidth: 1, lineStyle: LS.Dashed, axisLabelVisible: true, title: 'TP' });
+    if (p.sl) DMU.lines[p.id + 's'] = candle.createPriceLine({ price: p.sl, color: '#f6465d', lineWidth: 1, lineStyle: LS.Dashed, axisLabelVisible: true, title: 'SL' });
+  }
+}
+function dmUpdateLines(){
+  for (const p of DM.pos){ const ln = DMU.lines[p.id]; if (ln && ln.applyOptions){ try{ ln.applyOptions({ title: dmLineTitle(p) }); }catch(e){} } }
+}
+
+/* --- Panel --- */
+function dmMenuTag(){ const el = $('stDemo'); if (el){ const a = dmAcc(); el.textContent = f$(a.equity); el.classList.toggle('on', DM.pos.length > 0); } }
+function dmSumHtml(){
+  const a = dmAcc(), tot = a.equity - DM.start, cl = v => v >= 0 ? 'dm-up' : 'dm-dn';
+  const real = DM.hist.reduce((x, h) => x + h.pnl, 0);
+  return `<div class="sub">Toplam varlık (anlık)</div><div class="big ${cl(tot)}" id="dmEq">${f$(a.equity)}</div>
+    <div class="sub">Başlangıç ${f$(DM.start)} · Toplam K/Z <span class="${cl(tot)}">${f$(tot, true)} (${(tot / DM.start * 100).toFixed(2)}%)</span></div>
+    <div class="dm-grid"><div>Bakiye (cüzdan)<b>${f$(DM.bal)}</b></div><div>Kullanılabilir<b>${f$(a.avail)}</b></div>
+    <div>Kullanılan teminat<b>${f$(a.margin)}</b></div><div>Açık pozisyon K/Z<b class="${cl(a.unreal)}">${f$(a.unreal, true)}</b></div>
+    <div>Gerçekleşen K/Z<b class="${cl(real)}">${f$(real, true)}</b></div><div>Açık pozisyon<b>${DM.pos.length}</b></div></div>`;
+}
+function dmPosHtml(){
+  if (!DM.pos.length) return '<div class="dm-empty">Açık pozisyon yok.<br>“İşlem” sekmesinden bir parite seçip LONG veya SHORT aç.</div>';
+  const cl = v => v >= 0 ? 'dm-up' : 'dm-dn';
+  return DM.pos.map(p => {
+    const px = dmPrice(p.sym), u = dmUnreal(p), roe = u / p.margin * 100;
+    return `<div class="dm-card" data-id="${p.id}"><div class="h"><span><b>${esc(dmName(p.sym))}</b><span class="dm-tag ${p.side === 'long' ? 'l' : 's'}">${p.side === 'long' ? 'LONG' : 'SHORT'} ${p.lev}x</span></span>
+      <span class="pn ${cl(u)}">${f$(u, true)} <small>(${roe >= 0 ? '+' : ''}${roe.toFixed(2)}%)</small></span></div>
+      <div class="g"><span>Giriş <b>${dmPd(p.sym, p.entry)}</b></span><span>Güncel <b>${px != null ? dmPd(p.sym, px) : '–'}</b></span>
+      <span>Miktar <b>${fQty(p.qty)}</b></span><span>Teminat <b>${f$(p.margin)}</b></span>
+      <span>Likidasyon <b>${dmPd(p.sym, p.liq)}</b></span><span>TP / SL <b>${p.tp ? dmPd(p.sym, p.tp) : '–'} / ${p.sl ? dmPd(p.sym, p.sl) : '–'}</b></span></div>
+      <div class="dm-act"><button data-dmg="${p.id}">Grafik</button><button data-dmtp="${p.id}">TP/SL</button><button class="cl" data-dmc="${p.id}">Kapat</button></div></div>`;
+  }).join('') + (DM.pos.length > 1 ? '<div class="dm-act" style="margin:0 12px 12px"><button class="cl" data-dmall="1">Tümünü kapat</button></div>' : '');
+}
+function dmHistHtml(){
+  const n = DM.hist.length, w = DM.hist.filter(h => h.pnl > 0).length, tot = DM.hist.reduce((a, h) => a + h.pnl, 0), fee = DM.hist.reduce((a, h) => a + h.fees, 0);
+  const cl = v => v >= 0 ? 'dm-up' : 'dm-dn';
+  let h = `<div class="dm-card"><div class="g"><span>İşlem sayısı <b>${n}</b></span><span>Kazanma oranı <b>${n ? Math.round(w / n * 100) + '%' : '–'}</b></span>
+    <span>Net K/Z <b class="${cl(tot)}">${f$(tot, true)}</b></span><span>Ödenen komisyon <b>${f$(fee)}</b></span></div></div>`;
+  if (!n) return h + '<div class="dm-empty">Henüz kapanmış işlem yok.</div>';
+  h += DM.hist.map(x => `<div class="dm-card"><div class="h"><span><b>${esc(dmName(x.sym))}</b><span class="dm-tag ${x.side === 'long' ? 'l' : 's'}">${x.side === 'long' ? 'LONG' : 'SHORT'} ${x.lev}x</span></span>
+      <span class="pn ${cl(x.pnl)}">${f$(x.pnl, true)} <small>(${x.roe >= 0 ? '+' : ''}${x.roe.toFixed(2)}%)</small></span></div>
+      <div class="g"><span>Giriş <b>${dmPd(x.sym, x.entry)}</b></span><span>Çıkış <b>${dmPd(x.sym, x.exit)}</b></span>
+      <span>Teminat <b>${f$(x.margin)}</b></span><span>Sonuç <b>${DM_WHY[x.why] || ''}</b></span>
+      <span>Açılış <b>${whenStr(x.t0)}</b></span><span>Kapanış <b>${whenStr(x.t1)}</b></span></div></div>`).join('');
+  return h;
+}
+function dmPrevHtml(){
+  const sym = DMU.sym, px = sym && dmPrice(sym), m = +$('dmMargin').value, lev = +$('dmLev').value;
+  if (!px || !(m > 0)) return 'Fiyat veya teminat girilmedi.';
+  const notional = m * lev, fee = notional * DM_FEE;
+  return `Pozisyon büyüklüğü <b>${f$(notional)}</b> (${fQty(notional / px)} adet) · komisyon <b>${f$(fee)}</b><br>
+    Likidasyon: LONG <b class="dm-dn">${dmPd(sym, dmLiq('long', px, lev))}</b> · SHORT <b class="dm-dn">${dmPd(sym, dmLiq('short', px, lev))}</b>`;
+}
+function dmTradeLive(){
+  const sym = DMU.sym, px = sym && dmPrice(sym), m = S.symbols[sym];
+  $('dmName').textContent = sym ? dmName(sym) + (m && m.src === 'hl' ? ' · HL' : '') : '–';
+  $('dmPrice').textContent = px ? dmPd(sym, px) : '–';
+  $('dmAvail').textContent = f$(dmAcc().avail);
+  $('dmPrev').innerHTML = dmPrevHtml();
+}
+function dmRender(force){
+  if (!dmOpenQ()){ dmMenuTag(); return; }
+  $('dmSum').innerHTML = dmSumHtml();
+  $('dmPn').textContent = DM.pos.length ? '(' + DM.pos.length + ')' : '';
+  if (DMU.tab === 'trade') dmTradeLive();
+  if (DMU.tab === 'pos'){ const el = $('dmPos'), h = dmPosHtml(); if (force || el.dataset.h !== h){ el.dataset.h = h; el.innerHTML = h; } }
+  if (DMU.tab === 'hist' && (force || !$('dmHist').innerHTML)) $('dmHist').innerHTML = dmHistHtml();
+}
+function dmTab(t){
+  DMU.tab = t;
+  document.querySelectorAll('#dmTabs [data-dmt]').forEach(b => b.classList.toggle('on', b.dataset.dmt === t));
+  $('dmTrade').hidden = t !== 'trade'; $('dmPos').hidden = t !== 'pos'; $('dmHist').hidden = t !== 'hist';
+  $('dmHist').innerHTML = ''; $('dmPos').dataset.h = '';
+  dmRender(true);
+}
+function dmSetSym(sym){
+  if (!S.symbols[sym]) return;
+  DMU.sym = sym;
+  const mx = dmMaxLev(sym), lv = $('dmLev'); lv.max = mx; if (+lv.value > mx) lv.value = mx;
+  $('dmLevV').textContent = lv.value + 'x';
+  $('dmSym').value = ''; $('dmRes').innerHTML = '';
+  dmTradeLive();
+}
+function dmSearch(q){
+  q = q.trim().toLocaleLowerCase('tr'); const el = $('dmRes');
+  if (!q){ el.innerHTML = ''; return; }
+  const out = Object.keys(S.symbols).filter(s => {
+    if (dmPrice(s) == null) return false; const m = S.symbols[s];
+    return s.toLowerCase().includes(q) || String(m.base).toLowerCase().includes(q) || (m.label && m.label.toLocaleLowerCase('tr').includes(q));
+  }).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0)).slice(0, 8);
+  el.innerHTML = out.length ? out.map(s => { const m = S.symbols[s]; return `<button data-dms="${esc(s)}"><span>${esc(m.label || m.base)}</span><small>${m.src === 'hl' ? esc(m.base) + ' · HL' : esc(m.quote)}</small></button>`; }).join('')
+    : '<div class="dm-empty" style="padding:10px">Parite bulunamadı</div>';
+}
+function openDemo(sym){
+  DMU.sym = sym && S.symbols[sym] ? sym : (S.symbols[DMU.sym] ? DMU.sym : S.symbol);
+  $('dmSheet').classList.add('open'); history.pushState({ dm: 1 }, '');
+  dmSetSym(DMU.sym); dmTab(DMU.tab);
+}
+function closeDemo(fromPop){
+  if (!dmOpenQ()) return;
+  $('dmSheet').classList.remove('open');
+  if (!fromPop && history.state && history.state.dm) history.back();
+}
+$('dmClose').addEventListener('click', () => closeDemo());
+window.addEventListener('popstate', () => closeDemo(true));
+$('dmSheet').addEventListener('input', e => {
+  if (e.target.id === 'dmSym') dmSearch(e.target.value);
+  else if (e.target.id === 'dmLev'){ $('dmLevV').textContent = e.target.value + 'x'; $('dmPrev').innerHTML = dmPrevHtml(); }
+  else if (e.target.id === 'dmMargin') $('dmPrev').innerHTML = dmPrevHtml();
+});
+$('dmSheet').addEventListener('click', e => {
+  const t = e.target.closest('[data-dmt]'), r = e.target.closest('[data-dms]'), pc = e.target.closest('[data-dmp]'),
+        c = e.target.closest('[data-dmc]'), g = e.target.closest('[data-dmg]'), tp = e.target.closest('[data-dmtp]');
+  if (t) dmTab(t.dataset.dmt);
+  else if (r) dmSetSym(r.dataset.dms);
+  else if (pc){
+    const a = dmAcc().avail, lev = +$('dmLev').value, k = +pc.dataset.dmp / 100;
+    $('dmMargin').value = Math.floor(a * k / (1 + lev * DM_FEE) * 100) / 100; $('dmPrev').innerHTML = dmPrevHtml();
+  }
+  else if (e.target.closest('#dmLong')) dmOpen(DMU.sym, 'long', $('dmMargin').value, $('dmLev').value, $('dmTp').value, $('dmSl').value);
+  else if (e.target.closest('#dmShort')) dmOpen(DMU.sym, 'short', $('dmMargin').value, $('dmLev').value, $('dmTp').value, $('dmSl').value);
+  else if (c) dmClose(c.dataset.dmc, 0, 'manual');
+  else if (e.target.closest('[data-dmall]')){ if (confirm('Tüm açık pozisyonlar kapatılsın mı?')) DM.pos.slice().forEach(p => dmClose(p.id, 0, 'manual')); }
+  else if (g){ const p = DM.pos.find(x => x.id === g.dataset.dmg); if (p){ closeDemo(); setTimeout(() => { if (p.sym !== S.symbol) selectSymbol(p.sym); }, 60); } }
+  else if (tp){
+    const p = DM.pos.find(x => x.id === tp.dataset.dmtp); if (!p) return;
+    const a = prompt('Kâr al (TP) fiyatı — boş bırak: kaldır', p.tp ? dmPd(p.sym, p.tp) : ''); if (a === null) return;
+    const b = prompt('Zarar durdur (SL) fiyatı — boş bırak: kaldır', p.sl ? dmPd(p.sym, p.sl) : ''); if (b === null) return;
+    const tpv = +a > 0 ? +a : 0, slv = +b > 0 ? +b : 0, L = p.side === 'long', px = dmPrice(p.sym) || p.entry;
+    if (L ? ((tpv && tpv <= px) || (slv && slv >= px)) : ((tpv && tpv >= px) || (slv && slv <= px))) return flash('TP/SL fiyatın doğru tarafında olmalı');
+    p.tp = tpv; p.sl = slv; dmSave(); dmRefreshLines(); dmRender(true);
+  }
+  else if (e.target.closest('[data-dmreset]')){
+    if (confirm('Demo hesap sıfırlansın mı? Bakiye 100.000 $ olur, tüm pozisyon ve geçmiş silinir.')){ DM = dmNew(); dmSave(); dmRefreshLines(); DMU.tab = 'trade'; dmTab('trade'); flash('Demo hesap sıfırlandı'); }
+  }
+});
+// geçmiş sekmesinin altına sıfırlama
+(() => { const d = document.createElement('div'); d.className = 'dm-foot'; d.innerHTML = '<button data-dmreset="1">Demo hesabı sıfırla (100.000 $)</button>'; $('dmBody').appendChild(d); })();
+setInterval(() => {
+  if (DM.pos.length) dmUpdateLines();
+  if (dmOpenQ() && !document.hidden) dmRender(false);
+}, 1000);
+window.__vgDM = { get DM(){ return DM; }, dmOpen, dmClose, demoTick, dmAcc, openDemo };
+dmMenuTag();
 
 /* ---------- Uygulama olarak yükleme (PWA) ---------- */
 let instEvt = null;
