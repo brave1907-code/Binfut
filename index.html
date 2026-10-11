@@ -899,10 +899,18 @@ const PRE = {};
    [açılışZamanı, açılış, yüksek, düşük, kapanış, hacim, kapanışZamanı, dolarHacmi, işlemSayısı, alışHacmi, alışDolarHacmi]
    (Hyperliquid alış/satış ayrımı vermez; bu alanlar null olur.) */
 const isHL = sym => !!(S.symbols[sym] && S.symbols[sym].src === 'hl');
+const isExt = sym => !!(S.symbols[sym] && S.symbols[sym].src);          // Binance Futures dışı kaynaklar: hl, spot, bt (BtcTürk), dom (dominans)
+const EXT_PFX = new Set(['spot', 'bt', 'dom']);
+const isHLName = s => String(s).includes(':') && !EXT_PFX.has(String(s).split(':')[0]);
+const SPOT_API = 'https://api.binance.com', SPOT_WS = 'wss://stream.binance.com:9443/ws';
 async function getKl(sym, iv, o){
   o = o || {};
-  if (isHL(sym)) return hlKlines(sym, iv, o);
-  let u = `${API}/fapi/v1/klines?symbol=${sym}&interval=${iv}&limit=${o.limit || FIRST_N}`;
+  const m = S.symbols[sym];
+  if (m && m.src === 'hl') return hlKlines(sym, iv, o);
+  if (m && m.src === 'bt') return btKlines(m.pair, iv, o);
+  if (m && m.src === 'dom') return domKlines(m.dom, iv, o);
+  const spot = !!(m && m.src === 'spot');
+  let u = `${spot ? SPOT_API + '/api/v3' : API + '/fapi/v1'}/klines?symbol=${spot ? m.pair : sym}&interval=${iv}&limit=${o.limit || FIRST_N}`;
   if (o.endTime) u += `&endTime=${o.endTime}`;
   if (o.startTime) u += `&startTime=${o.startTime}`;
   const r = await fetch(u);
@@ -1010,7 +1018,10 @@ function applyBar(b){
 }
 function openKlineWs(token){
   if (isHL(S.symbol)){ hlWatchCandles(S.symbol, S.interval, token); S.ws = { hl: true, close(){} }; S.lastKline = Date.now(); return; }
-  const ws = new WebSocket(`${WS}/${S.symbol.toLowerCase()}@kline_${srcInterval(S.symbol, S.interval)}`);
+  const sm = S.symbols[S.symbol];
+  if (sm && (sm.src === 'bt' || sm.src === 'dom')){ S.ws = { poll: true, close(){} }; S.lastKline = Date.now(); return; }     // canlı akış yok: yoklama ile güncellenir
+  const spot = !!(sm && sm.src === 'spot');
+  const ws = new WebSocket(`${spot ? SPOT_WS : WS}/${(spot ? sm.pair : S.symbol).toLowerCase()}@kline_${srcInterval(S.symbol, S.interval)}`);
   S.ws = ws;
   S.lastKline = Date.now();
   ws.onmessage = e => {
@@ -1035,10 +1046,11 @@ function closeKlineWs(){
 let livePolling = false, lastReopen = 0;
 setInterval(async () => {
   if (document.hidden || livePolling || !S.candles.length || !S.ws) return;
-  const quiet = Date.now() - (S.lastKline || 0), hl = isHL(S.symbol);
-  if (quiet < (hl ? 6000 : 2000)) return;
-  if (hl && Date.now() - (S.lastPoll || 0) < 4000) return;      // Hyperliquid istek sınırına takılmamak için en fazla 4 sn'de bir
-  if (quiet > 10000 && Date.now() - lastReopen > 10000){
+  const sm = S.symbols[S.symbol], src = sm && sm.src, quiet = Date.now() - (S.lastKline || 0), hl = src === 'hl';
+  const need = hl ? 6000 : src === 'dom' ? 12000 : src === 'bt' ? 3000 : 2000, gap = hl ? 4000 : src === 'dom' ? 11000 : src === 'bt' ? 2800 : 0;
+  if (quiet < need) return;
+  if (gap && Date.now() - (S.lastPoll || 0) < gap) return;      // harici kaynakların istek sınırına takılmamak için aralıklı
+  if (quiet > 10000 && Date.now() - lastReopen > 10000 && src !== 'dom' && src !== 'bt'){
     lastReopen = Date.now();
     if (hl){ if (typeof HLW !== 'undefined') hlReconnect(); } else { closeKlineWs(); openKlineWs(loadToken); }
   }
@@ -1091,8 +1103,8 @@ requestAnimationFrame(cdFrame);
 /* ---------- Üst bilgi ---------- */
 function updateHeader(){
   const m = S.symbols[S.symbol];
-  $('symBase').textContent = m ? (m.src === 'hl' && m.label && m.label.length <= 8 ? m.label : m.base) : S.symbol;
-  $('symQuote').textContent = m ? (m.src === 'hl' ? 'HL' : m.quote + ' Sürekli') : '';
+  $('symBase').textContent = m ? (m.src && m.label && m.label.length <= 8 ? m.label : m.base) : S.symbol;
+  $('symQuote').textContent = m ? (m.src === 'hl' ? 'HL' : m.src === 'dom' ? 'Dominans' : m.src === 'bt' ? m.quote + ' · BtcTürk' : m.src === 'spot' ? 'USDT · Spot' : m.quote + ' Sürekli') : '';
   const t = S.tickers[S.symbol] || {};
   const last = S.candles.length ? S.candles[S.candles.length - 1].close : t.last;
   const pe = $('price');
@@ -1145,6 +1157,9 @@ const G_INDEX = new Set(['SPX','SPX500','US500','SP500','ES','NDX','NAS100','US1
 function symGroup(sym){
   const m = S.symbols[sym]; if (!m) return 'coin';
   if (m.src === 'hl') return m.hlGroup;
+  if (m.src === 'dom') return 'other';
+  if (m.src === 'bt') return 'btcturk';
+  if (m.src === 'spot') return 'spot';
   const b = String(m.base).toUpperCase();
   if (G_GOLDTOK.has(b)) return 'metal';
   if (m.tradfi){ if (G_METAL.has(b)) return 'metal'; if (G_FX.has(b)) return 'fx'; if (G_INDEX.has(b)) return 'index'; return 'stock'; }
@@ -1153,7 +1168,7 @@ function symGroup(sym){
 }
 const inGroup = (sym, mode) => {
   const m = S.symbols[sym], g = symGroup(sym);
-  if (mode === 'coin') return !m.tradfi && m.src !== 'hl';  // coin listesi (PAXG, EUR vb. de burada)
+  if (mode === 'coin') return !m.tradfi && !m.src;           // coin listesi (PAXG, EUR vb. de burada)
   if (mode === 'tradfi') return g === 'stock';               // TradFi = Binance hisseleri
   if (g !== mode) return false;                              // metal / fx / index
   // Hyperliquid'de aynı varlık varsa Binance'teki kopyası gösterilmez; Hyperliquid'e ulaşılamazsa Binance'teki görünür (yedek)
@@ -1162,17 +1177,25 @@ const inGroup = (sym, mode) => {
 };
 const GROUP_INFO = {
   coin: ['Coin ara (ör. SOL)', '03:00 %'], tradfi: ['Hisse ara (ör. TSLA)', 'Seans %'], metal: ['Metal / emtia ara (ör. GOLD)', '24s %'],
-  fx: ['Parite ara (ör. EUR)', '24s %'], index: ['Endeks ara (ör. SP500)', '24s %']
+  fx: ['Parite ara (ör. EUR)', '24s %'], index: ['Endeks ara (ör. SP500)', '24s %'],
+  other: ['Dominans', '24s %'], btcturk: ['BtcTürk coin ara (ör. BTC)', '24s %'], spot: ['Spot coin ara (ör. SOL)', '24s %']
 };
+const EXT_GROUPS = ['other', 'btcturk', 'spot'];
+const GRP_LABEL = { other: 'Diğer', btcturk: 'BtcTürk', spot: 'Spot' };
 function renderSort(){
-  let h = SORTS.map(([v, l]) =>
+  const g = S.listMode, grpOn = g === 'coin' || EXT_GROUPS.includes(g);
+  let h = g === 'other' ? '' : SORTS.map(([v, l]) =>
     `<button class="chip${v === S.sort ? ' on' : ''}" data-sort="${v}">${l}</button>`).join('');
+  if (grpOn) h += EXT_GROUPS.map(k => `<button class="chip${g === k ? ' on' : ''}" data-grp="${k}">${GRP_LABEL[k]}</button>`).join('');
+  if (g === 'other'){ $('sortBar').innerHTML = h; return; }
   h += S.lists.map(l => `<button class="chip${S.sort === 'L:' + l.id ? ' on' : ''}" data-sort="L:${l.id}">📋 ${esc(l.name)}</button>`).join('');
   h += '<button class="chip" data-newlist="1">＋ Liste</button>';
   $('sortBar').innerHTML = h;
 }
 $('sortBar').addEventListener('click', e => {
   if (e.target.closest('[data-newlist]')){ const l = newList(); if (l){ S.sort = 'L:' + l.id; S.favAll = S.listMode === 'coin'; store.set('vg_sort', S.sort); renderSort(); renderList(true); } return; }
+  const gp = e.target.closest('[data-grp]');
+  if (gp){ extSwitch(S.listMode === gp.dataset.grp ? 'coin' : gp.dataset.grp); return; }
   const k = e.target.closest('[data-tfk]');
   if (k){ S.tfKind = k.dataset.tfk; store.set('vg_tfkind', S.tfKind); renderSort(); renderList(true); return; }
   const b = e.target.closest('[data-sort]');
@@ -1185,6 +1208,8 @@ $('sortBar').addEventListener('click', e => {
 });
 
 function listItems(){
+  if (S.listMode === 'other' && EXT.dom.st !== 'ok') return [];
+  if (S.listMode === 'other'){ const q0 = S.query.trim().toUpperCase(); return Object.keys(S.symbols).filter(s => inGroup(s, 'other') && (!q0 || s.toUpperCase().includes(q0))).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0)); }
   const tf = S.listMode === 'tradfi';
   const cl = S.sort.startsWith('L:') ? S.lists.find(x => 'L:' + x.id === S.sort) : null;
   const favv = S.sort === 'fav';
@@ -1208,6 +1233,11 @@ function listItems(){
 function renderList(resetScroll){
   const items = listItems();
   if (!items.length){
+    const E = EXT_GROUPS.includes(S.listMode) ? extState(S.listMode) : null;
+    if (E && !S.query && E.st !== 'ok'){
+      $('list').innerHTML = E.st === 'err' ? `<div class="empty">Veri alınamadı${E.err ? ' (' + esc(E.err) + ')' : ''}.<br><button class="btn" data-retry="1" style="margin-top:12px">Tekrar dene</button></div>` : '<div class="empty">Yükleniyor…</div>';
+      return;
+    }
     $('list').innerHTML = `<div class="empty">${S.sort === 'fav' && !S.query ? 'Henüz favori yok. Yıldıza dokunarak ekleyebilirsin.' : S.sort.startsWith('L:') && !S.query ? 'Bu liste boş. Bir coinin yıldızına dokunup bu listeyi işaretle.' : (S.listMode !== 'coin' && !S.query && !Object.keys(S.symbols).some(x => inGroup(x, S.listMode)) ? 'Binance Futures’ta şu an bu grupta kontrat bulunamadı.' : 'Sonuç bulunamadı.')}</div>`;
     return;
   }
@@ -1216,7 +1246,7 @@ function renderList(resetScroll){
     const fav = S.favs.has(s) || S.lists.some(l => l.syms.includes(s));
     return `<div class="row${s === S.symbol ? ' cur' : ''}" data-s="${s}">
       <button class="star${fav ? ' on' : ''}" data-fav="${s}">${fav ? '★' : '☆'}</button>
-      <div class="nm"><b>${m.label || m.base}</b><small>${m.src === 'hl' ? m.base + ' · HL' : m.quote}</small><span class="v">Hac ${fvol(t.qv)}</span></div>
+      <div class="nm"><b>${m.label || m.base}</b><small>${m.src === 'hl' ? m.base + ' · HL' : m.quote}</small><span class="v">${m.src === 'dom' ? 'Piyasa payı' : 'Hac ' + fvol(t.qv)}</span></div>
       <div class="pr">${fp(t.last, s)}</div>
       <div class="pill ${cls(t.chg)}">${fpct(t.chg)}</div>
     </div>`;
@@ -1225,6 +1255,7 @@ function renderList(resetScroll){
 }
 
 $('list').addEventListener('click', e => {
+  if (e.target.closest('[data-retry]')){ extEnsure(S.listMode, true); return; }
   const f = e.target.closest('[data-fav]');
   if (f){ if (S.lists.length) openListMenu(f.dataset.fav); else { toggleFav(f.dataset.fav); renderList(); } return; }
   const r = e.target.closest('[data-s]');
@@ -1240,6 +1271,7 @@ $('search').addEventListener('input', e => {
 function openSheet(mode, all){
   S.listMode = GROUP_INFO[mode] ? mode : 'coin';
   S.favAll = !!all;
+  if (EXT_GROUPS.includes(S.listMode)) extEnsure(S.listMode);
   // Favoriler / özel liste seçili kalmışsa grup düğmeleri (Coin, Metaller…) yine kendi listesini açsın
   if (!all && (S.sort === 'fav' || S.sort.startsWith('L:'))){ S.sort = 'vol'; store.set('vg_sort', S.sort); }
   if (S.listMode !== 'coin' && S.listMode !== 'tradfi' && typeof HL !== 'undefined' && !HL.ok) hlInit();   // veri gelmediyse hemen yeniden dene
@@ -1340,7 +1372,7 @@ async function loadDayOpens(){
   if (DAYO.running) return;
   DAYO.running = true;
   const start = utcDayStart(), key = new Date(start).toISOString().slice(0, 10);
-  const syms = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && !isHL(s)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
+  const syms = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && !isExt(s)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
   let i = 0, ok = 0, stop = false;
   const worker = async () => {
     for (;;){
@@ -2865,7 +2897,7 @@ async function wScan(){
     await loadTop25();
     const cand = Object.keys(S.symbols).filter(sym => {
       const m = S.symbols[sym], t = S.tickers[sym];
-      return m.quote === 'USDT' && !m.tradfi && !W.top.has(baseKey(m.base)) && t && t.qv >= WALL.minVol;
+      return m.quote === 'USDT' && !m.tradfi && !m.src && !W.top.has(baseKey(m.base)) && t && t.qv >= WALL.minVol;
     }).sort((a, b) => S.tickers[b].qv - S.tickers[a].qv);
     W.total = cand.length;
     let i = 0;
@@ -3006,7 +3038,7 @@ async function loadWeekOpens(){
     const c = store.get('vg_weekopen', null);
     if (c && c.k === start && c.o) WK.open = c.o;
   }
-  const syms = Object.keys(S.symbols).filter(x => !isHL(x) && !(WK.open[x] > 0)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
+  const syms = Object.keys(S.symbols).filter(x => !isExt(x) && !(WK.open[x] > 0)).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0));
   if (!syms.length) return;
   WK.running = true; WK.done = 0; WK.total = syms.length; WK.err = ''; WK.failed = 0;
   let i = 0, stop = false;
@@ -3139,7 +3171,7 @@ async function c2Load(){
     C2.candle.priceScale().applyOptions({ autoScale: true });
     const pf = S.symbols[sym] ? S.symbols[sym].prec : 2;
     if (S.symbols[sym]) C2.candle.applyOptions({ priceFormat: { type: 'price', precision: S.symbols[sym].prec, minMove: S.symbols[sym].tick } });
-    if (isHL(sym)){                                    // Hyperliquid: 5 sn'de bir son mumları tazele
+    if (isExt(sym)){                                   // Hyperliquid / Spot / BtcTürk / dominans: 5 sn'de bir son mumları tazele
       C2.ws = { close(){ clearInterval(this.t); }, onclose: null, onmessage: null };
       C2.ws.t = setInterval(async () => {
         if (token !== C2.token || document.hidden) return;
@@ -3295,7 +3327,7 @@ function whOnTrade(x, sym){
 }
 // Son birkaç bin işlemi REST'ten çekip geçmiş balinaları doldurur (en fazla ~6 saat geriye)
 async function whHistory(sym){
-  if (isHL(sym)) return;
+  if (isExt(sym)) return;
   if (WH.histBusy || (WH.hist[sym] && Date.now() - WH.hist[sym] < 120000)) return;
   WH.histBusy = true;
   try{
@@ -3327,7 +3359,7 @@ function whRender(){
   $('whBox').classList.toggle('on', WH.on);
   $('whBox').classList.toggle('mini', WH.mini);
   if (!WH.on) return;
-  if (isHL(S.symbol)){ $('whHead').innerHTML = '<div class="wh-top"><b>🐋</b><span class="wh-thr">Hyperliquid</span><button data-whx="1">✕</button></div>'; $('whHead').dataset.h = ''; $('whList').innerHTML = '<div class="wh-r"><span class="tm" style="grid-column:1/4">Balina verisi sadece Binance coinlerinde var.</span></div>'; WH.html = ''; return; }
+  if (isExt(S.symbol)){ $('whHead').innerHTML = '<div class="wh-top"><b>🐋</b><span class="wh-thr">–</span><button data-whx="1">✕</button></div>'; $('whHead').dataset.h = ''; $('whList').innerHTML = '<div class="wh-r"><span class="tm" style="grid-column:1/4">Balina verisi sadece Binance coinlerinde var.</span></div>'; WH.html = ''; return; }
   const sym = S.symbol, thr = whThr(sym), nm = (S.symbols[sym] || {}).base || sym;
   const head = `<div class="wh-top"><b>🐋 ${esc(nm)}</b><span class="wh-thr">≥$${fvol(thr)}</span><button data-wha="1" class="${WH.alert ? 'on' : ''}" title="Dev balina uyarısı">🔔</button><button data-whmini="1">${WH.mini ? '▢' : '—'}</button><button data-whx="1">✕</button></div>`
     + (WH.mini ? '' : `<div class="wh-steps">${WH_STEPS.map(v => `<button data-whm="${v}" class="${String(v) === String(WH.mode) ? 'on' : ''}">${v === 'auto' ? 'Oto' : fvol(v)}</button>`).join('')}</div>`);
@@ -3382,7 +3414,7 @@ function whOpen(){
   whClose();
   if (!WH.on) return;
   const sym = S.symbol; WH.sym = sym;
-  if (isHL(sym)){ $('whList').innerHTML = '<div class="wh-r"><span class="tm" style="grid-column:1/4">Balina verisi sadece Binance coinlerinde var.</span></div>'; WH.html = ''; return; }
+  if (isExt(sym)){ $('whList').innerHTML = '<div class="wh-r"><span class="tm" style="grid-column:1/4">Balina verisi sadece Binance coinlerinde var.</span></div>'; WH.html = ''; return; }
   const ws = new WebSocket(`${WS}/${sym.toLowerCase()}@aggTrade`);
   WH.ws = ws;
   ws.onmessage = e => { const x = JSON.parse(e.data); if (x && x.s === sym) whOnTrade(x, sym); };
@@ -3587,7 +3619,7 @@ const CVD = { on: store.get('vg_cvd', false), s: null, lastTime: null, base: 0, 
 const cvdD = b => (b.tbq == null || b.qv == null) ? 0 : 2 * b.tbq - b.qv;
 function cvdAll(){
   if (!CVD.on || !CVD.s) return;
-  if (isHL(S.symbol) && cvdWarned !== S.symbol){ cvdWarned = S.symbol; flash('CVD bu sembolde yok: Hyperliquid alış/satış ayrımı vermiyor'); }
+  if (isExt(S.symbol) && cvdWarned !== S.symbol){ cvdWarned = S.symbol; flash('CVD bu sembolde yok: alış/satış ayrımı sadece Binance Futures coinlerinde var'); }
   let cum = 0; const data = [];
   for (const b of S.candles){ cum += cvdD(b); data.push({ time: b.time, value: cum }); }
   CVD.s.setData(data);
@@ -3622,7 +3654,6 @@ mnState();
 /* =====================================================================
    SPOT ve VADELİ: aynı coinin spot (api.binance.com) ve vadeli verisini karşılaştırır
    ===================================================================== */
-const SPOT_API = 'https://api.binance.com';
 const SV = { per: null, data: null, err: '', loading: false, token: 0, t: 0 };
 function spotOf(sym){
   const m = S.symbols[sym]; if (!m) return null;
@@ -3850,9 +3881,9 @@ const SG = { dir: store.get('vg_sg_dir', 'long'), tf: store.get('vg_sg_tf', '15m
 const sgOpenQ = () => $('sgSheet').classList.contains('open');
 function sgUniverse(){
   const set = new Set();
-  for (const s of S.favs) if (S.symbols[s] && !S.symbols[s].tradfi) set.add(s);
-  for (const l of S.lists) for (const s of l.syms) if (S.symbols[s] && !S.symbols[s].tradfi) set.add(s);
-  const top = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && S.symbols[s].quote === 'USDT' && S.tickers[s]).sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0));
+  for (const s of S.favs) if (S.symbols[s] && !S.symbols[s].tradfi && !S.symbols[s].src) set.add(s);
+  for (const l of S.lists) for (const s of l.syms) if (S.symbols[s] && !S.symbols[s].tradfi && !S.symbols[s].src) set.add(s);
+  const top = Object.keys(S.symbols).filter(s => !S.symbols[s].tradfi && !S.symbols[s].src && S.symbols[s].quote === 'USDT' && S.tickers[s]).sort((a, b) => (S.tickers[b].qv || 0) - (S.tickers[a].qv || 0));
   for (const s of top){ if (set.size >= SG_MAXC) break; set.add(s); }
   return [...set].filter(s => !SG.noSpot.has(s));
 }
@@ -4250,7 +4281,7 @@ async function hlInit(){
     if (isHL(S.symbol) && !S.candles.length) loadChart();
   }catch(e){
     HL.ok = false; HL.err = e.message || String(e);
-    if (String(S.symbol).includes(':') && !S.symbols[S.symbol] && S.symbols.BTCUSDT){ S.symbol = 'BTCUSDT'; loadChart(); }
+    if (isHLName(S.symbol) && !S.symbols[S.symbol] && S.symbols.BTCUSDT){ S.symbol = 'BTCUSDT'; loadChart(); }
     HL.tm = setTimeout(hlInit, 30000);                  // sonra tekrar dene; bu arada Binance karşılıkları görünür
   }
   HL.busy = false;
@@ -4349,6 +4380,258 @@ window.__vgHL = { HL, HLW, hlKlines, hlMids };
 
 
 /* =====================================================================
+   ÜÇ YENİ BÖLÜM (Coin listesinde A-Z'nin sağında): DİĞER (dominans) · BTCTÜRK · SPOT
+   - Spot: Binance spot USDT pariteleri (api.binance.com + canlı WebSocket)
+   - BtcTürk: BtcTürk'te listelenen tüm pariteler (REST yoklama ~3 sn, grafik mumları graph-api)
+   - Diğer: BTC.D, USDT.D, OTHERS.D — piyasa değerleri CoinPaprika/CoinGecko'dan (anahtarsız),
+     geçmiş fiyatlar Binance spot mumlarından hesaplanır (yaklaşık: arz sabit varsayılır)
+   ===================================================================== */
+const EXT = { spot: { st: 'idle', p: null, err: '' }, bt: { st: 'idle', p: null, err: '' }, dom: { st: 'idle', p: null, err: '', t: 0 } };
+const extState = g => EXT[g === 'btcturk' ? 'bt' : g === 'other' ? 'dom' : 'spot'];
+function extEnsure(g, force){
+  const E = extState(g);
+  if (force && E.st === 'err'){ E.st = 'idle'; E.p = null; }
+  const p = g === 'spot' ? spotInit() : g === 'btcturk' ? btInit() : domRefresh();
+  Promise.resolve(p).catch(() => {}).then(() => { if ($('sheet').classList.contains('open') && S.listMode === g) renderList(); });
+  if ($('sheet').classList.contains('open') && S.listMode === g) renderList();
+  return p;
+}
+function extSwitch(g){
+  S.listMode = g; S.favAll = false;
+  $('search').placeholder = GROUP_INFO[g][0]; $('lhChg').textContent = GROUP_INFO[g][1]; $('search').value = ''; S.query = '';
+  if (EXT_GROUPS.includes(g)) extEnsure(g);
+  renderSort(); renderList(true);
+}
+function autoPrec(px){ if (!(px > 0)) return 2; if (px >= 1000) return 2; return Math.max(2, Math.min(8, 4 - Math.floor(Math.log10(px)))); }
+const IV_MS = Object.assign({ '6h': 21600e3 }, typeof HL_IV !== 'undefined' ? HL_IV : {});
+
+/* --- SPOT --- */
+const SPW = { ws: null };
+function spotInit(){
+  const E = EXT.spot;
+  if (E.st === 'ok' || E.st === 'load') return E.p;
+  E.st = 'load'; E.err = '';
+  E.p = (async () => {
+    const r = await fetch(`${SPOT_API}/api/v3/ticker/24hr`);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const j = await r.json();
+    if (!Array.isArray(j)) throw new Error('veri yok');
+    for (const x of j){
+      if (!x.symbol || !x.symbol.endsWith('USDT')) continue;
+      const qv = +x.quoteVolume, px = +x.lastPrice;
+      if (!(qv > 0) || !(px > 0)) continue;
+      const base = x.symbol.slice(0, -4), key = 'spot:' + x.symbol, prec = autoPrec(px);
+      S.symbols[key] = { base, quote: 'USDT', src: 'spot', pair: x.symbol, tradfi: false, label: base, prec, tick: Math.pow(10, -prec) };
+      S.tickers[key] = { last: px, chg: +x.priceChangePercent, hi: +x.highPrice, lo: +x.lowPrice, qv };
+    }
+    E.st = 'ok'; listDirty = true; spotConnect();
+  })().catch(e => { E.st = 'err'; E.err = e.message || String(e); E.p = null; throw e; });
+  return E.p;
+}
+function spotConnect(){
+  if (SPW.ws && SPW.ws.readyState <= 1) return;
+  let ws; try{ ws = new WebSocket(`${SPOT_WS}/!miniTicker@arr`); }catch(e){ setTimeout(spotConnect, 3000); return; }
+  SPW.ws = ws;
+  ws.onmessage = e => {
+    let a; try{ a = JSON.parse(e.data); }catch(_){ return; }
+    if (!Array.isArray(a)) return;
+    for (const x of a){
+      const key = 'spot:' + x.s, t = S.tickers[key]; if (!t) continue;
+      const c = +x.c, o = +x.o; if (!(c > 0)) continue;
+      t.last = c; t.chg = o > 0 ? (c - o) / o * 100 : 0; t.hi = +x.h; t.lo = +x.l; t.qv = +x.q;
+      if (A.list.length) checkAlarms(key, c);
+      if (DM.pos.length) demoTick(key, c);
+    }
+    listDirty = true;
+  };
+  ws.onclose = () => { if (SPW.ws === ws){ SPW.ws = null; setTimeout(spotConnect, 3000); } };
+  ws.onerror = () => { try{ ws.close(); }catch(e){} };
+}
+
+/* --- BTCTÜRK --- */
+const BT_API = 'https://api.btcturk.com', BT_GRAPH = 'https://graph-api.btcturk.com';
+const BTK = { t: 0 };
+async function btFetchTicker(){
+  const r = await fetch(`${BT_API}/api/v2/ticker`);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  if (!j || !Array.isArray(j.data)) throw new Error('veri yok');
+  return j.data;
+}
+function btApply(list){
+  for (const x of list){
+    const pair = x.pairNormalized, px = +x.last; if (!pair || !(px > 0)) continue;
+    const key = 'bt:' + pair;
+    if (!S.symbols[key]){ const prec = autoPrec(px); S.symbols[key] = { base: x.numeratorSymbol, quote: x.denominatorSymbol, src: 'bt', pair, tradfi: false, label: x.numeratorSymbol, prec, tick: Math.pow(10, -prec) }; }
+    const t = S.tickers[key] || (S.tickers[key] = {});
+    t.last = px; t.chg = +x.dailyPercent || 0; t.hi = +x.high; t.lo = +x.low; t.qv = (+x.volume || 0) * px;
+    if (A.list.length) checkAlarms(key, px);
+    if (DM.pos.length) demoTick(key, px);
+    if (key === S.symbol && S.candles.length && Date.now() <= S.closeMs){       // grafik: son mumun kapanışı anlık fiyatla
+      const l = S.candles[S.candles.length - 1];
+      applyBar(Object.assign({}, l, { close: px, high: Math.max(l.high, px), low: Math.min(l.low, px) })); S.lastKline = Date.now(); setLiveMode('live');
+    }
+  }
+  listDirty = true; updateHeader();
+}
+function btInit(){
+  const E = EXT.bt;
+  if (E.st === 'ok' || E.st === 'load') return E.p;
+  E.st = 'load'; E.err = '';
+  E.p = btFetchTicker().then(l => { btApply(l); E.st = 'ok'; BTK.t = Date.now(); }).catch(e => { E.st = 'err'; E.err = e.message || String(e); E.p = null; throw e; });
+  return E.p;
+}
+setInterval(async () => {
+  if (EXT.bt.st !== 'ok' || document.hidden) return;
+  const cur = S.symbols[S.symbol] && S.symbols[S.symbol].src === 'bt', open = $('sheet').classList.contains('open') && S.listMode === 'btcturk';
+  const watch = cur || open || A.list.some(a => a.active && a.symbol.startsWith('bt:'));
+  if (Date.now() - BTK.t < (watch ? 2800 : 20000)) return;
+  BTK.t = Date.now();
+  try{ btApply(await btFetchTicker()); }catch(e){}
+}, 1000);
+// BtcTürk mumları: [çözünürlük (dk), kaç tanesi birleştirilecek]
+const BT_RES = { '1m': [1, 1], '3m': [1, 3], '5m': [5, 1], '15m': [15, 1], '30m': [30, 1], '1h': [60, 1], '2h': [60, 2], '4h': [240, 1], '6h': [60, 6], '8h': [240, 2], '12h': [60, 12], '1d': [1440, 1], '3d': [1440, 3], '1w': [1440, 7], '1M': [1440, 0] };
+function aggRows(rows, bucket, endOf){
+  const g = new Map();
+  for (const r of rows){
+    const b = bucket(r[0]), x = g.get(b);
+    if (!x) g.set(b, [b, r[1], r[2], r[3], r[4], +r[5], endOf(b), null, 0, null, null]);
+    else { x[2] = String(Math.max(+x[2], +r[2])); x[3] = String(Math.min(+x[3], +r[3])); x[4] = r[4]; x[5] += +r[5]; }
+  }
+  return [...g.values()].map(x => (x[5] = String(x[5]), x)).sort((a, b) => a[0] - b[0]);
+}
+async function btKlines(pair, iv, o){
+  const [res, k] = BT_RES[iv] || [60, 1], ms = IV_MS[iv] || 3600e3, limit = Math.min(o.limit || FIRST_N, 1000), baseMs = res * 60000;
+  const spanMs = iv === '1M' ? 31 * 86400e3 : ms;
+  const end = o.endTime ? Math.floor(o.endTime / 1000) : Math.floor(Date.now() / 1000) + 120;
+  const start = o.startTime ? Math.floor(o.startTime / 1000) : end - Math.ceil((limit + 1) * spanMs / 1000);
+  let j = null;
+  for (const sym of [pair, pair.replace('_', '')]){
+    const r = await fetch(`${BT_GRAPH}/v1/klines/history?symbol=${sym}&resolution=${res}&from=${start}&to=${end}`);
+    if (!r.ok) continue;
+    const d = await r.json();
+    if (d && d.s === 'ok' && Array.isArray(d.t) && d.t.length){ j = d; break; }
+  }
+  if (!j) return [];
+  let rows = j.t.map((t, i) => [t * 1000, String(j.o[i]), String(j.h[i]), String(j.l[i]), String(j.c[i]), String(j.v[i]), t * 1000 + baseMs - 1, null, 0, null, null]);
+  if (iv === '1M') rows = aggRows(rows, t => { const d = new Date(t); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1); }, b => { const d = new Date(b); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) - 1; });
+  else if (iv === '1w') rows = aggRows(rows, t => Math.floor((t - 4 * 86400e3) / 604800e3) * 604800e3 + 4 * 86400e3, b => b + 604800e3 - 1);
+  else if (k > 1) rows = aggRows(rows, t => Math.floor(t / ms) * ms, b => b + ms - 1);
+  rows.sort((a, b) => a[0] - b[0]);
+  return o.startTime ? rows.slice(0, limit) : rows.slice(-limit);
+}
+
+/* --- DOMİNANS (BTC.D · USDT.D · OTHERS.D) --- */
+const DOM = { t: 0, p: null, total: 0, coins: [], traded: [], memo: {} };
+const DOM_STABLE = /^(USDT|USDC|DAI|USDE|FDUSD|TUSD|USDS|PYUSD|BUSD|USD1|USDD|FRAX|USDG|RLUSD|USDY|BSC-USD|SUSDE|BUIDL|USDTB|USDF|USDX|GUSD)$/;
+const DOM_NOPAIR = /^(WBTC|WETH|STETH|WSTETH|WBETH|WEETH|CBBTC|BSC-USD|LEO|WTRX|BGB|OKB|CRO|HYPE)$/;
+[['BTC', 'BTC.D', 'Bitcoin dominansı'], ['USDT', 'USDT.D', 'Tether dominansı'], ['OTHERS', 'OTHERS.D', 'Diğer coinler (ilk 10 hariç)']].forEach(([k, lab], i) => {
+  S.symbols['dom:' + k] = { base: lab, quote: '%', src: 'dom', dom: k, tradfi: false, label: lab, prec: 2, tick: 0.01 };
+  S.tickers['dom:' + k] = { last: null, chg: null, qv: 3 - i };
+});
+async function domFetchCaps(){
+  let total = 0, coins = [];
+  try{
+    const [g, t] = await Promise.all([fetch('https://api.coinpaprika.com/v1/global'), fetch('https://api.coinpaprika.com/v1/tickers?quotes=USD&limit=40')]);
+    if (!g.ok || !t.ok) throw new Error('paprika');
+    const gj = await g.json(), tj = await t.json();
+    total = +gj.market_cap_usd;
+    coins = tj.filter(x => x && x.quotes && x.quotes.USD).map(x => ({ sym: String(x.symbol).toUpperCase(), price: +x.quotes.USD.price, mcap: +x.quotes.USD.market_cap }));
+  }catch(e){
+    const [g, t] = await Promise.all([fetch('https://api.coingecko.com/api/v3/global'), fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=40&page=1')]);
+    if (!g.ok || !t.ok) throw new Error('piyasa değeri kaynağına ulaşılamadı');
+    const gj = await g.json(), tj = await t.json();
+    total = +(gj.data && gj.data.total_market_cap && gj.data.total_market_cap.usd);
+    coins = tj.map(x => ({ sym: String(x.symbol).toUpperCase(), price: +x.current_price, mcap: +x.market_cap }));
+  }
+  const seen = new Set();
+  coins = coins.filter(c => c.price > 0 && c.mcap > 0 && !seen.has(c.sym) && seen.add(c.sym)).sort((a, b) => b.mcap - a.mcap).slice(0, 40);
+  if (!(total > 1e11) || coins.length < 10 || !coins.some(c => c.sym === 'BTC') || !coins.some(c => c.sym === 'USDT')) throw new Error('piyasa değeri verisi eksik');
+  return { total, coins };
+}
+async function domLoad(){
+  if (DOM.coins.length && Date.now() - DOM.t < 30 * 60000) return;
+  if (DOM.p) return DOM.p;
+  DOM.p = (async () => {
+    const { total, coins } = await domFetchCaps();
+    coins.forEach(c => { c.supply = c.mcap / c.price; c.stable = DOM_STABLE.test(c.sym); c.canTrade = !c.stable && !DOM_NOPAIR.test(c.sym); });
+    DOM.total = total; DOM.coins = coins; DOM.top10 = new Set(coins.slice(0, 10).map(c => c.sym));
+    DOM.traded = coins.filter(c => c.canTrade).slice(0, 24).map(c => c.sym);
+    if (!DOM.traded.includes('BTC')) DOM.traded.unshift('BTC');
+    DOM.t = Date.now();
+    DOM.memo = {};
+  })().finally(() => { DOM.p = null; });
+  return DOM.p;
+}
+// Bir zaman anındaki fiyatlardan (sym → fiyat) üç dominans değeri (%)
+function domCalc(px){
+  const C = DOM.coins; let tr = 0, trNow = 0, fixed = 0, top10 = 0, btc = 0, usdt = 0;
+  for (const c of C){
+    const traded = px[c.sym] > 0, val = traded ? c.supply * px[c.sym] : c.mcap;
+    if (DOM.traded.includes(c.sym)){ tr += c.supply * (px[c.sym] || c.price); trNow += c.supply * c.price; } else fixed += c.mcap;
+    if (DOM.top10.has(c.sym)) top10 += val;
+    if (c.sym === 'BTC') btc = val;
+    if (c.sym === 'USDT') usdt = c.mcap;
+  }
+  const s30now = trNow + C.filter(c => !DOM.traded.includes(c.sym)).reduce((a, c) => a + c.mcap, 0);
+  const rest = Math.max(0, DOM.total - s30now) * (trNow > 0 ? tr / trNow : 1);
+  const total = tr + fixed + rest;
+  return { BTC: btc / total * 100, USDT: usdt / total * 100, OTHERS: Math.max(0, (total - top10) / total * 100) };
+}
+async function domCompute(iv, o){
+  await domLoad();
+  const limit = Math.min(o.limit || FIRST_N, 1000), key = [iv, limit, o.endTime || 0, o.startTime || 0].join('|');
+  const m = DOM.memo[key]; if (m && Date.now() - m.t < 8000) return m.p;
+  const p = (async () => {
+    const q = s => {
+      let u = `${SPOT_API}/api/v3/klines?symbol=${s}USDT&interval=${iv}&limit=${limit}`;
+      if (o.endTime) u += `&endTime=${o.endTime}`; if (o.startTime) u += `&startTime=${o.startTime}`;
+      return fetch(u).then(r => r.ok ? r.json() : null).catch(() => null);
+    };
+    const res = await Promise.all(DOM.traded.map(q));
+    const bi = DOM.traded.indexOf('BTC'), ref = res[bi];
+    if (!Array.isArray(ref) || !ref.length) throw new Error('fiyat verisi alınamadı');
+    const maps = res.map(r => Array.isArray(r) && r.length ? new Map(r.map(k => [k[0], k])) : null);
+    const last = DOM.traded.map((s, i) => maps[i] ? (maps[i].get(ref[0][0]) ? +maps[i].get(ref[0][0])[1] : +res[i][0][1]) : 0);
+    const rows = { BTC: [], USDT: [], OTHERS: [] };
+    for (const k of ref){
+      const po = {}, pc = {};
+      DOM.traded.forEach((s, i) => {
+        const r = maps[i] && maps[i].get(k[0]);
+        if (r){ po[s] = +r[1]; pc[s] = +r[4]; last[i] = pc[s]; } else if (last[i] > 0){ po[s] = last[i]; pc[s] = last[i]; }
+      });
+      const a = domCalc(po), b = domCalc(pc);
+      for (const kk in rows){
+        const ov = a[kk], cv = b[kk];
+        rows[kk].push([k[0], ov.toFixed(4), Math.max(ov, cv).toFixed(4), Math.min(ov, cv).toFixed(4), cv.toFixed(4), '0', k[6], null, 0, null, null]);
+      }
+    }
+    return rows;
+  })();
+  DOM.memo[key] = { t: Date.now(), p };
+  p.catch(() => { delete DOM.memo[key]; });
+  return p;
+}
+async function domKlines(kind, iv, o){ const r = await domCompute(iv, o); return r[kind]; }
+function domRefresh(){
+  const E = EXT.dom;
+  if (E.p) return E.p;
+  if (E.st === 'ok' && Date.now() - E.t < 60000) return Promise.resolve();
+  if (E.st !== 'ok') E.st = 'load';
+  E.err = '';
+  E.p = (async () => {
+    const r = await domCompute('1h', { limit: 26 });
+    for (const k in r){
+      const rows = r[k], t = S.tickers['dom:' + k], l = +rows[rows.length - 1][4], f = +rows[0][1];
+      t.last = l; t.chg = f > 0 ? (l / f - 1) * 100 : 0;
+    }
+    E.st = 'ok'; E.t = Date.now(); listDirty = true; updateHeader();
+  })().catch(e => { E.st = 'err'; E.err = e.message || String(e); throw e; }).finally(() => { E.p = null; });
+  return E.p;
+}
+window.__vgExt = { EXT, DOM, domCalc, btKlines, domRefresh, spotInit, btInit };
+
+/* =====================================================================
    DEMO HESAP — sanal 100.000 $ ile gerçek fiyatlarla vadeli (kaldıraçlı) işlem.
    Hesaba özel saklanır (vg_demo). Teminat, kaldıraç, TP/SL, likidasyon ve %0,04 komisyon hesaplanır.
    ===================================================================== */
@@ -4379,9 +4662,11 @@ function dmAcc(){
 function dmMaxLev(sym){ const m = S.symbols[sym]; return m && m.src === 'hl' ? 20 : 50; }
 function dmPd(sym, v){ const m = S.symbols[sym]; return Number(v).toFixed(m ? Math.max(m.prec, 2) : 2); }
 
+function dmOk(sym){ const m = S.symbols[sym]; return !!m && m.src !== 'dom' && !(m.src === 'bt' && m.quote === 'TRY'); }   // demo hesap dolar bazlı
 function dmOpen(sym, side, margin, lev, tp, sl){
   const px = dmPrice(sym);
   if (!S.symbols[sym] || px == null) return flash('Bu paritenin fiyatı şu an yok');
+  if (!dmOk(sym)) return flash('Demo hesapta dominans ve TL pariteleri ile işlem açılmaz');
   margin = +margin; lev = Math.round(+lev) || 1;
   if (!(margin >= 1)) return flash('Teminat en az 1 $ olmalı');
   lev = Math.max(1, Math.min(dmMaxLev(sym), lev));
@@ -4520,7 +4805,7 @@ function dmSearch(q){
   q = q.trim().toLocaleLowerCase('tr'); const el = $('dmRes');
   if (!q){ el.innerHTML = ''; return; }
   const out = Object.keys(S.symbols).filter(s => {
-    if (dmPrice(s) == null) return false; const m = S.symbols[s];
+    if (!dmOk(s) || dmPrice(s) == null) return false; const m = S.symbols[s];
     return s.toLowerCase().includes(q) || String(m.base).toLowerCase().includes(q) || (m.label && m.label.toLocaleLowerCase('tr').includes(q));
   }).sort((a, b) => ((S.tickers[b] || {}).qv || 0) - ((S.tickers[a] || {}).qv || 0)).slice(0, 8);
   el.innerHTML = out.length ? out.map(s => { const m = S.symbols[s]; return `<button data-dms="${esc(s)}"><span>${esc(m.label || m.base)}</span><small>${m.src === 'hl' ? esc(m.base) + ' · HL' : esc(m.quote)}</small></button>`; }).join('')
@@ -4626,6 +4911,10 @@ async function init(){
   loadDayOpens();
   loadTfOpens();
   if (S.symbols[S.symbol]) loadChart();
+  else if (EXT_PFX.has(String(S.symbol).split(':')[0])){            // Spot / BtcTürk: liste gelince grafik açılır, gelmezse BTC
+    extEnsure(S.symbol.startsWith('spot:') ? 'spot' : 'btcturk').then(() => { if (S.symbols[S.symbol]) loadChart(); else { S.symbol = 'BTCUSDT'; loadChart(); } })
+      .catch(() => { S.symbol = 'BTCUSDT'; loadChart(); });
+  }
   else if (HL.err && S.symbols.BTCUSDT){ S.symbol = 'BTCUSDT'; loadChart(); }   // Hyperliquid'e ulaşılamadı → BTC
   else setStatus('Yükleniyor…');                        // Hyperliquid sembolü: liste gelince hlInit yükler
 }
