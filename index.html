@@ -689,6 +689,7 @@ const S = {
   loadingOld: false, noMoreOld: false,
   ws: null, tickWs: null, hovering: false, hiddenAt: 0,
   listMode: 'coin',      // 'coin' | 'tradfi'
+  favAll: false,         // favori / özel liste tüm gruplardan mı gösterilsin (sadece Favoriler düğmesi ve Coin listesi)
   tfKind: store.get('vg_tfkind', 'all')
 };
 
@@ -1171,12 +1172,13 @@ function renderSort(){
   $('sortBar').innerHTML = h;
 }
 $('sortBar').addEventListener('click', e => {
-  if (e.target.closest('[data-newlist]')){ const l = newList(); if (l){ S.sort = 'L:' + l.id; store.set('vg_sort', S.sort); renderSort(); renderList(true); } return; }
+  if (e.target.closest('[data-newlist]')){ const l = newList(); if (l){ S.sort = 'L:' + l.id; S.favAll = S.listMode === 'coin'; store.set('vg_sort', S.sort); renderSort(); renderList(true); } return; }
   const k = e.target.closest('[data-tfk]');
   if (k){ S.tfKind = k.dataset.tfk; store.set('vg_tfkind', S.tfKind); renderSort(); renderList(true); return; }
   const b = e.target.closest('[data-sort]');
   if (!b) return;
   S.sort = b.dataset.sort;
+  S.favAll = S.listMode === 'coin';
   store.set('vg_sort', S.sort);
   renderSort();
   renderList(true);
@@ -1186,7 +1188,8 @@ function listItems(){
   const tf = S.listMode === 'tradfi';
   const cl = S.sort.startsWith('L:') ? S.lists.find(x => 'L:' + x.id === S.sort) : null;
   const favv = S.sort === 'fav';
-  let arr = Object.keys(S.symbols).filter(s => cl ? cl.syms.includes(s) : favv ? S.favs.has(s) : inGroup(s, S.listMode));   // özel liste ve favoriler: tüm gruplar birlikte
+  let arr = Object.keys(S.symbols).filter(s => cl ? cl.syms.includes(s) : favv ? S.favs.has(s) : inGroup(s, S.listMode));
+  if (!S.favAll && (cl || favv)) arr = arr.filter(s => inGroup(s, S.listMode));   // Metaller/Döviz/Endeks/TradFi içinde favori ve listeler sadece o grubu gösterir
   const q = S.query.trim().toUpperCase();
   if (q) arr = arr.filter(s => s.includes(q));
   if (S.sort === 'fav') arr = arr.filter(s => S.favs.has(s));
@@ -1234,8 +1237,12 @@ $('search').addEventListener('input', e => {
   qTimer = setTimeout(() => { S.query = e.target.value; renderList(true); }, 120);
 });
 
-function openSheet(mode){
+function openSheet(mode, all){
   S.listMode = GROUP_INFO[mode] ? mode : 'coin';
+  S.favAll = !!all;
+  // Favoriler / özel liste seçili kalmışsa grup düğmeleri (Coin, Metaller…) yine kendi listesini açsın
+  if (!all && (S.sort === 'fav' || S.sort.startsWith('L:'))){ S.sort = 'vol'; store.set('vg_sort', S.sort); }
+  if (S.listMode !== 'coin' && S.listMode !== 'tradfi' && typeof HL !== 'undefined' && !HL.ok) hlInit();   // veri gelmediyse hemen yeniden dene
   $('search').placeholder = GROUP_INFO[S.listMode][0];
   $('lhChg').textContent = GROUP_INFO[S.listMode][1];
   $('search').value = ''; S.query = '';
@@ -1255,7 +1262,7 @@ $('list').addEventListener('pointerdown', e => {
   if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
 }, { passive: true });
 $('openList').addEventListener('click', () => openSheet('coin'));
-$('favListBtn').addEventListener('click', () => { S.sort = 'fav'; store.set('vg_sort', S.sort); openSheet('coin'); });
+$('favListBtn').addEventListener('click', () => { S.sort = 'fav'; store.set('vg_sort', S.sort); openSheet('coin', true); });
 $('tfBtn').addEventListener('click', () => openSheet('tradfi'));
 $('metBtn').addEventListener('click', () => openSheet('metal'));
 $('fxBtn').addEventListener('click', () => openSheet('fx'));
@@ -4200,6 +4207,8 @@ function hlPrec(px, szDec){
   return Math.max(0, Math.min(maxDec, sig));
 }
 async function hlInit(){
+  if (HL.busy) return;
+  HL.busy = true; clearTimeout(HL.tm);
   try{
     let dexes = [];
     try{ const d = await hlPost({ type: 'perpDexs' }); if (Array.isArray(d)) dexes = d.filter(x => x && x.name).map(x => x.name); }catch(e){}
@@ -4242,8 +4251,9 @@ async function hlInit(){
   }catch(e){
     HL.ok = false; HL.err = e.message || String(e);
     if (String(S.symbol).includes(':') && !S.symbols[S.symbol] && S.symbols.BTCUSDT){ S.symbol = 'BTCUSDT'; loadChart(); }
-    setTimeout(hlInit, 30000);                          // sonra tekrar dene; bu arada Binance karşılıkları görünür
+    HL.tm = setTimeout(hlInit, 30000);                  // sonra tekrar dene; bu arada Binance karşılıkları görünür
   }
+  HL.busy = false;
   if ($('sheet').classList.contains('open')) renderList();
 }
 // 24 saatlik değişim ve hacim dakikada bir tazelenir (fiyatın kendisi WebSocket ile anlık gelir)
