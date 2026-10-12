@@ -47,7 +47,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.35);display:none}
 :root[data-theme="dark"] #dv{--dbg:#0f0f0f;--dtx:#dbdbdb;--dmu:#8c8c8c;--dln:#2e2e2e;--dch:#2e2e2e;--dup:#089981;--ddn:#f23645}
 #dv.open{display:block}
-.dv-sheet{position:absolute;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top) + 6px);background:var(--dbg);color:var(--dtx);
+.dv-sheet{touch-action:none;will-change:transform;position:absolute;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top) + 6px);background:var(--dbg);color:var(--dtx);
   border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom);
   font-family:-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,sans-serif;transition:transform .18s ease,opacity .18s ease}
 .dv-sheet.out-l{transform:translateX(-35%);opacity:0}.dv-sheet.out-r{transform:translateX(35%);opacity:0}
@@ -4023,16 +4023,20 @@ function closeDetail(fromPop){
   if (!fromPop && history.state && history.state.dv) history.back();
 }
 window.addEventListener('popstate', () => closeDetail(true));
-function dvStep(dir){      // +1: listede bir alttaki, -1: bir üstteki
-  const j = DV.idx + dir;
-  if (j < 0 || j >= DV.list.length || !S.symbols[DV.list[j]]){ const b = $('dvBody'); b.classList.add(dir > 0 ? 'out-l' : 'out-r'); setTimeout(() => b.classList.remove('out-l', 'out-r'), 120); flash(dir > 0 ? 'Listenin sonu' : 'Listenin başı'); return; }
-  const b = $('dvBody');
-  b.classList.add(dir > 0 ? 'out-l' : 'out-r');
+function dvStep(dir){      // +1: listede bir alttaki (parmak sola), -1: bir üstteki (parmak sağa)
+  const j = DV.idx + dir, b = $('dvBody'), W = b.offsetWidth || 390;
+  if (j < 0 || j >= DV.list.length || !S.symbols[DV.list[j]]){
+    b.style.transition = 'transform .2s ease'; b.style.transform = '';
+    setTimeout(() => { b.style.transition = ''; }, 220); flash(dir > 0 ? 'Listenin sonu' : 'Listenin başı'); return;
+  }
+  b.style.transition = 'transform .16s ease'; b.style.transform = `translateX(${dir > 0 ? -W : W}px)`;
   setTimeout(() => {
     DV.idx = j; dvShow(DV.list[j]);
-    b.classList.add('no-anim'); b.classList.remove('out-l', 'out-r'); b.classList.add(dir > 0 ? 'out-r' : 'out-l');
-    void b.offsetWidth; b.classList.remove('no-anim'); b.classList.remove('out-l', 'out-r');
-  }, 170);
+    b.style.transition = 'none'; b.style.transform = `translateX(${dir > 0 ? W : -W}px)`;
+    void b.offsetWidth;
+    b.style.transition = 'transform .2s ease'; b.style.transform = '';
+    setTimeout(() => { b.style.transition = ''; }, 230);
+  }, 165);
 }
 window.__dvStep = dvStep;
 function dvToChart(openInd){
@@ -4044,15 +4048,37 @@ function dvToChart(openInd){
   if (!$('drawBar').classList.contains('show')) $('drawToggle').click();
   if (openInd) setTimeout(() => { if (!$('indPop').classList.contains('open')) indPopToggle($('indTool')); }, 350);
 }
-// kaydırma (parmakla sağa/sola)
+// kaydırma: parmak basılıyken ekran parmakla birlikte sürüklenir; bırakınca yeterince çekildiyse yan pariteye geçer
 (() => {
-  let x0 = null, y0 = 0, t0 = 0;
+  let x0 = null, y0 = 0, t0 = 0, lock = null, dx = 0;
   const el = $('dvBody');
-  el.addEventListener('touchstart', e => { if (e.touches.length !== 1){ x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); }, { passive: true });
-  el.addEventListener('touchend', e => {
-    if (x0 == null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
-    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4 && Date.now() - t0 < 900) dvStep(dx < 0 ? 1 : -1);
+  const edge = d => { const j = DV.idx + (d < 0 ? 1 : -1); return j < 0 || j >= DV.list.length; };
+  el.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1){ x0 = null; return; }
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); lock = null; dx = 0; el.style.transition = 'none';
   }, { passive: true });
+  el.addEventListener('touchmove', e => {
+    if (x0 == null) return;
+    const t = e.touches[0], mx = t.clientX - x0, my = t.clientY - y0;
+    if (lock == null){ if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; lock = Math.abs(mx) > Math.abs(my) * 1.1 ? 'h' : 'v'; }
+    if (lock !== 'h') return;
+    if (e.cancelable) e.preventDefault();
+    dx = edge(mx) ? mx * 0.3 : mx;
+    el.style.transform = `translateX(${dx}px)`;
+  }, { passive: false });
+  const end = e => {
+    if (x0 == null) return;
+    const t = e.changedTouches && e.changedTouches[0];
+    let mx = dx; if (t && (lock == null || !dx)) mx = t.clientX - x0;
+    const my = t ? t.clientY - y0 : 0, dt = Date.now() - t0, W = el.offsetWidth || 390;
+    x0 = null;
+    const horiz = lock === 'h' || (Math.abs(mx) > 40 && Math.abs(mx) > Math.abs(my) * 1.4);
+    const far = Math.abs(mx) > W * 0.25 || (Math.abs(mx) > 40 && dt < 300);
+    if (horiz && far) dvStep(mx < 0 ? 1 : -1);
+    else { el.style.transition = 'transform .2s ease'; el.style.transform = ''; setTimeout(() => { el.style.transition = ''; }, 220); }
+  };
+  el.addEventListener('touchend', end, { passive: true });
+  el.addEventListener('touchcancel', end, { passive: true });
 })();
 $('dvRng').addEventListener('click', e => {
   if (e.target.closest('#dvFull')){ dvToChart(false); return; }
