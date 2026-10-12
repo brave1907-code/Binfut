@@ -52,29 +52,30 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   font-family:-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,sans-serif;transition:transform .18s ease,opacity .18s ease}
 .dv-sheet.out-l{transform:translateX(-35%);opacity:0}.dv-sheet.out-r{transform:translateX(35%);opacity:0}
 .dv-sheet.no-anim{transition:none}
+.dv-sheet.peek{display:none;pointer-events:none;transition:none;box-shadow:0 0 24px rgba(0,0,0,.25)}
 .dv-grip{width:28px;height:4px;border-radius:2px;background:var(--dln);margin:6px auto 8px;flex:0 0 auto}
 .dv-head{display:flex;align-items:center;gap:10px;padding:0 14px}
 .dv-logo{width:32px;height:32px;border-radius:50%;flex:0 0 32px;display:flex;align-items:center;justify-content:center;overflow:hidden;
   color:#fff;font-weight:700;font-size:13px;background:#2962ff}
 .dv-logo img{width:100%;height:100%;object-fit:cover}
 .dv-tt{flex:1;min-width:0}
-#dvTitle{display:flex;align-items:center;gap:4px;max-width:100%;font-size:17px;font-weight:600;color:var(--dtx);text-align:left}
-#dvName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#dvTitle svg{width:14px;height:14px;flex:0 0 14px;fill:none;stroke:var(--dtx);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.dv-title{display:flex;align-items:center;gap:4px;max-width:100%;font-size:17px;font-weight:600;color:var(--dtx);text-align:left}
+.dv-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dv-title svg{width:14px;height:14px;flex:0 0 14px;fill:none;stroke:var(--dtx);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .dv-sub{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--dmu);font-weight:500;margin-top:1px;white-space:nowrap}
 .dv-dot{width:8px;height:8px;border-radius:50%;background:var(--dup);box-shadow:0 0 0 4px rgba(8,153,129,.18);flex:0 0 8px;margin-left:2px}
 .dv-dot.off{background:var(--dmu);box-shadow:0 0 0 4px rgba(128,128,128,.18)}
-#dvMore{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--dtx)}
-#dvMore svg{width:22px;height:22px;fill:var(--dtx)}
+.dv-more{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--dtx)}
+.dv-more svg{width:22px;height:22px;fill:var(--dtx)}
 .dv-px{padding:14px 14px 0;display:flex;align-items:baseline;gap:6px}
-#dvPrice{font-size:36px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1}
-#dvUnit{font-size:13px;font-weight:600}
+.dv-price{font-size:36px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1}
+.dv-unit{font-size:13px;font-weight:600}
 .dv-chg{padding:8px 14px 0;font-size:16px;font-weight:600;display:flex;gap:9px;align-items:baseline;font-variant-numeric:tabular-nums}
 .dv-chg2{padding:6px 14px 0;font-size:13px;font-weight:600;display:flex;gap:7px;align-items:baseline;font-variant-numeric:tabular-nums}
 .dv-chg small,.dv-chg2 small{font-size:12.5px;font-weight:500}
 .dv-up{color:var(--dup)}.dv-dn{color:var(--ddn)}.dv-fl{color:var(--dmu)}
 .dv-chart{position:relative;flex:1;min-height:150px;margin-top:8px}
-#dvChart{position:absolute;inset:0}
+.dv-chartin{position:absolute;inset:0}
 .dv-status{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--dmu);font-size:13px;z-index:2;pointer-events:none}
 .dv-status.show{display:flex}
 .dv-pill{position:absolute;bottom:40px;z-index:3;width:43px;height:27px;border-radius:14px;border:1px solid var(--dln);background:var(--dbg);
@@ -84,8 +85,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .dv-rng{display:flex;align-items:center;padding:8px 6px 10px;gap:2px;flex:0 0 auto}
 .dv-rng button{flex:1 1 0;min-width:0;height:30px;border-radius:7px;font-size:14px;color:var(--dtx);font-weight:500}
 .dv-rng button.on{background:var(--dch);font-weight:700}
-#dvFull{flex:0 0 38px}
-#dvFull svg{width:20px;height:20px;fill:none;stroke:var(--dtx);stroke-width:2;stroke-linecap:round}
+#dvFull,.dv-full{flex:0 0 38px}
+.dv-full svg{width:20px;height:20px;fill:none;stroke:var(--dtx);stroke-width:2;stroke-linecap:round}
 .dv-menu{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 60px);z-index:5;background:var(--dbg);color:var(--dtx);
   border:1px solid var(--dln);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);min-width:200px;overflow:hidden}
 .dv-menu button{display:block;width:100%;text-align:left;padding:12px 14px;font-size:14px;border-bottom:1px solid var(--dln)}
@@ -563,23 +564,23 @@ a.chip{text-decoration:none;display:inline-block}
   <div class="dv-sheet" id="dvBody">
     <div class="dv-grip" id="dvGrip"></div>
     <div class="dv-head">
-      <div class="dv-logo" id="dvLogo"></div>
+      <div class="dv-logo" id="dvLogo" data-f="logo"></div>
       <div class="dv-tt">
-        <button id="dvTitle"><span id="dvName"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
-        <div class="dv-sub"><span id="dvSub"></span><i class="dv-dot" id="dvDot"></i></div>
+        <button id="dvTitle" class="dv-title"><span id="dvName" class="dv-name" data-f="name"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="dv-sub"><span id="dvSub" data-f="sub"></span><i class="dv-dot" id="dvDot" data-f="dot"></i></div>
       </div>
-      <button id="dvMore" aria-label="Diğer"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+      <button id="dvMore" class="dv-more" aria-label="Diğer"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
     </div>
-    <div class="dv-px"><span id="dvPrice">–</span><span id="dvUnit"></span></div>
-    <div class="dv-chg" id="dvChg"></div>
-    <div class="dv-chg2" id="dvChg2"></div>
+    <div class="dv-px"><span id="dvPrice" class="dv-price" data-f="price">–</span><span id="dvUnit" class="dv-unit" data-f="unit"></span></div>
+    <div class="dv-chg" id="dvChg" data-f="chg"></div>
+    <div class="dv-chg2" id="dvChg2" data-f="chg2"></div>
     <div class="dv-chart">
-      <div id="dvChart"></div>
-      <div class="dv-status" id="dvStatus"></div>
+      <div id="dvChart" class="dv-chartin" data-f="chart"></div>
+      <div class="dv-status" id="dvStatus" data-f="status"></div>
       <button class="dv-pill l" id="dvAlarm" aria-label="Alarm kur"><svg viewBox="0 0 24 24"><circle cx="11" cy="13" r="7"/><path d="M11 9.5V13l2 1.5M4 4.5L6.5 2.5M18 4.5L15.5 2.5M17.5 17.5h5M20 15v5"/></svg></button>
       <button class="dv-pill r" id="dvInd" aria-label="İndikatörler"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 5-7 4 5"/><path d="M3 21l5-4 4 2 5-5 4 3" opacity=".55"/></svg></button>
     </div>
-    <div class="dv-rng" id="dvRng"></div>
+    <div class="dv-rng" id="dvRng" data-f="rng"></div>
   </div>
   <div class="dv-menu" id="dvMenu" hidden></div>
 </div>
@@ -3905,7 +3906,7 @@ indSeries(); indState();
    Sağ alttaki kare → analiz / çizim ekranı.
    ===================================================================== */
 const DV = { sym: null, list: [], idx: 0, range: (() => { const v = store.get('vg_dvr', '3A'); return ['1G','1H','1A','3A','YTD','1Y','5Y','Tümü'].includes(v) ? v : '3A'; })(),
-  chart: null, ser: null, bars: [], tok: 0, open: false, base: null, last: null };
+  chart: null, ser: null, bars: [], tok: 0, open: false, base: null, last: null, cache: new Map(), peek: null, peekTpl: null, pchart: null, pser: null, dragPeek: 0, stepping: false, peekRange: '' };
 const DV_R = { '1G': ['5m', 288, 'son 1 gün'], '1H': ['30m', 336, 'son 1 hafta'], '1A': ['2h', 372, 'son 1 ay'], '3A': ['1d', 92, 'son 3 ay'],
   'YTD': ['1d', 0, 'yılbaşından beri'], '1Y': ['1d', 366, 'son 1 yıl'], '5Y': ['1w', 262, 'son 5 yıl'], 'Tümü': ['1M', 500, 'tüm zamanlar'] };
 const TR_MON = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
@@ -3922,8 +3923,9 @@ function dvInfo(sym){
   return { title: `${sym} Perpetual Contract`, sub: `${sym}.P • BINANCE`, unit: m.quote || 'USDT', logo: m.label || base };
 }
 const DV_COLORS = ['#2962ff', '#f7931a', '#26a69a', '#7e57c2', '#e91e63', '#00bcd4', '#ff9800', '#4caf50', '#3f51b5', '#795548'];
-function dvLogo(sym, info){
-  const m = S.symbols[sym] || {}, el = $('dvLogo'), key = String(m.base || info.logo).toUpperCase().replace(/^1000+/, '').replace(/[^A-Z0-9]/g, '');
+const dvF = (root, f) => root.querySelector('[data-f="' + f + '"]');
+function dvLogo(root, sym, info){
+  const m = S.symbols[sym] || {}, el = dvF(root, 'logo'), key = String(m.base || info.logo).toUpperCase().replace(/^1000+/, '').replace(/[^A-Z0-9]/g, '');
   let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   el.style.background = DV_COLORS[h % DV_COLORS.length];
   const letter = esc(String(info.logo).replace(/^1000+/, '').charAt(0).toUpperCase() || '?');
@@ -3931,20 +3933,20 @@ function dvLogo(sym, info){
   if (!m.src || m.src === 'spot'){
     if (!m.tradfi){
       const img = new Image(); img.alt = '';
-      img.onload = () => { if (DV.sym === sym){ el.innerHTML = ''; el.style.background = 'transparent'; el.appendChild(img); } };
+      img.onload = () => { if (root.dataset.sym === sym){ el.innerHTML = ''; el.style.background = 'transparent'; el.appendChild(img); } };
       img.src = `https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/${key.toLowerCase()}.png`;
     }
   }
 }
 function dvTheme(){
-  if (!DV.chart) return;
   const cs = getComputedStyle($('dv'));
-  DV.chart.applyOptions({ layout: { attributionLogo: false, background: { type: 'solid', color: cs.getPropertyValue('--dbg').trim() || '#fff' }, textColor: cs.getPropertyValue('--dmu').trim() || '#6a6d78' } });
+  const o = { layout: { attributionLogo: false, background: { type: 'solid', color: cs.getPropertyValue('--dbg').trim() || '#fff' }, textColor: cs.getPropertyValue('--dmu').trim() || '#6a6d78' } };
+  if (DV.chart) DV.chart.applyOptions(o);
+  if (DV.pchart) DV.pchart.applyOptions(o);
 }
 window.__dvTheme = dvTheme;
-function dvEnsureChart(){
-  if (DV.chart) return;
-  DV.chart = LightweightCharts.createChart($('dvChart'), {
+function dvMakeChart(el){
+  const ch = LightweightCharts.createChart(el, {
     autoSize: true,
     layout: { attributionLogo: false, background: { type: 'solid', color: '#ffffff' }, textColor: '#6a6d78', fontSize: 12, fontFamily: '-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,sans-serif' },
     grid: { vertLines: { visible: false }, horzLines: { visible: false } },
@@ -3956,59 +3958,108 @@ function dvEnsureChart(){
         return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); } },
     crosshair: { vertLine: { visible: false, labelVisible: false }, horzLine: { visible: false, labelVisible: false } },
     handleScroll: false, handleScale: false,
-    localization: { locale: 'tr-TR', priceFormatter: p => Number(p).toLocaleString('tr-TR', { maximumFractionDigits: dvPrec(DV.sym) }) }
+    localization: { locale: 'tr-TR', priceFormatter: p => Number(p).toLocaleString('tr-TR', { maximumFractionDigits: dvPrec(el.closest('.dv-sheet') && el.closest('.dv-sheet').dataset.sym) }) }
   });
-  DV.ser = DV.chart.addCandlestickSeries({ upColor: '#089981', downColor: '#f23645', borderVisible: false, wickUpColor: '#089981', wickDownColor: '#f23645',
+  const ser = ch.addCandlestickSeries({ upColor: '#089981', downColor: '#f23645', borderVisible: false, wickUpColor: '#089981', wickDownColor: '#f23645',
     priceScaleId: 'right', priceLineVisible: true, priceLineStyle: 2, priceLineWidth: 1, priceLineColor: '#9598a1', lastValueVisible: false });
-  dvTheme();
+  return { ch, ser };
 }
-function dvRenderRng(){
-  $('dvRng').innerHTML = Object.keys(DV_R).map(k => `<button data-r="${k}" class="${k === DV.range ? 'on' : ''}">${k}</button>`).join('') +
-    '<button id="dvFull" aria-label="Analiz ekranı"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>';
+function dvEnsureChart(){
+  if (DV.chart) return;
+  const c = dvMakeChart($('dvChart')); DV.chart = c.ch; DV.ser = c.ser; dvTheme();
 }
-function dvHeader(){
-  const sym = DV.sym, info = dvInfo(sym), m = S.symbols[sym] || {}, t = S.tickers[sym] || {}, d = dvPrec(sym);
-  $('dvName').textContent = info.title; $('dvSub').textContent = info.sub; $('dvUnit').textContent = info.unit;
-  const last = t.last != null ? t.last : DV.last;
-  $('dvPrice').textContent = trn(last, d);
+function dvRenderRng(root, main){
+  root = root || $('dvBody'); main = main !== false && root.id === 'dvBody';
+  dvF(root, 'rng').innerHTML = Object.keys(DV_R).map(k => `<button data-r="${k}" class="${k === DV.range ? 'on' : ''}">${k}</button>`).join('') +
+    `<button ${main ? 'id="dvFull" ' : ''}class="dv-full" aria-label="Analiz ekranı"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>`;
+}
+function dvFill(root, sym, bars){
+  const info = dvInfo(sym), m = S.symbols[sym] || {}, t = S.tickers[sym] || {}, d = dvPrec(sym);
+  if (root.dataset.sym !== sym){ root.dataset.sym = sym; dvLogo(root, sym, info); }
+  dvF(root, 'name').textContent = info.title; dvF(root, 'sub').textContent = info.sub; dvF(root, 'unit').textContent = info.unit;
+  const last = t.last != null ? t.last : (bars && bars.length ? bars[bars.length - 1].close : null);
+  dvF(root, 'price').textContent = trn(last, d);
   const chg = t.chg, abs = last != null && chg != null ? last - last / (1 + chg / 100) : null, c1 = chg > 0 ? 'dv-up' : chg < 0 ? 'dv-dn' : 'dv-fl';
-  $('dvChg').className = 'dv-chg ' + c1;
-  $('dvChg').innerHTML = chg == null ? '' : `<span>${sgn(abs, d)}</span><span>${sgn(chg, 2)}%</span><small>bugün</small>`;
-  const b0 = DV.base, r = b0 && last != null ? (last / b0 - 1) * 100 : null, c2 = r > 0 ? 'dv-up' : r < 0 ? 'dv-dn' : 'dv-fl';
-  $('dvChg2').className = 'dv-chg2 ' + c2;
-  $('dvChg2').innerHTML = r == null || DV.range === '1G' ? '' : `<span>${sgn(last - b0, d)}</span><span>${sgn(r, 2)}%</span><small>${DV_R[DV.range][2]}</small>`;
-  $('dvDot').classList.toggle('off', m.src === 'dom' || (m.src === 'kr' && [0, 6].includes(new Date().getUTCDay())));
+  dvF(root, 'chg').className = 'dv-chg ' + c1;
+  dvF(root, 'chg').innerHTML = chg == null ? '' : `<span>${sgn(abs, d)}</span><span>${sgn(chg, 2)}%</span><small>bugün</small>`;
+  const b0 = bars && bars.length ? bars[0].open : null, r = b0 && last != null ? (last / b0 - 1) * 100 : null, c2 = r > 0 ? 'dv-up' : r < 0 ? 'dv-dn' : 'dv-fl';
+  dvF(root, 'chg2').className = 'dv-chg2 ' + c2;
+  dvF(root, 'chg2').innerHTML = r == null || DV.range === '1G' ? '' : `<span>${sgn(last - b0, d)}</span><span>${sgn(r, 2)}%</span><small>${DV_R[DV.range][2]}</small>`;
+  dvF(root, 'dot').classList.toggle('off', m.src === 'dom' || (m.src === 'kr' && [0, 6].includes(new Date().getUTCDay())));
+}
+function dvHeader(){ dvFill($('dvBody'), DV.sym, DV.bars); }
+const dvKey = (sym, range) => sym + '|' + range;
+async function dvFetch(sym, range){
+  const key = dvKey(sym, range);
+  if (DV.cache.has(key)) return DV.cache.get(key);
+  const [iv, lim0] = DV_R[range]; let lim = lim0;
+  if (range === 'YTD'){ const n = new Date(); lim = Math.max(2, Math.ceil((Date.now() - Date.UTC(n.getUTCFullYear(), 0, 1)) / 86400e3) + 1); }
+  const rows = await getKl(sym, iv, { limit: Math.min(lim, 1000) });
+  let bars = buildBars(rows || [], sym, iv, true).filter(b => isFinite(b.open) && isFinite(b.close));
+  if (range === 'YTD'){ const n = new Date(), y0 = Date.UTC(n.getUTCFullYear(), 0, 1) / 1000 + TZ; bars = bars.filter(b => b.time >= y0); }
+  if (bars.length){ DV.cache.set(key, bars); if (DV.cache.size > 24) DV.cache.delete(DV.cache.keys().next().value); }
+  return bars;
+}
+function dvApply(bars){
+  DV.bars = bars; DV.ser.setData(bars); DV.chart.timeScale().fitContent();
+  DV.base = bars.length ? bars[0].open : null; DV.last = bars.length ? bars[bars.length - 1].close : null;
+  $('dvStatus').classList.toggle('show', !bars.length); $('dvStatus').textContent = bars.length ? '' : 'Grafik verisi yok';
+  dvHeader();
+}
+function dvPrefetch(){
+  const tok = DV.tok;
+  setTimeout(() => { if (tok !== DV.tok || !DV.open) return;
+    for (const j of [DV.idx + 1, DV.idx - 1]){ const sy = DV.list[j]; if (sy && S.symbols[sy]) dvFetch(sy, DV.range).catch(() => {}); } }, 400);
 }
 async function dvLoad(){
-  const tok = ++DV.tok, sym = DV.sym, [iv, lim0] = DV_R[DV.range];
-  let lim = lim0;
-  if (DV.range === 'YTD'){ const n = new Date(); lim = Math.max(2, Math.ceil((Date.now() - Date.UTC(n.getUTCFullYear(), 0, 1)) / 86400e3) + 1); }
+  const tok = ++DV.tok, sym = DV.sym, key = dvKey(sym, DV.range);
+  if (DV.cache.has(key)){ dvApply(DV.cache.get(key)); dvPrefetch(); return; }
   $('dvStatus').textContent = 'Yükleniyor…'; $('dvStatus').classList.add('show');
   try{
-    const rows = await getKl(sym, iv, { limit: Math.min(lim, 1000) });
+    const bars = await dvFetch(sym, DV.range);
     if (tok !== DV.tok) return;
-    let bars = buildBars(rows || [], sym, iv, true).filter(b => isFinite(b.open) && isFinite(b.close));
-    if (DV.range === 'YTD'){ const n = new Date(), y0 = Date.UTC(n.getUTCFullYear(), 0, 1) / 1000 + TZ; bars = bars.filter(b => b.time >= y0); }
-    DV.bars = bars;
-    DV.ser.setData(bars);
-    DV.chart.timeScale().fitContent();
-    DV.base = bars.length ? bars[0].open : null; DV.last = bars.length ? bars[bars.length - 1].close : null;
-    $('dvStatus').classList.toggle('show', !bars.length); $('dvStatus').textContent = bars.length ? '' : 'Grafik verisi yok';
+    dvApply(bars); dvPrefetch();
   }catch(e){
     if (tok !== DV.tok) return;
     DV.bars = []; DV.ser.setData([]); DV.base = null;
-    $('dvStatus').textContent = 'Veri alınamadı'; $('dvStatus').classList.add('show');
+    $('dvStatus').textContent = 'Veri alınamadı'; $('dvStatus').classList.add('show'); dvHeader();
   }
-  dvHeader();
 }
 function dvShow(sym){
   DV.sym = sym; DV.base = null; DV.last = null;
-  const info = dvInfo(sym); dvLogo(sym, info);
   $('dvMenu').hidden = true;
-  dvEnsureChart(); DV.ser.setData([]); dvHeader(); dvRenderRng();
-  if (EXT_PFX.has(String(sym).split(':')[0]) && S.symbols[sym] && S.symbols[sym].src === 'kr') extEnsure('fx');
+  dvEnsureChart(); dvTheme();
+  const cached = DV.cache.get(dvKey(sym, DV.range));
+  if (!cached) DV.ser.setData([]);
+  $('dvBody').dataset.sym = ''; dvFill($('dvBody'), sym, cached || []); dvRenderRng();
+  if (S.symbols[sym] && S.symbols[sym].src === 'kr') extEnsure('fx');
   dvLoad();
 }
+(() => { const pk = $('dvBody').cloneNode(true); pk.removeAttribute('id'); pk.querySelectorAll('[id]').forEach(n => n.removeAttribute('id')); pk.classList.add('peek'); pk.setAttribute('aria-hidden', 'true'); DV.peekTpl = pk; })();
+// ---- yan parite (parmakla çekerken arkadan görünür) ----
+function dvPeekEl(){
+  if (DV.peek) return DV.peek;
+  const pk = DV.peekTpl; DV.peek = pk; $('dv').appendChild(pk); return pk;
+}
+function dvPeekPrep(dir){
+  const j = DV.idx + dir, ns = DV.list[j];
+  if (j < 0 || j >= DV.list.length || !S.symbols[ns]) return null;
+  const pk = dvPeekEl(); pk.style.display = 'flex';
+  if (pk.dataset.sym !== ns || DV.peekRange !== DV.range){
+    const cached = DV.cache.get(dvKey(ns, DV.range)); pk.dataset.sym = ''; DV.peekRange = DV.range;
+    if (!DV.pchart){ const c = dvMakeChart(dvF(pk, 'chart')); DV.pchart = c.ch; DV.pser = c.ser; dvTheme(); }
+    DV.pser.setData(cached || []); dvFill(pk, ns, cached || []); dvRenderRng(pk, false);
+    dvF(pk, 'status').classList.toggle('show', !cached); dvF(pk, 'status').textContent = cached ? '' : 'Yükleniyor…';
+    requestAnimationFrame(() => { try{ DV.pchart.timeScale().fitContent(); }catch(e){} });
+    if (!cached) dvFetch(ns, DV.range).then(bars => {
+      if (pk.dataset.sym !== ns) return;
+      DV.pser.setData(bars); dvFill(pk, ns, bars); dvF(pk, 'status').classList.toggle('show', !bars.length); dvF(pk, 'status').textContent = bars.length ? '' : 'Grafik verisi yok';
+      requestAnimationFrame(() => { try{ DV.pchart.timeScale().fitContent(); }catch(e){} });
+    }).catch(() => { if (pk.dataset.sym === ns) dvF(pk, 'status').textContent = 'Veri alınamadı'; });
+  }
+  return j;
+}
+function dvPeekHide(){ if (DV.peek){ DV.peek.style.display = 'none'; DV.peek.style.transform = ''; DV.peek.style.transition = ''; } DV.dragPeek = 0; }
 function openDetail(sym, list){
   if (!S.symbols[sym]) return;
   DV.list = Array.isArray(list) && list.includes(sym) ? list.slice() : [sym];
@@ -4019,24 +4070,34 @@ function openDetail(sym, list){
 function closeDetail(fromPop){
   if (!DV.open) return;
   DV.open = false; DV.tok++; $('dv').classList.remove('open'); $('dv').setAttribute('aria-hidden', 'true'); $('dvMenu').hidden = true;
+  dvPeekHide(); DV.stepping = false; $('dvBody').style.transform = '';
   if ($('sheet').classList.contains('open') && typeof renderList === 'function') renderList();
   if (!fromPop && history.state && history.state.dv) history.back();
 }
 window.addEventListener('popstate', () => closeDetail(true));
 function dvStep(dir){      // +1: listede bir alttaki (parmak sola), -1: bir üstteki (parmak sağa)
-  const j = DV.idx + dir, b = $('dvBody'), W = b.offsetWidth || 390;
-  if (j < 0 || j >= DV.list.length || !S.symbols[DV.list[j]]){
+  const b = $('dvBody'), W = b.offsetWidth || 390;
+  if (DV.stepping) return;
+  const j = dvPeekPrep(dir);
+  if (j == null){
     b.style.transition = 'transform .2s ease'; b.style.transform = '';
-    setTimeout(() => { b.style.transition = ''; }, 220); flash(dir > 0 ? 'Listenin sonu' : 'Listenin başı'); return;
+    setTimeout(() => { b.style.transition = ''; }, 220); dvPeekHide(); flash(dir > 0 ? 'Listenin sonu' : 'Listenin başı'); return;
   }
-  b.style.transition = 'transform .16s ease'; b.style.transform = `translateX(${dir > 0 ? -W : W}px)`;
+  const pk = DV.peek; DV.stepping = true;
+  if (DV.dragPeek !== dir){ pk.style.transition = 'none'; pk.style.transform = `translateX(${dir > 0 ? W : -W}px)`; void pk.offsetWidth; }
+  b.style.transition = pk.style.transition = 'transform .2s ease';
+  b.style.transform = `translateX(${dir > 0 ? -W : W}px)`; pk.style.transform = 'translateX(0)';
   setTimeout(() => {
     DV.idx = j; dvShow(DV.list[j]);
-    b.style.transition = 'none'; b.style.transform = `translateX(${dir > 0 ? W : -W}px)`;
-    void b.offsetWidth;
-    b.style.transition = 'transform .2s ease'; b.style.transform = '';
-    setTimeout(() => { b.style.transition = ''; }, 230);
-  }, 165);
+    b.style.transition = 'none'; b.style.transform = ''; void b.offsetWidth;
+    requestAnimationFrame(() => requestAnimationFrame(() => { dvPeekHide(); b.style.transition = ''; DV.stepping = false; }));
+  }, 215);
+}
+function dvSpring(){
+  const b = $('dvBody'), pk = DV.peek, W = b.offsetWidth || 390, dir = DV.dragPeek;
+  b.style.transition = 'transform .2s ease'; b.style.transform = '';
+  if (pk && dir){ pk.style.transition = 'transform .2s ease'; pk.style.transform = `translateX(${dir > 0 ? W : -W}px)`; }
+  setTimeout(() => { b.style.transition = ''; dvPeekHide(); }, 220);
 }
 window.__dvStep = dvStep;
 function dvToChart(openInd){
@@ -4048,23 +4109,28 @@ function dvToChart(openInd){
   if (!$('drawBar').classList.contains('show')) $('drawToggle').click();
   if (openInd) setTimeout(() => { if (!$('indPop').classList.contains('open')) indPopToggle($('indTool')); }, 350);
 }
-// kaydırma: parmak basılıyken ekran parmakla birlikte sürüklenir; bırakınca yeterince çekildiyse yan pariteye geçer
+// kaydırma: parmak basılıyken ekran parmakla birlikte sürüklenir, yandaki parite arkadan görünür; bırakınca yeterince çekildiyse oraya geçer
 (() => {
   let x0 = null, y0 = 0, t0 = 0, lock = null, dx = 0;
   const el = $('dvBody');
-  const edge = d => { const j = DV.idx + (d < 0 ? 1 : -1); return j < 0 || j >= DV.list.length; };
   el.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1){ x0 = null; return; }
+    if (DV.stepping || e.touches.length !== 1){ x0 = null; return; }
     x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); lock = null; dx = 0; el.style.transition = 'none';
   }, { passive: true });
   el.addEventListener('touchmove', e => {
     if (x0 == null) return;
-    const t = e.touches[0], mx = t.clientX - x0, my = t.clientY - y0;
+    const t = e.touches[0], mx = t.clientX - x0, my = t.clientY - y0, W = el.offsetWidth || 390;
     if (lock == null){ if (Math.abs(mx) < 8 && Math.abs(my) < 8) return; lock = Math.abs(mx) > Math.abs(my) * 1.1 ? 'h' : 'v'; }
     if (lock !== 'h') return;
     if (e.cancelable) e.preventDefault();
-    dx = edge(mx) ? mx * 0.3 : mx;
+    const dir = mx < 0 ? 1 : -1;
+    if (DV.dragPeek !== dir){
+      const j = dvPeekPrep(dir);
+      if (j == null){ DV.dragPeek = 0; if (DV.peek) DV.peek.style.display = 'none'; } else { DV.dragPeek = dir; DV.peek.style.display = 'flex'; DV.peek.style.transition = 'none'; }
+    }
+    dx = DV.dragPeek ? mx : mx * 0.3;
     el.style.transform = `translateX(${dx}px)`;
+    if (DV.dragPeek) DV.peek.style.transform = `translateX(${dx + (dir > 0 ? W : -W)}px)`;
   }, { passive: false });
   const end = e => {
     if (x0 == null) return;
@@ -4075,13 +4141,13 @@ function dvToChart(openInd){
     const horiz = lock === 'h' || (Math.abs(mx) > 40 && Math.abs(mx) > Math.abs(my) * 1.4);
     const far = Math.abs(mx) > W * 0.25 || (Math.abs(mx) > 40 && dt < 300);
     if (horiz && far) dvStep(mx < 0 ? 1 : -1);
-    else { el.style.transition = 'transform .2s ease'; el.style.transform = ''; setTimeout(() => { el.style.transition = ''; }, 220); }
+    else dvSpring();
   };
   el.addEventListener('touchend', end, { passive: true });
   el.addEventListener('touchcancel', end, { passive: true });
 })();
 $('dvRng').addEventListener('click', e => {
-  if (e.target.closest('#dvFull')){ dvToChart(false); return; }
+  if (e.target.closest('.dv-full')){ dvToChart(false); return; }
   const b = e.target.closest('[data-r]'); if (!b) return;
   DV.range = b.dataset.r; store.set('vg_dvr', DV.range); dvRenderRng(); dvLoad();
 });
