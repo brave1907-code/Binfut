@@ -838,7 +838,7 @@ function setStatus(msg){ const el = $('status'); el.textContent = msg || ''; el.
 /* ---------- Grafik ---------- */
 const chart = LightweightCharts.createChart($('chart'), {
   autoSize: true,
-  layout: { background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 11 },
+  layout: { attributionLogo: false, background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 11 },
   grid: { vertLines: { visible: false }, horzLines: { visible: false } },          // arka plan ızgarası yok
   crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
   rightPriceScale: { borderColor: T.border },
@@ -862,7 +862,7 @@ function applyTheme(name, save){
   themeName = name; T = THEMES[name];
   document.documentElement.setAttribute('data-theme', name);
   const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute('content', T.bg);
-  chart.applyOptions({ layout: { background: { type: 'solid', color: T.bg }, textColor: T.text },
+  chart.applyOptions({ layout: { attributionLogo: false, background: { type: 'solid', color: T.bg }, textColor: T.text },
     rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border } });
   $('themeBtn').textContent = T.icon;
   if (window.__c2Theme) window.__c2Theme();
@@ -3259,7 +3259,7 @@ function c2Make(){
   if (C2.chart) return;
   C2.chart = LightweightCharts.createChart($('c2'), {
     autoSize: true,
-    layout: { background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 11 },
+    layout: { attributionLogo: false, background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 11 },
     grid: { vertLines: { visible: false }, horzLines: { visible: false } },
     crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
     rightPriceScale: { borderColor: T.border },
@@ -3271,7 +3271,7 @@ function c2Make(){
   C2.vol = C2.chart.addHistogramSeries({ priceScaleId: 'vol', priceFormat: { type: 'volume' }, lastValueVisible: false, priceLineVisible: false });
   C2.chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
 }
-window.__c2Theme = () => { if (C2.chart) C2.chart.applyOptions({ layout: { background: { type: 'solid', color: T.bg }, textColor: T.text }, rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border } }); };
+window.__c2Theme = () => { if (C2.chart) C2.chart.applyOptions({ layout: { attributionLogo: false, background: { type: 'solid', color: T.bg }, textColor: T.text }, rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border } }); };
 function c2Bar(){
   $('c2Bar').innerHTML = `<span id="c2Name">${esc((S.symbols[S.symbol] || {}).base || S.symbol)}</span>` +
     INTERVALS.map(([v, l]) => `<button class="tf${v === C2.iv ? ' on' : ''}" data-c2tf="${v}">${l}</button>`).join('') +
@@ -3594,7 +3594,7 @@ function crMake(id){
   if (CR.charts[id]) return CR.charts[id];
   const ch = LightweightCharts.createChart($(id), {
     autoSize: true,
-    layout: { background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 10 },
+    layout: { attributionLogo: false, background: { type: 'solid', color: T.bg }, textColor: T.text, fontSize: 10 },
     grid: { vertLines: { visible: false }, horzLines: { visible: false } },
     rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border, timeVisible: true, secondsVisible: false },
     handleScroll: false, handleScale: false
@@ -3604,7 +3604,7 @@ function crMake(id){
 }
 function crLines(id, sets){
   const c = crMake(id);
-  c.ch.applyOptions({ layout: { background: { type: 'solid', color: T.bg }, textColor: T.text } });
+  c.ch.applyOptions({ layout: { attributionLogo: false, background: { type: 'solid', color: T.bg }, textColor: T.text } });
   while (c.s.length < sets.length) c.s.push(c.ch.addLineSeries({ lineWidth: 2, priceLineVisible: false, lastValueVisible: true }));
   sets.forEach((st, i) => { c.s[i].applyOptions({ color: st.color }); c.s[i].setData(st.data); });
   try{ c.ch.timeScale().fitContent(); }catch(e){}
@@ -3901,7 +3901,7 @@ indSeries(); indState();
 
 /* =====================================================================
    PARİTE AYRINTI EKRANI (TradingView mobil görünümü)
-   Listede pariteye dokununca açılır. Sağa kaydır → listede bir alttaki, sola → bir üstteki.
+   Listede pariteye dokununca açılır. Sola kaydır → listede bir alttaki, sağa → bir üstteki.
    Sağ alttaki kare → analiz / çizim ekranı.
    ===================================================================== */
 const DV = { sym: null, list: [], idx: 0, range: (() => { const v = store.get('vg_dvr', '3A'); return ['1G','1H','1A','3A','YTD','1Y','5Y','Tümü'].includes(v) ? v : '3A'; })(),
@@ -3939,17 +3939,17 @@ function dvLogo(sym, info){
 function dvTheme(){
   if (!DV.chart) return;
   const cs = getComputedStyle($('dv'));
-  DV.chart.applyOptions({ layout: { background: { type: 'solid', color: cs.getPropertyValue('--dbg').trim() || '#fff' }, textColor: cs.getPropertyValue('--dmu').trim() || '#6a6d78' } });
+  DV.chart.applyOptions({ layout: { attributionLogo: false, background: { type: 'solid', color: cs.getPropertyValue('--dbg').trim() || '#fff' }, textColor: cs.getPropertyValue('--dmu').trim() || '#6a6d78' } });
 }
 window.__dvTheme = dvTheme;
 function dvEnsureChart(){
   if (DV.chart) return;
   DV.chart = LightweightCharts.createChart($('dvChart'), {
     autoSize: true,
-    layout: { background: { type: 'solid', color: '#ffffff' }, textColor: '#6a6d78', fontSize: 12, fontFamily: '-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,sans-serif' },
+    layout: { attributionLogo: false, background: { type: 'solid', color: '#ffffff' }, textColor: '#6a6d78', fontSize: 12, fontFamily: '-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,sans-serif' },
     grid: { vertLines: { visible: false }, horzLines: { visible: false } },
-    leftPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.12, bottom: 0.2 } },
-    rightPriceScale: { visible: false },
+    leftPriceScale: { visible: false },
+    rightPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.12, bottom: 0.2 } },
     timeScale: { borderVisible: false, fixLeftEdge: true, fixRightEdge: true, lockVisibleTimeRangeOnResize: true,
       tickMarkFormatter: (t, type) => { const d = new Date(t * 1000); const mo = TR_MON[d.getUTCMonth()];
         if (type === 0) return String(d.getUTCFullYear()); if (type === 1) return mo; if (type === 2) return String(d.getUTCDate());
@@ -3959,7 +3959,7 @@ function dvEnsureChart(){
     localization: { locale: 'tr-TR', priceFormatter: p => Number(p).toLocaleString('tr-TR', { maximumFractionDigits: dvPrec(DV.sym) }) }
   });
   DV.ser = DV.chart.addCandlestickSeries({ upColor: '#089981', downColor: '#f23645', borderVisible: false, wickUpColor: '#089981', wickDownColor: '#f23645',
-    priceScaleId: 'left', priceLineVisible: true, priceLineStyle: 2, priceLineWidth: 1, priceLineColor: '#9598a1', lastValueVisible: false });
+    priceScaleId: 'right', priceLineVisible: true, priceLineStyle: 2, priceLineWidth: 1, priceLineColor: '#9598a1', lastValueVisible: false });
   dvTheme();
 }
 function dvRenderRng(){
@@ -4051,7 +4051,7 @@ function dvToChart(openInd){
   el.addEventListener('touchstart', e => { if (e.touches.length !== 1){ x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); }, { passive: true });
   el.addEventListener('touchend', e => {
     if (x0 == null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
-    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4 && Date.now() - t0 < 900) dvStep(dx > 0 ? 1 : -1);
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4 && Date.now() - t0 < 900) dvStep(dx < 0 ? 1 : -1);
   }, { passive: true });
 })();
 $('dvRng').addEventListener('click', e => {
