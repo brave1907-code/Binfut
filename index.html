@@ -35,6 +35,73 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 #app{height:100dvh;display:flex;flex-direction:column;
   padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 
+
+/* ---- Geri tuşu ---- */
+#backBtn{position:fixed;left:12px;bottom:calc(env(safe-area-inset-bottom) + 74px);z-index:44;width:44px;height:44px;border-radius:50%;
+  background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 10px rgba(0,0,0,.25);opacity:.92;transition:bottom .15s}
+#backBtn svg{width:22px;height:22px;fill:none;stroke:var(--text);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+#backBtn:active{transform:scale(.94)}
+/* ---- Parite ayrıntı ekranı (TradingView mobil görünümü) ---- */
+#dv{--dbg:#ffffff;--dtx:#131722;--dmu:#6a6d78;--dln:#e0e3eb;--dch:#f0f3fa;--dup:#089981;--ddn:#f23645;
+  position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.35);display:none}
+:root[data-theme="dark"] #dv{--dbg:#0f0f0f;--dtx:#dbdbdb;--dmu:#8c8c8c;--dln:#2e2e2e;--dch:#2e2e2e;--dup:#089981;--ddn:#f23645}
+#dv.open{display:block}
+.dv-sheet{position:absolute;left:0;right:0;bottom:0;top:calc(env(safe-area-inset-top) + 6px);background:var(--dbg);color:var(--dtx);
+  border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom);
+  font-family:-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,sans-serif;transition:transform .18s ease,opacity .18s ease}
+.dv-sheet.out-l{transform:translateX(-35%);opacity:0}.dv-sheet.out-r{transform:translateX(35%);opacity:0}
+.dv-sheet.no-anim{transition:none}
+.dv-grip{width:28px;height:4px;border-radius:2px;background:var(--dln);margin:6px auto 8px;flex:0 0 auto}
+.dv-head{display:flex;align-items:center;gap:10px;padding:0 14px}
+.dv-logo{width:32px;height:32px;border-radius:50%;flex:0 0 32px;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  color:#fff;font-weight:700;font-size:13px;background:#2962ff}
+.dv-logo img{width:100%;height:100%;object-fit:cover}
+.dv-tt{flex:1;min-width:0}
+#dvTitle{display:flex;align-items:center;gap:4px;max-width:100%;font-size:17px;font-weight:600;color:var(--dtx);text-align:left}
+#dvName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dvTitle svg{width:14px;height:14px;flex:0 0 14px;fill:none;stroke:var(--dtx);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.dv-sub{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--dmu);font-weight:500;margin-top:1px;white-space:nowrap}
+.dv-dot{width:8px;height:8px;border-radius:50%;background:var(--dup);box-shadow:0 0 0 4px rgba(8,153,129,.18);flex:0 0 8px;margin-left:2px}
+.dv-dot.off{background:var(--dmu);box-shadow:0 0 0 4px rgba(128,128,128,.18)}
+#dvMore{width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:var(--dtx)}
+#dvMore svg{width:22px;height:22px;fill:var(--dtx)}
+.dv-px{padding:14px 14px 0;display:flex;align-items:baseline;gap:6px}
+#dvPrice{font-size:36px;font-weight:700;letter-spacing:-.5px;font-variant-numeric:tabular-nums;line-height:1}
+#dvUnit{font-size:13px;font-weight:600}
+.dv-chg{padding:8px 14px 0;font-size:16px;font-weight:600;display:flex;gap:9px;align-items:baseline;font-variant-numeric:tabular-nums}
+.dv-chg2{padding:6px 14px 0;font-size:13px;font-weight:600;display:flex;gap:7px;align-items:baseline;font-variant-numeric:tabular-nums}
+.dv-chg small,.dv-chg2 small{font-size:12.5px;font-weight:500}
+.dv-up{color:var(--dup)}.dv-dn{color:var(--ddn)}.dv-fl{color:var(--dmu)}
+.dv-chart{position:relative;flex:1;min-height:150px;margin-top:8px}
+#dvChart{position:absolute;inset:0}
+.dv-status{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--dmu);font-size:13px;z-index:2;pointer-events:none}
+.dv-status.show{display:flex}
+.dv-pill{position:absolute;bottom:40px;z-index:3;width:43px;height:27px;border-radius:14px;border:1px solid var(--dln);background:var(--dbg);
+  display:flex;align-items:center;justify-content:center}
+.dv-pill svg{width:19px;height:19px;fill:none;stroke:var(--dtx);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.dv-pill.l{left:14px}.dv-pill.r{right:14px}
+.dv-rng{display:flex;align-items:center;padding:8px 6px 10px;gap:2px;flex:0 0 auto}
+.dv-rng button{flex:1 1 0;min-width:0;height:30px;border-radius:7px;font-size:14px;color:var(--dtx);font-weight:500}
+.dv-rng button.on{background:var(--dch);font-weight:700}
+#dvFull{flex:0 0 38px}
+#dvFull svg{width:20px;height:20px;fill:none;stroke:var(--dtx);stroke-width:2;stroke-linecap:round}
+.dv-menu{position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 60px);z-index:5;background:var(--dbg);color:var(--dtx);
+  border:1px solid var(--dln);border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.25);min-width:200px;overflow:hidden}
+.dv-menu button{display:block;width:100%;text-align:left;padding:12px 14px;font-size:14px;border-bottom:1px solid var(--dln)}
+.dv-menu button:last-child{border-bottom:0}
+/* ---- İndikatörler ---- */
+#indPop{position:fixed;left:8px;right:8px;z-index:45;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);padding:6px 0;display:none}
+#indPop.open{display:block}
+#indPop .ih{padding:8px 14px 6px;font-size:12px;color:var(--muted);font-weight:600}
+#indPop label{display:flex;align-items:center;gap:10px;padding:11px 14px;font-size:14px}
+#indPop label i{width:14px;height:3px;border-radius:2px;flex:0 0 14px}
+#indPop label span{flex:1}
+#indPop input{width:20px;height:20px;accent-color:var(--accent)}
+.indlbl{position:absolute;left:8px;z-index:3;font-size:10.5px;pointer-events:none;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.indlbl b{font-weight:600}
+
 /* Üst bar */
 .top{display:flex;align-items:center;gap:10px;padding:8px 12px 4px}
 #symBtn{display:flex;align-items:baseline;gap:4px;font-weight:700;font-size:18px}
@@ -468,6 +535,7 @@ a.chip{text-decoration:none;display:inline-block}
     <button class="dt" data-tool="trend"><svg viewBox="0 0 24 24"><path d="M6.8 17.2L17.2 6.8"/><circle cx="5" cy="19" r="2.5"/><circle cx="19" cy="5" r="2.5"/></svg>Trend</button>
     <button class="dt" data-tool="measure"><svg viewBox="0 0 24 24"><path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/><path d="M5 3h4M5 21h4" opacity=".6"/></svg>Ölçü %</button>
     <button class="dt" data-tool="tmeasure"><svg viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/><path d="M3 5v4M21 5v4" opacity=".6"/></svg>Zaman ↔️</button>
+    <button class="dt" data-act="ind" id="indTool"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 5-7 4 5"/><path d="M3 21h18" opacity=".6"/></svg>İndikatör</button>
     <button class="dt sep" data-act="magnet"><svg viewBox="0 0 24 24"><path d="M6 3v9a6 6 0 0 0 12 0V3"/><path d="M6 7h3.5M14.5 7H18"/></svg>Mıknatıs</button>
     <button class="dt" data-act="save" id="dSave" hidden><svg viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/></svg>Kaydet</button>
     <button class="dt" data-act="share"><svg viewBox="0 0 24 24"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Paylaş</button>
@@ -483,6 +551,38 @@ a.chip{text-decoration:none;display:inline-block}
   </footer>
 </div>
 
+
+<button id="backBtn" aria-label="Geri"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+<div id="indPop" role="dialog" aria-label="İndikatörler">
+  <div class="ih">İNDİKATÖRLER</div>
+  <label><i style="background:#7e57c2"></i><span>RSI (14)</span><input type="checkbox" data-ind="rsi"></label>
+  <label><i style="background:#2962ff"></i><span>MACD (12, 26, 9)</span><input type="checkbox" data-ind="macd"></label>
+  <label><i style="background:#ff6d00"></i><span>Bollinger Bantları (20, 2)</span><input type="checkbox" data-ind="bb"></label>
+</div>
+<div id="dv" aria-hidden="true">
+  <div class="dv-sheet" id="dvBody">
+    <div class="dv-grip" id="dvGrip"></div>
+    <div class="dv-head">
+      <div class="dv-logo" id="dvLogo"></div>
+      <div class="dv-tt">
+        <button id="dvTitle"><span id="dvName"></span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="dv-sub"><span id="dvSub"></span><i class="dv-dot" id="dvDot"></i></div>
+      </div>
+      <button id="dvMore" aria-label="Diğer"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+    </div>
+    <div class="dv-px"><span id="dvPrice">–</span><span id="dvUnit"></span></div>
+    <div class="dv-chg" id="dvChg"></div>
+    <div class="dv-chg2" id="dvChg2"></div>
+    <div class="dv-chart">
+      <div id="dvChart"></div>
+      <div class="dv-status" id="dvStatus"></div>
+      <button class="dv-pill l" id="dvAlarm" aria-label="Alarm kur"><svg viewBox="0 0 24 24"><circle cx="11" cy="13" r="7"/><path d="M11 9.5V13l2 1.5M4 4.5L6.5 2.5M18 4.5L15.5 2.5M17.5 17.5h5M20 15v5"/></svg></button>
+      <button class="dv-pill r" id="dvInd" aria-label="İndikatörler"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 4 5-7 4 5"/><path d="M3 21l5-4 4 2 5-5 4 3" opacity=".55"/></svg></button>
+    </div>
+    <div class="dv-rng" id="dvRng"></div>
+  </div>
+  <div class="dv-menu" id="dvMenu" hidden></div>
+</div>
 <div id="sheet">
   <div class="sh-head">
     <input id="search" type="search" placeholder="Coin ara (ör. SOL)" autocomplete="off" autocapitalize="characters" spellcheck="false">
@@ -681,7 +781,7 @@ const S = {
   symbols: {},           // sembol -> {base, quote, prec, tick}
   tickers: {},           // sembol -> {last, chg, hi, lo, qv}; chg = Türkiye saatiyle 03:00'a (00:00 UTC) göre %
   dayOpen: {},           // sembol -> günlük (00:00 UTC = 03:00 TR) açılış fiyatı
-  symbol: store.get('vg_symbol', 'BTCUSDT'),
+  symbol: (v => String(v).startsWith('bt:') ? 'BTCUSDT' : v)(store.get('vg_symbol', 'BTCUSDT')),
   interval: store.get('vg_interval', '1h'),
   favs: new Set(store.get('vg_favs', ['BTCUSDT','ETHUSDT','SOLUSDT'])),
   lists: (() => { const l = store.get('vg_lists', []); return Array.isArray(l) ? l.filter(x => x && x.id && Array.isArray(x.syms)) : []; })(),
@@ -690,7 +790,7 @@ const S = {
   candles: [],
   loadingOld: false, noMoreOld: false,
   ws: null, tickWs: null, hovering: false, hiddenAt: 0,
-  mkt: (() => { const v = store.get('vg_mkt', 'coin'); return ['coin','tradfi','spot','btcturk','metal','fx','index','other'].includes(v) ? v : 'coin'; })(), favView: false, btq: 'all',
+  mkt: (() => { const v = store.get('vg_mkt', 'coin'); return ['coin','tradfi','spot','metal','fx','index','other'].includes(v) ? v : 'coin'; })(), favView: false,
   listMode: 'coin',      // 'coin' | 'tradfi'
   favAll: false,         // favori / özel liste tüm gruplardan mı gösterilsin (sadece Favoriler düğmesi ve Coin listesi)
   tfKind: store.get('vg_tfkind', 'all')
@@ -766,6 +866,7 @@ function applyTheme(name, save){
     rightPriceScale: { borderColor: T.border }, timeScale: { borderColor: T.border } });
   $('themeBtn').textContent = T.icon;
   if (window.__c2Theme) window.__c2Theme();
+  if (window.__dvTheme) window.__dvTheme();
   if (save) store.set('vg_theme', name);
   if (typeof D !== 'undefined') D.ver++;
 }
@@ -903,14 +1004,13 @@ const PRE = {};
    (Hyperliquid alış/satış ayrımı vermez; bu alanlar null olur.) */
 const isHL = sym => !!(S.symbols[sym] && S.symbols[sym].src === 'hl');
 const isExt = sym => !!(S.symbols[sym] && S.symbols[sym].src);          // Binance Futures dışı kaynaklar: hl, spot, bt (BtcTürk), dom (dominans)
-const EXT_PFX = new Set(['spot', 'bt', 'dom', 'kr']);
+const EXT_PFX = new Set(['spot', 'dom', 'kr']);
 const isHLName = s => String(s).includes(':') && !EXT_PFX.has(String(s).split(':')[0]);
 const SPOT_API = 'https://api.binance.com', SPOT_WS = 'wss://stream.binance.com:9443/ws';
 async function getKl(sym, iv, o){
   o = o || {};
   const m = S.symbols[sym];
   if (m && m.src === 'hl') return hlKlines(sym, iv, o);
-  if (m && m.src === 'bt') return btKlines(m.pair, iv, o);
   if (m && m.src === 'kr') return krKlines(m.pair, iv, o);
   if (m && m.src === 'dom') return domKlines(m.dom, iv, o);
   const spot = !!(m && m.src === 'spot');
@@ -963,6 +1063,7 @@ async function loadChart(){
     candle.setData(S.candles);
     vol.setData(S.candles.map(volBar));
     if (window.__cvdAll) window.__cvdAll();
+    if (window.__indAll) window.__indAll();
     const n = S.candles.length;
     S.ref = n ? S.candles[n - 1].close : 0;
     S.closeMs = n ? initialCloseMs(data, symbol, interval) : 0;
@@ -1003,6 +1104,7 @@ async function loadOlder(){
       candle.setData(S.candles);
       vol.setData(S.candles.map(volBar));
       if (window.__cvdAll) window.__cvdAll();
+    if (window.__indAll) window.__indAll();
     }
   }catch(e){ /* sessizce geç, bir sonraki kaydırmada tekrar dener */ }
   finally{ S.loadingOld = false; }
@@ -1017,13 +1119,14 @@ function applyBar(b){
   candle.update(b);
   vol.update(volBar(b));
   if (window.__cvdBar) window.__cvdBar(b);
+  if (window.__indBar) window.__indBar(b);
   updateHeader();
   if (!S.hovering) setLegend(b);
 }
 function openKlineWs(token){
   if (isHL(S.symbol)){ hlWatchCandles(S.symbol, S.interval, token); S.ws = { hl: true, close(){} }; S.lastKline = Date.now(); return; }
   const sm = S.symbols[S.symbol];
-  if (sm && (sm.src === 'bt' || sm.src === 'dom' || sm.src === 'kr')){ S.ws = { poll: true, close(){} }; S.lastKline = Date.now(); return; }     // canlı akış yok: yoklama ile güncellenir
+  if (sm && (sm.src === 'dom' || sm.src === 'kr')){ S.ws = { poll: true, close(){} }; S.lastKline = Date.now(); return; }     // canlı akış yok: yoklama ile güncellenir
   const spot = !!(sm && sm.src === 'spot');
   const ws = new WebSocket(`${spot ? SPOT_WS : WS}/${(spot ? sm.pair : S.symbol).toLowerCase()}@kline_${srcInterval(S.symbol, S.interval)}`);
   S.ws = ws;
@@ -1051,10 +1154,10 @@ let livePolling = false, lastReopen = 0;
 setInterval(async () => {
   if (document.hidden || livePolling || !S.candles.length || !S.ws) return;
   const sm = S.symbols[S.symbol], src = sm && sm.src, quiet = Date.now() - (S.lastKline || 0), hl = src === 'hl';
-  const need = hl ? 6000 : src === 'dom' ? 12000 : src === 'kr' ? 3500 : src === 'bt' ? 3000 : 2000, gap = hl ? 4000 : src === 'dom' ? 11000 : src === 'kr' ? 5000 : src === 'bt' ? 2800 : 0;
+  const need = hl ? 6000 : src === 'dom' ? 12000 : src === 'kr' ? 3500 : 2000, gap = hl ? 4000 : src === 'dom' ? 11000 : src === 'kr' ? 5000 : 0;
   if (quiet < need) return;
   if (gap && Date.now() - (S.lastPoll || 0) < gap) return;      // harici kaynakların istek sınırına takılmamak için aralıklı
-  if (quiet > 10000 && Date.now() - lastReopen > 10000 && src !== 'dom' && src !== 'bt' && src !== 'kr'){
+  if (quiet > 10000 && Date.now() - lastReopen > 10000 && src !== 'dom' && src !== 'kr'){
     lastReopen = Date.now();
     if (hl){ if (typeof HLW !== 'undefined') hlReconnect(); } else { closeKlineWs(); openKlineWs(loadToken); }
   }
@@ -1108,7 +1211,7 @@ requestAnimationFrame(cdFrame);
 function updateHeader(){
   const m = S.symbols[S.symbol];
   $('symBase').textContent = m ? (m.src && m.label && m.label.length <= 8 ? m.label : m.base) : S.symbol;
-  $('symQuote').textContent = m ? (m.src === 'hl' ? 'HL' : m.src === 'dom' ? 'Dominans' : m.src === 'bt' ? m.quote + ' · BtcTürk' : m.src === 'kr' ? 'Forex · Kraken' : m.src === 'spot' ? 'USDT · Spot' : m.quote + ' Sürekli') : '';
+  $('symQuote').textContent = m ? (m.src === 'hl' ? 'HL' : m.src === 'dom' ? 'Dominans' : m.src === 'kr' ? 'Forex · Kraken' : m.src === 'spot' ? 'USDT · Spot' : m.quote + ' Sürekli') : '';
   const t = S.tickers[S.symbol] || {};
   const last = S.candles.length ? S.candles[S.candles.length - 1].close : t.last;
   const pe = $('price');
@@ -1162,7 +1265,6 @@ function symGroup(sym){
   const m = S.symbols[sym]; if (!m) return 'coin';
   if (m.src === 'hl') return m.hlGroup;
   if (m.src === 'dom') return 'other';
-  if (m.src === 'bt') return 'btcturk';
   if (m.src === 'kr') return 'fx';
   if (m.src === 'spot') return 'spot';
   const b = String(m.base).toUpperCase();
@@ -1184,10 +1286,10 @@ const inGroup = (sym, mode) => {
 const GROUP_INFO = {
   coin: ['Future coin ara (ör. SOL)', '03:00 %'], tradfi: ['Hisse ara (ör. TSLA)', 'Seans %'], metal: ['Metal / emtia ara (ör. Gold)', '24s %'],
   fx: ['Parite ara (ör. EUR)', '24s %'], index: ['Endeks ara (ör. S&P)', '24s %'],
-  other: ['Dominans', '24s %'], btcturk: ['BtcTürk coin ara (ör. BTC)', '24s %'], spot: ['Spot coin ara (ör. SOL)', '24s %']
+  other: ['Dominans', '24s %'], spot: ['Spot coin ara (ör. SOL)', '24s %']
 };
-const EXT_GROUPS = ['other', 'btcturk', 'spot', 'fx', 'metal', 'index'];
-const MKT = [['coin', 'Future'], ['tradfi', 'TradFi'], ['spot', 'Spot'], ['btcturk', 'BtcTürk'], ['metal', 'Metaller'], ['fx', 'Döviz'], ['index', 'Endeks'], ['other', 'Diğer']];
+const EXT_GROUPS = ['other', 'spot', 'fx', 'metal', 'index'];
+const MKT = [['coin', 'Future'], ['tradfi', 'TradFi'], ['spot', 'Spot'], ['metal', 'Metaller'], ['fx', 'Döviz'], ['index', 'Endeks'], ['other', 'Diğer']];
 const MSORTS = SORTS.filter(x => ['vol', 'up', 'down', 'az'].includes(x[0]));
 function renderSort(){
   const g = S.listMode, fv = S.favView;
@@ -1197,7 +1299,6 @@ function renderSort(){
   if (!fv){
     if (g === 'other'){ $('sortBar').innerHTML = ''; return; }
     let h = MSORTS.map(([v, l]) => `<button class="chip${v === S.sort ? ' on' : ''}" data-sort="${v}">${l}</button>`).join('');
-    if (g === 'btcturk') h += '<span class="sepv"></span>' + [['all', 'Hepsi'], ['TRY', 'TL'], ['USDT', 'USDT']].map(([v, l]) => `<button class="chip${S.btq === v ? ' on' : ''}" data-btq="${v}">${l}</button>`).join('');
     $('sortBar').innerHTML = h; return;
   }
   let h = SORTS.map(([v, l]) => `<button class="chip${v === S.sort ? ' on' : ''}" data-sort="${v}">${l}</button>`).join('');
@@ -1217,8 +1318,6 @@ function setMkt(k){
 $('mktTabs').addEventListener('click', e => { const b = e.target.closest('[data-mkt]'); if (b) setMkt(b.dataset.mkt); });
 $('sortBar').addEventListener('click', e => {
   if (e.target.closest('[data-newlist]')){ const l = newList(); if (l){ S.sort = 'L:' + l.id; S.favAll = true; store.set('vg_sort', S.sort); renderSort(); renderList(true); } return; }
-  const q = e.target.closest('[data-btq]');
-  if (q){ S.btq = q.dataset.btq; renderSort(); renderList(true); return; }
   const b = e.target.closest('[data-sort]');
   if (!b) return;
   S.sort = b.dataset.sort;
@@ -1236,7 +1335,6 @@ function listItems(){
   let arr = Object.keys(S.symbols).filter(s => cl ? cl.syms.includes(s) : favv ? S.favs.has(s) : inGroup(s, S.listMode));
   if (!S.favView && (cl || favv)) arr = arr.filter(s => inGroup(s, S.listMode));   // Metaller/Döviz/Endeks/TradFi içinde favori ve listeler sadece o grubu gösterir
   const q = S.query.trim().toUpperCase();
-  if (S.listMode === 'btcturk' && S.btq !== 'all' && !S.favView) arr = arr.filter(s => S.symbols[s].quote === S.btq);
   if (q) arr = arr.filter(s => s.toUpperCase().includes(q) || String(S.symbols[s].label || '').toUpperCase().includes(q));
   if (S.sort === 'fav') arr = arr.filter(s => S.favs.has(s));
   const t = s => S.tickers[s] || {};
@@ -1281,7 +1379,7 @@ $('list').addEventListener('click', e => {
   const f = e.target.closest('[data-fav]');
   if (f){ if (S.lists.length) openListMenu(f.dataset.fav); else { toggleFav(f.dataset.fav); renderList(); } return; }
   const r = e.target.closest('[data-s]');
-  if (r) selectSymbol(r.dataset.s);
+  if (r) openDetail(r.dataset.s, listItems());
 });
 
 let qTimer;
@@ -1313,7 +1411,7 @@ function closeSheet(fromPop){
   $('search').blur();
   if (!fromPop && history.state && history.state.sheet) history.back();
 }
-window.addEventListener('popstate', () => { closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); closeCrowd(true); closeMenu(true); }); // Android geri tuşu listeyi kapatır
+window.addEventListener('popstate', () => { if (!(history.state && history.state.sheet)) closeSheet(true); closeAlarms(true); closeWall(true); closeWeek(true); closeCrowd(true); closeMenu(true); }); // Android geri tuşu listeyi kapatır
 $('list').addEventListener('pointerdown', e => {
   const r = e.target.closest('.row[data-s]');
   if (r) { try{ fetchKlines(r.dataset.s, S.interval).catch(() => {}); }catch(err){} }
@@ -1375,9 +1473,12 @@ $('lsMenu').addEventListener('click', e => {
 });
 $('favBtn').addEventListener('click', () => { if (S.lists.length) openListMenu(S.symbol); else toggleFav(S.symbol); });
 
+const SYMH = [];   // geri tuşu için önceki pariteler
+let backNav = false;
 function selectSymbol(s){
   closeSheet();
   if (s === S.symbol) return;
+  if (!backNav && S.symbol && (SYMH[SYMH.length - 1] !== S.symbol)){ SYMH.push(S.symbol); if (SYMH.length > 40) SYMH.shift(); }
   S.symbol = s;
   store.set('vg_symbol', s);
   loadChart();
@@ -1989,6 +2090,7 @@ $('drawBar').addEventListener('click', e => {
   const b = e.target.closest('[data-tool],[data-act]');
   if (!b) return;
   if (b.dataset.tool) setTool(D.tool === b.dataset.tool ? null : b.dataset.tool);
+  else if (b.dataset.act === 'ind'){ indPopToggle(b); }
   else if (b.dataset.act === 'magnet'){ D.magnet = !D.magnet; store.set('vg_magnet', D.magnet); renderDrawBar(); }
   else if (b.dataset.act === 'share'){ shareChart(); }
   else if (b.dataset.act === 'save'){
@@ -3656,19 +3758,376 @@ function cvdBar(b){
 function cvdApply(){
   if (CVD.on && !CVD.s){
     CVD.s = chart.addLineSeries({ priceScaleId: 'cvd', color: '#b26bff', lineWidth: 2, priceLineVisible: false, lastValueVisible: true, title: 'CVD', priceFormat: { type: 'volume' } });
-    chart.priceScale('cvd').applyOptions({ scaleMargins: { top: 0.6, bottom: 0.2 } });
-    candle.priceScale().applyOptions({ scaleMargins: { top: 0.06, bottom: 0.42 } });
+    paneLayout();
     cvdAll();
   } else if (!CVD.on && CVD.s){
     try{ chart.removeSeries(CVD.s); }catch(e){}
     CVD.s = null;
-    candle.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0.22 } });
+    paneLayout();
   }
 }
 window.__cvdAll = cvdAll; window.__cvdBar = cvdBar;
 let cvdWarned = '';
 window.__cvdOn = () => CVD.on;
 window.__cvdToggle = () => { CVD.on = !CVD.on; store.set('vg_cvd', CVD.on); cvdApply(); mnState(); };
+
+/* =====================================================================
+   İNDİKATÖRLER: RSI (14) · MACD (12, 26, 9) · Bollinger Bantları (20, 2)
+   RSI ve MACD grafiğin altında ayrı bölmelerde, Bollinger fiyatın üstünde çizilir.
+   ===================================================================== */
+var IND = Object.assign({ rsi: false, macd: false, bb: false }, (() => { try{ const v = store.get('vg_ind', null); return v && typeof v === 'object' ? v : {}; }catch(e){ return {}; } })());
+const INDS = {};
+let indDirty = false;
+function emaArr(v, n){
+  const out = new Array(v.length).fill(null), k = 2 / (n + 1); let e = null, sum = 0, cnt = 0;
+  for (let i = 0; i < v.length; i++){
+    const x = v[i]; if (x == null){ continue; }
+    if (e == null){ sum += x; cnt++; if (cnt === n){ e = sum / n; out[i] = e; } continue; }
+    e = x * k + e * (1 - k); out[i] = e;
+  }
+  return out;
+}
+function rsiArr(c, n){
+  const out = new Array(c.length).fill(null); let ag = 0, al = 0;
+  for (let i = 1; i < c.length; i++){
+    const d = c[i] - c[i - 1], g = d > 0 ? d : 0, l = d < 0 ? -d : 0;
+    if (i <= n){ ag += g; al += l; if (i === n){ ag /= n; al /= n; out[i] = al === 0 ? 100 : 100 - 100 / (1 + ag / al); } continue; }
+    ag = (ag * (n - 1) + g) / n; al = (al * (n - 1) + l) / n;
+    out[i] = al === 0 ? 100 : 100 - 100 / (1 + ag / al);
+  }
+  return out;
+}
+function bbArr(c, n, k){
+  const mid = new Array(c.length).fill(null), up = mid.slice(), lo = mid.slice();
+  for (let i = n - 1; i < c.length; i++){
+    let s = 0; for (let j = i - n + 1; j <= i; j++) s += c[j];
+    const m = s / n; let q = 0; for (let j = i - n + 1; j <= i; j++) q += (c[j] - m) * (c[j] - m);
+    const sd = Math.sqrt(q / n); mid[i] = m; up[i] = m + k * sd; lo[i] = m - k * sd;
+  }
+  return { mid, up, lo };
+}
+function macdArr(c){
+  const e12 = emaArr(c, 12), e26 = emaArr(c, 26);
+  const m = c.map((_, i) => e12[i] != null && e26[i] != null ? e12[i] - e26[i] : null);
+  const sig = emaArr(m, 9);
+  return { m, sig, h: m.map((x, i) => x != null && sig[i] != null ? x - sig[i] : null) };
+}
+const INDC = { rsi: '#7e57c2', macd: '#2962ff', sig: '#ff6d00', bbm: '#ff6d00', bbb: '#2962ff' };
+function indLbl(id, top){
+  let el = $(id);
+  if (!el){ el = document.createElement('div'); el.id = id; el.className = 'indlbl'; $('chartWrap').appendChild(el); }
+  el.style.top = top; el.hidden = false; return el;
+}
+function paneLayout(){
+  const panes = [];
+  if (typeof CVD !== 'undefined' && CVD.on && CVD.s) panes.push('cvd');
+  if (IND && IND.rsi) panes.push('rsi');
+  if (IND && IND.macd) panes.push('macd');
+  const n = panes.length, h = n >= 3 ? 0.16 : n === 2 ? 0.19 : 0.22, sub = n * h;
+  if (!n){
+    candle.priceScale().applyOptions({ scaleMargins: { top: 0.1, bottom: 0.22 } });
+    chart.priceScale('vol').applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
+  } else {
+    const mb = sub + 0.02;
+    candle.priceScale().applyOptions({ scaleMargins: { top: 0.06, bottom: mb + 0.12 } });
+    chart.priceScale('vol').applyOptions({ scaleMargins: { top: 1 - mb - 0.1, bottom: mb } });
+  }
+  panes.forEach((p, i) => {
+    const top = 1 - sub + i * h + 0.025, bottom = sub - (i + 1) * h + 0.01;
+    try{ chart.priceScale(p).applyOptions({ scaleMargins: { top, bottom } }); }catch(e){}
+    if (p !== 'cvd') indLbl('lbl_' + p, (top * 100 - 2.2).toFixed(1) + '%');
+  });
+  ['rsi', 'macd'].forEach(p => { if (!panes.includes(p) && $('lbl_' + p)) $('lbl_' + p).hidden = true; });
+}
+function indSeries(){
+  const ls = (o) => chart.addLineSeries(Object.assign({ lineWidth: 1.5, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false }, o));
+  if (IND.rsi && !INDS.rsi){
+    INDS.rsi = ls({ priceScaleId: 'rsi', color: INDC.rsi, autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
+    INDS.rsi70 = INDS.rsi.createPriceLine({ price: 70, color: 'rgba(120,123,134,.7)', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+    INDS.rsi30 = INDS.rsi.createPriceLine({ price: 30, color: 'rgba(120,123,134,.7)', lineWidth: 1, lineStyle: 2, axisLabelVisible: false });
+  } else if (!IND.rsi && INDS.rsi){ try{ chart.removeSeries(INDS.rsi); }catch(e){} INDS.rsi = null; }
+  if (IND.macd && !INDS.mh){
+    INDS.mh = chart.addHistogramSeries({ priceScaleId: 'macd', priceLineVisible: false, lastValueVisible: false });
+    INDS.mm = ls({ priceScaleId: 'macd', color: INDC.macd });
+    INDS.ms = ls({ priceScaleId: 'macd', color: INDC.sig });
+  } else if (!IND.macd && INDS.mh){ for (const k of ['mh', 'mm', 'ms']){ try{ chart.removeSeries(INDS[k]); }catch(e){} INDS[k] = null; } }
+  if (IND.bb && !INDS.bm){
+    INDS.bm = ls({ color: INDC.bbm, lineWidth: 1 });
+    INDS.bu = ls({ color: INDC.bbb, lineWidth: 1 });
+    INDS.bl = ls({ color: INDC.bbb, lineWidth: 1 });
+  } else if (!IND.bb && INDS.bm){ for (const k of ['bm', 'bu', 'bl']){ try{ chart.removeSeries(INDS[k]); }catch(e){} INDS[k] = null; } }
+  paneLayout();
+}
+const fmtI = (v, d) => v == null || !isFinite(v) ? '–' : Number(v).toFixed(d);
+function indAll(){
+  if (!IND.rsi && !IND.macd && !IND.bb) return;
+  const bars = S.candles, c = bars.map(b => b.close), t = bars.map(b => b.time);
+  const pts = arr => { const o = []; for (let i = 0; i < arr.length; i++) if (arr[i] != null && isFinite(arr[i])) o.push({ time: t[i], value: arr[i] }); return o; };
+  const pr = (S.symbols[S.symbol] || {}).prec ?? 2;
+  try{
+    if (IND.rsi && INDS.rsi){ const r = rsiArr(c, 14), rp = pts(r); INDS.rsi.setData(rp); INDS.nRsi = rp.length; indLbl('lbl_rsi', $('lbl_rsi') ? $('lbl_rsi').style.top : '70%').innerHTML = `<b style="color:${INDC.rsi}">RSI 14</b> ${fmtI(r[r.length - 1], 2)}`; }
+    if (IND.macd && INDS.mh){
+      const m = macdArr(c), hd = [];
+      for (let i = 0; i < c.length; i++){ const v = m.h[i]; if (v == null) continue; const pv = i ? m.h[i - 1] : null;
+        hd.push({ time: t[i], value: v, color: v >= 0 ? (pv != null && v < pv ? '#b2dfdb' : '#26a69a') : (pv != null && v > pv ? '#ffcdd2' : '#ff5252') }); }
+      INDS.mh.setData(hd); INDS.nMacd = hd.length; INDS.mm.setData(pts(m.m)); INDS.ms.setData(pts(m.sig));
+      const L = c.length - 1, dp = Math.min(8, pr + 1);
+      indLbl('lbl_macd', $('lbl_macd') ? $('lbl_macd').style.top : '85%').innerHTML = `<b style="color:${INDC.macd}">MACD 12 26 9</b> ${fmtI(m.h[L], dp)} <span style="color:${INDC.macd}">${fmtI(m.m[L], dp)}</span> <span style="color:${INDC.sig}">${fmtI(m.sig[L], dp)}</span>`;
+    }
+    if (IND.bb && INDS.bm){ const b = bbArr(c, 20, 2), bp = pts(b.mid); INDS.nBb = bp.length; INDS.bm.setData(bp); INDS.bu.setData(pts(b.up)); INDS.bl.setData(pts(b.lo)); }
+  }catch(e){}
+}
+function indApply(){ store.set('vg_ind', { rsi: !!IND.rsi, macd: !!IND.macd, bb: !!IND.bb }); indSeries(); indAll(); indState(); }
+function indState(){
+  const any = IND.rsi || IND.macd || IND.bb;
+  const b = $('indTool'); if (b) b.classList.toggle('on', !!any || $('indPop').classList.contains('open'));
+  $('indPop').querySelectorAll('[data-ind]').forEach(x => { x.checked = !!IND[x.dataset.ind]; });
+}
+function indPopToggle(anchor){
+  const p = $('indPop'), open = !p.classList.contains('open');
+  if (open){
+    const r = (anchor || $('drawBar')).getBoundingClientRect();
+    p.style.bottom = (window.innerHeight - r.top + 8) + 'px'; p.style.top = 'auto';
+  }
+  p.classList.toggle('open', open); indState();
+}
+$('indPop').addEventListener('change', e => { const x = e.target.closest('[data-ind]'); if (!x) return; IND[x.dataset.ind] = x.checked; indApply(); });
+document.addEventListener('pointerdown', e => { const p = $('indPop'); if (p.classList.contains('open') && !p.contains(e.target) && !e.target.closest('#indTool,#dvInd')) { p.classList.remove('open'); indState(); } }, true);
+window.__indAll = indAll;
+window.__indBar = () => { indDirty = true; };
+setInterval(() => { if (indDirty && !document.hidden){ indDirty = false; indAll(); } }, 1000);
+window.__vgInd = { IND, INDS, rsiArr, macdArr, bbArr, emaArr, indApply, paneLayout };
+indSeries(); indState();
+
+/* =====================================================================
+   PARİTE AYRINTI EKRANI (TradingView mobil görünümü)
+   Listede pariteye dokununca açılır. Sağa kaydır → listede bir alttaki, sola → bir üstteki.
+   Sağ alttaki kare → analiz / çizim ekranı.
+   ===================================================================== */
+const DV = { sym: null, list: [], idx: 0, range: (() => { const v = store.get('vg_dvr', '3A'); return ['1G','1H','1A','3A','YTD','1Y','5Y','Tümü'].includes(v) ? v : '3A'; })(),
+  chart: null, ser: null, bars: [], tok: 0, open: false, base: null, last: null };
+const DV_R = { '1G': ['5m', 288, 'son 1 gün'], '1H': ['30m', 336, 'son 1 hafta'], '1A': ['2h', 372, 'son 1 ay'], '3A': ['1d', 92, 'son 3 ay'],
+  'YTD': ['1d', 0, 'yılbaşından beri'], '1Y': ['1d', 366, 'son 1 yıl'], '5Y': ['1w', 262, 'son 5 yıl'], 'Tümü': ['1M', 500, 'tüm zamanlar'] };
+const TR_MON = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+const CUR_NAME = { EUR: 'Euro', USD: 'U.S. Dollar', GBP: 'British Pound', JPY: 'Japanese Yen', CHF: 'Swiss Franc', AUD: 'Australian Dollar', CAD: 'Canadian Dollar' };
+const trn = (v, d) => v == null || !isFinite(v) ? '–' : Number(v).toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const sgn = (v, d) => v == null || !isFinite(v) ? '–' : (v > 0 ? '+' : v < 0 ? '−' : '') + trn(Math.abs(v), d);
+function dvPrec(sym){ const m = S.symbols[sym] || {}; const p = m.prec ?? 2; return m.src === 'kr' ? p : Math.max(2, p); }
+function dvInfo(sym){
+  const m = S.symbols[sym] || {}, base = String(m.base || sym);
+  if (m.src === 'spot') return { title: `${base} / ${m.quote === 'USDT' ? 'TetherUS' : m.quote}`, sub: `${m.pair} • BINANCE`, unit: m.quote, logo: base };
+  if (m.src === 'hl') return { title: `${m.label || base} Perpetual`, sub: `${base}USD.P • HYPERLIQUID`, unit: 'USD', logo: m.label || base };
+  if (m.src === 'kr') return { title: `${CUR_NAME[m.base] || m.base} / ${CUR_NAME[m.quote] || m.quote}`, sub: `${m.pair} • KRAKEN`, unit: m.quote, logo: m.base };
+  if (m.src === 'dom'){ const nm = { BTC: 'Bitcoin Dominance, %', USDT: 'Tether Dominance, %', OTHERS: 'Others Dominance, %' }[m.dom] || base; return { title: nm, sub: `${m.label} • CRYPTOCAP`, unit: '%', logo: m.dom === 'OTHERS' ? 'O' : m.dom }; }
+  return { title: `${sym} Perpetual Contract`, sub: `${sym}.P • BINANCE`, unit: m.quote || 'USDT', logo: m.label || base };
+}
+const DV_COLORS = ['#2962ff', '#f7931a', '#26a69a', '#7e57c2', '#e91e63', '#00bcd4', '#ff9800', '#4caf50', '#3f51b5', '#795548'];
+function dvLogo(sym, info){
+  const m = S.symbols[sym] || {}, el = $('dvLogo'), key = String(m.base || info.logo).toUpperCase().replace(/^1000+/, '').replace(/[^A-Z0-9]/g, '');
+  let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  el.style.background = DV_COLORS[h % DV_COLORS.length];
+  const letter = esc(String(info.logo).replace(/^1000+/, '').charAt(0).toUpperCase() || '?');
+  el.innerHTML = letter;
+  if (!m.src || m.src === 'spot'){
+    if (!m.tradfi){
+      const img = new Image(); img.alt = '';
+      img.onload = () => { if (DV.sym === sym){ el.innerHTML = ''; el.style.background = 'transparent'; el.appendChild(img); } };
+      img.src = `https://cdn.jsdelivr.net/gh/spothq/cryptocurrency-icons@master/128/color/${key.toLowerCase()}.png`;
+    }
+  }
+}
+function dvTheme(){
+  if (!DV.chart) return;
+  const cs = getComputedStyle($('dv'));
+  DV.chart.applyOptions({ layout: { background: { type: 'solid', color: cs.getPropertyValue('--dbg').trim() || '#fff' }, textColor: cs.getPropertyValue('--dmu').trim() || '#6a6d78' } });
+}
+window.__dvTheme = dvTheme;
+function dvEnsureChart(){
+  if (DV.chart) return;
+  DV.chart = LightweightCharts.createChart($('dvChart'), {
+    autoSize: true,
+    layout: { background: { type: 'solid', color: '#ffffff' }, textColor: '#6a6d78', fontSize: 12, fontFamily: '-apple-system,BlinkMacSystemFont,"Trebuchet MS",Roboto,Ubuntu,sans-serif' },
+    grid: { vertLines: { visible: false }, horzLines: { visible: false } },
+    leftPriceScale: { visible: true, borderVisible: false, scaleMargins: { top: 0.12, bottom: 0.2 } },
+    rightPriceScale: { visible: false },
+    timeScale: { borderVisible: false, fixLeftEdge: true, fixRightEdge: true, lockVisibleTimeRangeOnResize: true,
+      tickMarkFormatter: (t, type) => { const d = new Date(t * 1000); const mo = TR_MON[d.getUTCMonth()];
+        if (type === 0) return String(d.getUTCFullYear()); if (type === 1) return mo; if (type === 2) return String(d.getUTCDate());
+        return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); } },
+    crosshair: { vertLine: { visible: false, labelVisible: false }, horzLine: { visible: false, labelVisible: false } },
+    handleScroll: false, handleScale: false,
+    localization: { locale: 'tr-TR', priceFormatter: p => Number(p).toLocaleString('tr-TR', { maximumFractionDigits: dvPrec(DV.sym) }) }
+  });
+  DV.ser = DV.chart.addCandlestickSeries({ upColor: '#089981', downColor: '#f23645', borderVisible: false, wickUpColor: '#089981', wickDownColor: '#f23645',
+    priceScaleId: 'left', priceLineVisible: true, priceLineStyle: 2, priceLineWidth: 1, priceLineColor: '#9598a1', lastValueVisible: false });
+  dvTheme();
+}
+function dvRenderRng(){
+  $('dvRng').innerHTML = Object.keys(DV_R).map(k => `<button data-r="${k}" class="${k === DV.range ? 'on' : ''}">${k}</button>`).join('') +
+    '<button id="dvFull" aria-label="Analiz ekranı"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>';
+}
+function dvHeader(){
+  const sym = DV.sym, info = dvInfo(sym), m = S.symbols[sym] || {}, t = S.tickers[sym] || {}, d = dvPrec(sym);
+  $('dvName').textContent = info.title; $('dvSub').textContent = info.sub; $('dvUnit').textContent = info.unit;
+  const last = t.last != null ? t.last : DV.last;
+  $('dvPrice').textContent = trn(last, d);
+  const chg = t.chg, abs = last != null && chg != null ? last - last / (1 + chg / 100) : null, c1 = chg > 0 ? 'dv-up' : chg < 0 ? 'dv-dn' : 'dv-fl';
+  $('dvChg').className = 'dv-chg ' + c1;
+  $('dvChg').innerHTML = chg == null ? '' : `<span>${sgn(abs, d)}</span><span>${sgn(chg, 2)}%</span><small>bugün</small>`;
+  const b0 = DV.base, r = b0 && last != null ? (last / b0 - 1) * 100 : null, c2 = r > 0 ? 'dv-up' : r < 0 ? 'dv-dn' : 'dv-fl';
+  $('dvChg2').className = 'dv-chg2 ' + c2;
+  $('dvChg2').innerHTML = r == null || DV.range === '1G' ? '' : `<span>${sgn(last - b0, d)}</span><span>${sgn(r, 2)}%</span><small>${DV_R[DV.range][2]}</small>`;
+  $('dvDot').classList.toggle('off', m.src === 'dom' || (m.src === 'kr' && [0, 6].includes(new Date().getUTCDay())));
+}
+async function dvLoad(){
+  const tok = ++DV.tok, sym = DV.sym, [iv, lim0] = DV_R[DV.range];
+  let lim = lim0;
+  if (DV.range === 'YTD'){ const n = new Date(); lim = Math.max(2, Math.ceil((Date.now() - Date.UTC(n.getUTCFullYear(), 0, 1)) / 86400e3) + 1); }
+  $('dvStatus').textContent = 'Yükleniyor…'; $('dvStatus').classList.add('show');
+  try{
+    const rows = await getKl(sym, iv, { limit: Math.min(lim, 1000) });
+    if (tok !== DV.tok) return;
+    let bars = buildBars(rows || [], sym, iv, true).filter(b => isFinite(b.open) && isFinite(b.close));
+    if (DV.range === 'YTD'){ const n = new Date(), y0 = Date.UTC(n.getUTCFullYear(), 0, 1) / 1000 + TZ; bars = bars.filter(b => b.time >= y0); }
+    DV.bars = bars;
+    DV.ser.setData(bars);
+    DV.chart.timeScale().fitContent();
+    DV.base = bars.length ? bars[0].open : null; DV.last = bars.length ? bars[bars.length - 1].close : null;
+    $('dvStatus').classList.toggle('show', !bars.length); $('dvStatus').textContent = bars.length ? '' : 'Grafik verisi yok';
+  }catch(e){
+    if (tok !== DV.tok) return;
+    DV.bars = []; DV.ser.setData([]); DV.base = null;
+    $('dvStatus').textContent = 'Veri alınamadı'; $('dvStatus').classList.add('show');
+  }
+  dvHeader();
+}
+function dvShow(sym){
+  DV.sym = sym; DV.base = null; DV.last = null;
+  const info = dvInfo(sym); dvLogo(sym, info);
+  $('dvMenu').hidden = true;
+  dvEnsureChart(); DV.ser.setData([]); dvHeader(); dvRenderRng();
+  if (EXT_PFX.has(String(sym).split(':')[0]) && S.symbols[sym] && S.symbols[sym].src === 'kr') extEnsure('fx');
+  dvLoad();
+}
+function openDetail(sym, list){
+  if (!S.symbols[sym]) return;
+  DV.list = Array.isArray(list) && list.includes(sym) ? list.slice() : [sym];
+  DV.idx = DV.list.indexOf(sym);
+  if (!DV.open){ DV.open = true; $('dv').classList.add('open'); $('dv').setAttribute('aria-hidden', 'false'); history.pushState({ dv: 1 }, ''); }
+  dvShow(sym);
+}
+function closeDetail(fromPop){
+  if (!DV.open) return;
+  DV.open = false; DV.tok++; $('dv').classList.remove('open'); $('dv').setAttribute('aria-hidden', 'true'); $('dvMenu').hidden = true;
+  if ($('sheet').classList.contains('open') && typeof renderList === 'function') renderList();
+  if (!fromPop && history.state && history.state.dv) history.back();
+}
+window.addEventListener('popstate', () => closeDetail(true));
+function dvStep(dir){      // +1: listede bir alttaki, -1: bir üstteki
+  const j = DV.idx + dir;
+  if (j < 0 || j >= DV.list.length || !S.symbols[DV.list[j]]){ const b = $('dvBody'); b.classList.add(dir > 0 ? 'out-l' : 'out-r'); setTimeout(() => b.classList.remove('out-l', 'out-r'), 120); flash(dir > 0 ? 'Listenin sonu' : 'Listenin başı'); return; }
+  const b = $('dvBody');
+  b.classList.add(dir > 0 ? 'out-l' : 'out-r');
+  setTimeout(() => {
+    DV.idx = j; dvShow(DV.list[j]);
+    b.classList.add('no-anim'); b.classList.remove('out-l', 'out-r'); b.classList.add(dir > 0 ? 'out-r' : 'out-l');
+    void b.offsetWidth; b.classList.remove('no-anim'); b.classList.remove('out-l', 'out-r');
+  }, 170);
+}
+window.__dvStep = dvStep;
+function dvToChart(openInd){
+  const s = DV.sym; let n = 0;
+  if (DV.open){ DV.open = false; DV.tok++; $('dv').classList.remove('open'); n++; }
+  if ($('sheet').classList.contains('open')){ $('sheet').classList.remove('open'); $('search').blur(); n++; }
+  if (n) history.go(-n);
+  if (s && s !== S.symbol) selectSymbol(s);
+  if (!$('drawBar').classList.contains('show')) $('drawToggle').click();
+  if (openInd) setTimeout(() => { if (!$('indPop').classList.contains('open')) indPopToggle($('indTool')); }, 350);
+}
+// kaydırma (parmakla sağa/sola)
+(() => {
+  let x0 = null, y0 = 0, t0 = 0;
+  const el = $('dvBody');
+  el.addEventListener('touchstart', e => { if (e.touches.length !== 1){ x0 = null; return; } x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; t0 = Date.now(); }, { passive: true });
+  el.addEventListener('touchend', e => {
+    if (x0 == null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4 && Date.now() - t0 < 900) dvStep(dx > 0 ? 1 : -1);
+  }, { passive: true });
+})();
+$('dvRng').addEventListener('click', e => {
+  if (e.target.closest('#dvFull')){ dvToChart(false); return; }
+  const b = e.target.closest('[data-r]'); if (!b) return;
+  DV.range = b.dataset.r; store.set('vg_dvr', DV.range); dvRenderRng(); dvLoad();
+});
+$('dvGrip').addEventListener('click', () => closeDetail());
+$('dvTitle').addEventListener('click', () => closeDetail());
+$('dvInd').addEventListener('click', () => dvToChart(true));
+function dvAlarm(){
+  const sym = DV.sym, t = S.tickers[sym] || {}, cur = t.last != null ? t.last : DV.last, d = (S.symbols[sym] || {}).prec ?? 2;
+  if (cur == null){ flash('Güncel fiyat alınamadı'); return; }
+  const v = prompt(`${dvInfo(sym).title}\nAlarm fiyatı (şu an ${trn(cur, d)}):`, Number(cur).toFixed(d));
+  if (v == null) return;
+  const p = parseFloat(String(v).replace(/\s/g, '').replace(',', '.'));
+  if (!(p > 0)){ flash('Geçerli bir fiyat gir'); return; }
+  const a = createAlarm(sym, p);
+  if (a) flash(`⏰ Alarm kuruldu: ${trn(a.price, d)}`);
+}
+$('dvAlarm').addEventListener('click', dvAlarm);
+$('dvMore').addEventListener('click', e => {
+  e.stopPropagation();
+  const mn = $('dvMenu'); if (!mn.hidden){ mn.hidden = true; return; }
+  const fav = S.favs.has(DV.sym);
+  mn.innerHTML = `<button data-m="fav">${fav ? '★ Favorilerden çıkar' : '☆ Favorilere ekle'}</button><button data-m="al">⏰ Alarm kur</button><button data-m="chart">📈 Analiz / çizim ekranında aç</button>`;
+  mn.hidden = false;
+});
+$('dvMenu').addEventListener('click', e => {
+  const b = e.target.closest('[data-m]'); if (!b) return; $('dvMenu').hidden = true;
+  if (b.dataset.m === 'fav'){ toggleFav(DV.sym); flash(S.favs.has(DV.sym) ? '★ Favorilere eklendi' : 'Favorilerden çıkarıldı'); }
+  else if (b.dataset.m === 'al') dvAlarm();
+  else dvToChart(false);
+});
+$('dv').addEventListener('click', e => { if (!e.target.closest('#dvMenu,#dvMore')) $('dvMenu').hidden = true; if (e.target === $('dv')) closeDetail(); });
+// canlı fiyat
+setInterval(() => {
+  if (!DV.open || document.hidden || !DV.ser) return;
+  const t = S.tickers[DV.sym] || {}, px = t.last;
+  if (px != null && DV.bars.length){
+    const l = DV.bars[DV.bars.length - 1];
+    if (px !== l.close){ const nb = Object.assign({}, l, { close: px, high: Math.max(l.high, px), low: Math.min(l.low, px) }); DV.bars[DV.bars.length - 1] = nb; try{ DV.ser.update(nb); }catch(e){} }
+  }
+  dvHeader();
+}, 1000);
+window.__vgDV = { DV, openDetail, closeDetail, dvStep, dvToChart };
+window.__selectSymbol = selectSymbol;
+
+/* =====================================================================
+   GERİ TUŞU: açık pencereleri adım adım kapatır → çizim modundan çıkar → önceki pariteye döner
+   ===================================================================== */
+function goBack(){
+  if ($('indPop').classList.contains('open')){ $('indPop').classList.remove('open'); indState(); return; }
+  if (!$('dvMenu').hidden){ $('dvMenu').hidden = true; return; }
+  const st = history.state;
+  if (st && typeof st === 'object' && Object.keys(st).length){ history.back(); return; }
+  if (DV.open){ closeDetail(true); return; }
+  if ($('sheet').classList.contains('open')){ closeSheet(true); return; }
+  if ($('drawBar').classList.contains('show')){ $('drawToggle').click(); return; }
+  while (SYMH.length){
+    const s = SYMH.pop();
+    if (S.symbols[s] && s !== S.symbol){ backNav = true; try{ selectSymbol(s); } finally { backNav = false; } return; }
+  }
+  flash('Ana ekrandasın');
+}
+$('backBtn').addEventListener('click', goBack);
+function placeBack(){
+  const b = $('backBtn'); let px;
+  if (DV.open) px = ($('dvRng').offsetHeight || 48) + 84;
+  else if (document.querySelector('#sheet.open,#alSheet.open,#wSheet.open,.xsheet.open,#crSheet.open,#kSheet.open,#dmSheet.open,#sgSheet.open')) px = 18;
+  else px = (document.querySelector('footer.tools') || {}).offsetHeight + ($('drawBar').classList.contains('show') ? $('drawBar').offsetHeight : 0) + 34;
+  if (!isFinite(px)) px = 74;
+  const v = `calc(env(safe-area-inset-bottom) + ${Math.round(px)}px)`;
+  if (b.style.bottom !== v) b.style.bottom = v;
+}
+setInterval(placeBack, 300); placeBack();
 cvdApply();
 mnState();
 
@@ -4407,20 +4866,18 @@ window.__vgHL = { HL, HLW, hlKlines, hlMids };
 /* =====================================================================
    ÜÇ YENİ BÖLÜM (Coin listesinde A-Z'nin sağında): DİĞER (dominans) · BTCTÜRK · SPOT
    - Spot: Binance spot USDT pariteleri (api.binance.com + canlı WebSocket)
-   - BtcTürk: BtcTürk'te listelenen tüm pariteler (REST yoklama ~3 sn, grafik mumları graph-api)
    - Diğer: BTC.D, USDT.D, OTHERS.D — piyasa değerleri CoinPaprika/CoinGecko'dan (anahtarsız),
      geçmiş fiyatlar Binance spot mumlarından hesaplanır (yaklaşık: arz sabit varsayılır)
    ===================================================================== */
-const EXT = { spot: { st: 'idle', p: null, err: '' }, bt: { st: 'idle', p: null, err: '' }, dom: { st: 'idle', p: null, err: '', t: 0 } };
+const EXT = { spot: { st: 'idle', p: null, err: '' }, dom: { st: 'idle', p: null, err: '', t: 0 } };
 EXT.kr = { st: 'idle', p: null, err: '', t: 0 };
 EXT.hl = { get st(){ return HL.ok ? 'ok' : HL.busy ? 'load' : HL.err ? 'err' : 'idle'; }, get err(){ return HL.err; } };
-const extState = g => g === 'btcturk' ? EXT.bt : g === 'other' ? EXT.dom : g === 'fx' ? EXT.kr : (g === 'metal' || g === 'index') ? EXT.hl : EXT.spot;
+const extState = g => g === 'other' ? EXT.dom : g === 'fx' ? EXT.kr : (g === 'metal' || g === 'index') ? EXT.hl : EXT.spot;
 function extEnsure(g, force){
   const E = extState(g);
   if (force && E.st === 'err' && E !== EXT.hl){ E.st = 'idle'; E.p = null; }
   let p;
   if (g === 'spot') p = spotInit();
-  else if (g === 'btcturk') p = btInit();
   else if (g === 'other') p = domRefresh();
   else {                                                   // döviz / metal / endeks
     const ps = [];
@@ -4465,8 +4922,12 @@ function spotInit(){
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     if (!Array.isArray(j)) throw new Error('veri yok');
+    let live = null;                                   // işlem gören spot sembolleri (delist edilenler dışarıda)
+    try{ const ei = await (await fetch(`${SPOT_API}/api/v3/exchangeInfo?symbolStatus=TRADING`)).json(); if (ei && Array.isArray(ei.symbols) && ei.symbols.length) live = new Set(ei.symbols.filter(z => z.status === 'TRADING').map(z => z.symbol)); }catch(e){}
+    const fresh = Date.now() - 36 * 3600e3;
     for (const x of j){
       if (!x.symbol || !x.symbol.endsWith('USDT')) continue;
+      if (live ? !live.has(x.symbol) : (+x.closeTime || Date.now()) < fresh) continue;
       const qv = +x.quoteVolume, px = +x.lastPrice;
       if (!(qv > 0) || !(px > 0)) continue;
       const base = x.symbol.slice(0, -4), key = 'spot:' + x.symbol, prec = autoPrec(px);
@@ -4497,45 +4958,7 @@ function spotConnect(){
   ws.onerror = () => { try{ ws.close(); }catch(e){} };
 }
 
-/* --- BTCTÜRK --- */
-const BT_API = 'https://api.btcturk.com', BT_GRAPH = 'https://graph-api.btcturk.com';
-const BTK = { t: 0 };
-async function btFetchTicker(){
-  const j = await xjson(`${BT_API}/api/v2/ticker`, j => j && Array.isArray(j.data) && j.data.length);
-  return j.data;
-}
-function btApply(list){
-  for (const x of list){
-    const pair = x.pairNormalized, px = +x.last; if (!pair || !(px > 0)) continue;
-    const key = 'bt:' + pair;
-    if (!S.symbols[key]){ const prec = autoPrec(px); S.symbols[key] = { base: x.numeratorSymbol, quote: x.denominatorSymbol, src: 'bt', pair, tradfi: false, label: x.numeratorSymbol, prec, tick: Math.pow(10, -prec) }; }
-    const t = S.tickers[key] || (S.tickers[key] = {});
-    t.last = px; t.chg = +x.dailyPercent || 0; t.hi = +x.high; t.lo = +x.low; t.qv = (+x.volume || 0) * px;
-    if (A.list.length) checkAlarms(key, px);
-    if (DM.pos.length) demoTick(key, px);
-    if (key === S.symbol && S.candles.length && Date.now() <= S.closeMs){       // grafik: son mumun kapanışı anlık fiyatla
-      const l = S.candles[S.candles.length - 1];
-      applyBar(Object.assign({}, l, { close: px, high: Math.max(l.high, px), low: Math.min(l.low, px) })); S.lastKline = Date.now(); setLiveMode('live');
-    }
-  }
-  listDirty = true; updateHeader();
-}
-function btInit(){
-  const E = EXT.bt;
-  if (E.st === 'ok' || E.st === 'load') return E.p;
-  E.st = 'load'; E.err = '';
-  E.p = btFetchTicker().then(l => { btApply(l); E.st = 'ok'; BTK.t = Date.now(); }).catch(e => { E.st = 'err'; E.err = e.message || String(e); E.p = null; throw e; });
-  return E.p;
-}
-setInterval(async () => {
-  if (EXT.bt.st !== 'ok' || document.hidden) return;
-  const cur = S.symbols[S.symbol] && S.symbols[S.symbol].src === 'bt', open = $('sheet').classList.contains('open') && S.listMode === 'btcturk';
-  const watch = cur || open || A.list.some(a => a.active && a.symbol.startsWith('bt:'));
-  if (Date.now() - BTK.t < (watch ? 2800 : 20000)) return;
-  BTK.t = Date.now();
-  try{ btApply(await btFetchTicker()); }catch(e){}
-}, 1000);
-// BtcTürk mumları: [çözünürlük (dk), kaç tanesi birleştirilecek]
+// Mum çözünürlükleri: [çözünürlük (dk), kaç tanesi birleştirilecek]
 const BT_RES = { '1m': [1, 1], '3m': [1, 3], '5m': [5, 1], '15m': [15, 1], '30m': [30, 1], '1h': [60, 1], '2h': [60, 2], '4h': [240, 1], '6h': [60, 6], '8h': [240, 2], '12h': [60, 12], '1d': [1440, 1], '3d': [1440, 3], '1w': [1440, 7], '1M': [1440, 0] };
 function aggRows(rows, bucket, endOf){
   const g = new Map();
@@ -4546,30 +4969,6 @@ function aggRows(rows, bucket, endOf){
   }
   return [...g.values()].map(x => (x[5] = String(x[5]), x)).sort((a, b) => a[0] - b[0]);
 }
-async function btKlines(pair, iv, o){
-  const [res, k] = BT_RES[iv] || [60, 1], ms = IV_MS[iv] || 3600e3, limit = Math.min(o.limit || FIRST_N, 1000), baseMs = res * 60000;
-  const spanMs = iv === '1M' ? 31 * 86400e3 : ms;
-  const end = o.endTime ? Math.floor(o.endTime / 1000) : Math.floor(Date.now() / 1000) + 120;
-  const start = o.startTime ? Math.floor(o.startTime / 1000) : end - Math.ceil((limit + 1) * spanMs / 1000);
-  let j = null;
-  for (const sym of [pair, pair.replace('_', '')]){
-    try{ j = await xjson(`${BT_GRAPH}/v1/klines/history?symbol=${sym}&resolution=${res}&from=${start}&to=${end}`, d => d && d.s === 'ok' && Array.isArray(d.t) && d.t.length); break; }catch(e){}
-  }
-  if (!j && ms >= 86400e3 && !o.endTime){                // yedek: günlük mumlar (api.btcturk.com/ohlc)
-    try{
-      const d = await xjson(`${BT_API}/api/v2/ohlc?pairSymbol=${pair}&last=${Math.min(limit * Math.max(1, Math.round(ms / 86400e3)) + 10, 1500)}`, d => d && Array.isArray(d.data) && d.data.length);
-      j = { t: d.data.map(x => Math.floor(x.time / 1000)), o: d.data.map(x => x.open), h: d.data.map(x => x.high), l: d.data.map(x => x.low), c: d.data.map(x => x.close), v: d.data.map(x => x.volume) };
-    }catch(e){}
-  }
-  if (!j) return [];
-  let rows = j.t.map((t, i) => [t * 1000, String(j.o[i]), String(j.h[i]), String(j.l[i]), String(j.c[i]), String(j.v[i]), t * 1000 + baseMs - 1, null, 0, null, null]);
-  if (iv === '1M') rows = aggRows(rows, t => { const d = new Date(t); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1); }, b => { const d = new Date(b); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1) - 1; });
-  else if (iv === '1w') rows = aggRows(rows, t => Math.floor((t - 4 * 86400e3) / 604800e3) * 604800e3 + 4 * 86400e3, b => b + 604800e3 - 1);
-  else if (k > 1) rows = aggRows(rows, t => Math.floor(t / ms) * ms, b => b + ms - 1);
-  rows.sort((a, b) => a[0] - b[0]);
-  return o.startTime ? rows.slice(0, limit) : rows.slice(-limit);
-}
-
 /* --- DÖVİZ (Kraken forex, anahtarsız) --- */
 const KR_API = 'https://api.kraken.com';
 const KR_PAIRS = [['EURUSD', 'EUR/USD', 5], ['GBPUSD', 'GBP/USD', 5], ['USDJPY', 'USD/JPY', 3], ['USDCHF', 'USD/CHF', 5], ['AUDUSD', 'AUD/USD', 5],
@@ -4742,7 +5141,7 @@ function domRefresh(){
   })().catch(e => { E.st = 'err'; E.err = e.message || String(e); throw e; }).finally(() => { E.p = null; });
   return E.p;
 }
-window.__vgExt = { EXT, DOM, domCalc, btKlines, domRefresh, spotInit, btInit };
+window.__vgExt = { EXT, DOM, domCalc, domRefresh, spotInit };
 
 /* =====================================================================
    DEMO HESAP — sanal 100.000 $ ile gerçek fiyatlarla vadeli (kaldıraçlı) işlem.
@@ -4775,7 +5174,7 @@ function dmAcc(){
 function dmMaxLev(sym){ const m = S.symbols[sym]; return m && m.src === 'hl' ? 20 : 50; }
 function dmPd(sym, v){ const m = S.symbols[sym]; return Number(v).toFixed(m ? Math.max(m.prec, 2) : 2); }
 
-function dmOk(sym){ const m = S.symbols[sym]; return !!m && m.src !== 'dom' && !(m.src === 'bt' && m.quote === 'TRY') && !(m.src === 'kr' && m.quote !== 'USD'); }   // demo hesap dolar bazlı
+function dmOk(sym){ const m = S.symbols[sym]; return !!m && m.src !== 'dom' && !(m.src === 'kr' && m.quote !== 'USD'); }   // demo hesap dolar bazlı
 function dmOpen(sym, side, margin, lev, tp, sl){
   const px = dmPrice(sym);
   if (!S.symbols[sym] || px == null) return flash('Bu paritenin fiyatı şu an yok');
@@ -5025,7 +5424,7 @@ async function init(){
   loadTfOpens();
   if (S.symbols[S.symbol]) loadChart();
   else if (EXT_PFX.has(String(S.symbol).split(':')[0])){            // Spot / BtcTürk: liste gelince grafik açılır, gelmezse BTC
-    extEnsure(S.symbol.startsWith('spot:') ? 'spot' : S.symbol.startsWith('kr:') ? 'fx' : 'btcturk').then(() => { if (S.symbols[S.symbol]) loadChart(); else { S.symbol = 'BTCUSDT'; loadChart(); } })
+    extEnsure(S.symbol.startsWith('spot:') ? 'spot' : 'fx').then(() => { if (S.symbols[S.symbol]) loadChart(); else { S.symbol = 'BTCUSDT'; loadChart(); } })
       .catch(() => { S.symbol = 'BTCUSDT'; loadChart(); });
   }
   else if (HL.err && S.symbols.BTCUSDT){ S.symbol = 'BTCUSDT'; loadChart(); }   // Hyperliquid'e ulaşılamadı → BTC
